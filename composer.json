@@ -1,0 +1,18 @@
+{
+    "name": "helsingborg-stad/s3-local-index",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sebastian Thulin",
+            "email": "sebastian.thulin@helsingborg.se"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "S3LocalIndex\\": "source/php/"
+        }
+    },
+    "version": "0.1.0"
+}
