@@ -5,6 +5,7 @@ namespace S3_Local_Index\CLI;
 use S3_Uploads\Plugin;
 use S3_Local_Index\Stream\Reader;
 use S3_Local_Index\Rebuild\RebuildTracker;
+use S3_Local_Index\Config\ConfigFactory;
 use WP_CLI;
 use Exception;
 
@@ -20,6 +21,12 @@ class Command {
      * @when after_wp_load
      */
     public function create($args = [], $assoc_args = []) {
+        $config = ConfigFactory::createDefault();
+        
+        if (!$config->isEnabled('cliCommands')) {
+            WP_CLI::warning('CLI commands are disabled via configuration.');
+        }
+        
         if (!class_exists(Plugin::class)) {
             WP_CLI::error('S3_Uploads plugin not loaded yet.');
             return;
@@ -153,6 +160,12 @@ class Command {
      * @when after_wp_load
      */
     public function rebuild($args = [], $assoc_args = []) {
+        $config = ConfigFactory::createDefault();
+        
+        if (!$config->isEnabled('cliCommands')) {
+            WP_CLI::warning('CLI commands are disabled via configuration.');
+        }
+        
         if (!class_exists(Plugin::class)) {
             WP_CLI::error('S3_Uploads plugin not loaded yet.');
             return;
