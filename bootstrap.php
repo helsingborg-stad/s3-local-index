@@ -2,8 +2,10 @@
 
 // Bootstrap file for PHPUnit tests
 
-// Register the autoloader
-require_once __DIR__ . '/vendor/autoload.php';
+// Register the autoloader if it exists
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
 
 // Define constants that might be needed in tests
 if (!defined('ABSPATH')) {
@@ -20,8 +22,19 @@ if (!class_exists('WP_CLI')) {
     }
 }
 
+// Simple class loader for our tests when autoloader is not available
+spl_autoload_register(function ($class) {
+    $file = __DIR__ . '/source/php/' . str_replace(['\\', '_'], ['/', '/'], $class) . '.php';
+    $file = str_replace('/S3LocalIndex/', '/', $file);
+    $file = str_replace('/S3/Local/Index/', '/', $file);
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
+
 // Mock S3 Uploads Plugin class if needed
 if (!class_exists('S3_Uploads\Plugin')) {
+    eval('
     namespace S3_Uploads {
         class Plugin {
             public static function get_instance() {
@@ -31,14 +44,15 @@ if (!class_exists('S3_Uploads\Plugin')) {
             public function s3() {
                 return new class {
                     public function getPaginator($operation, $args) {
-                        return [];
+                        return new \ArrayIterator([]);
                     }
                 };
             }
             
             public function get_s3_bucket() {
-                return 'test-bucket';
+                return "test-bucket";
             }
         }
     }
+    ');
 }
