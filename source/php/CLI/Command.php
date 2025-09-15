@@ -8,8 +8,25 @@ use WP_CLI;
 use Exception;
 use WpService\WpService;
 
+/**
+ * WP-CLI command handler for S3 Local Index operations.
+ * 
+ * This class provides CLI commands for managing S3 file indexes, including
+ * creating full indexes, flushing specific path caches, and rebuilding
+ * selective indexes from a rebuild queue.
+ */
 class Command {
 
+  /**
+   * Constructor for CLI Command.
+   *
+   * @param WpService $wpService The WordPress service provider
+   * @param Plugin $s3 The S3 Uploads plugin instance
+   * @param WP_CLI $cli The WP-CLI interface
+   * @param FileSystemInterface|null $fileSystem File system handler (optional, defaults to NativeFileSystem)
+   * @param \S3_Local_Index\Rebuild\RebuildTracker|null $rebuildTracker Rebuild tracking service (optional)
+   * @param \S3_Local_Index\Cache\CacheFactory|null $cacheFactory Cache factory service (optional)
+   */
   public function __construct(
     private WpService $wpService, 
     private Plugin $s3, 
@@ -23,6 +40,27 @@ class Command {
     $this->cacheFactory ??= new \S3_Local_Index\Cache\CacheFactory($this->wpService);
   }
 
+    /**
+     * Create a complete S3 index by scanning all objects in the bucket.
+     * 
+     * This command iterates through all objects in the S3 bucket and creates
+     * local index files organized by blog ID, year, and month. It clears the
+     * cache before starting and provides progress updates during execution.
+     * 
+     * ## OPTIONS
+     * 
+     * No specific options required.
+     * 
+     * ## EXAMPLES
+     * 
+     *     wp s3-index create
+     * 
+     * @param array $args Positional arguments (unused)
+     * @param array $assoc_args Associative arguments (unused)
+     * @return void
+     * 
+     * @when after_wp_load
+     */
     public function create($args = [], $assoc_args = []) {
 
         $s3     = $this->s3::get_instance()->s3();

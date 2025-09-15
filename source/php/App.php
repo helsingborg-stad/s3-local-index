@@ -11,12 +11,28 @@ use S3_Local_Index\Stream\Wrapper;
 use S3_Local_Index\Cache\CacheFactory;
 use S3_Uploads\Plugin as S3Plugin;
 
+/**
+ * Main application class for S3 Local Index plugin.
+ * 
+ * This class orchestrates the initialization of the plugin's components,
+ * including CLI commands and stream wrapper functionality. It implements
+ * the HookableInterface to integrate with WordPress hooks.
+ */
 class App implements HookableInterface
 {
+  /**
+   * Constructor for the main application.
+   *
+   * @param WpService $wpService The WordPress service provider
+   * @param ConfigInterface $config The configuration provider
+   */
   public function __construct(private WpService $wpService, private ConfigInterface $config){}
 
   /**
    * Add hooks to WordPress.
+   * 
+   * Registers WordPress action hooks for CLI and plugin initialization
+   * if the plugin is enabled according to configuration.
    * 
    * @return void
    */
@@ -40,6 +56,9 @@ class App implements HookableInterface
   /**
    * Initialize the CLI commands.
    *
+   * Sets up the WP-CLI command interface for managing S3 indexes,
+   * including create, flush, and rebuild operations.
+   *
    * @return void
    */
   public function initCli(): void
@@ -61,6 +80,9 @@ class App implements HookableInterface
 
   /**
    * Initialize the plugin functionality.
+   *
+   * Sets up the stream wrapper that provides transparent access to S3 files
+   * through the WordPress filesystem API, with caching support.
    *
    * @return void
    */
