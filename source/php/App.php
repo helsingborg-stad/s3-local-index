@@ -66,7 +66,7 @@ class App implements HookableInterface
    */
   public function initCli(): void
   {
-    $fileSystem = new NativeFileSystem();
+    $fileSystem = new NativeFileSystem($this->config);
     $rebuildTracker = new RebuildTracker($fileSystem);
     $cacheFactory = new CacheFactory($this->wpService);
     
@@ -91,7 +91,7 @@ class App implements HookableInterface
    */
   public function initPlugin(): void
   {
-    $fileSystem   = new NativeFileSystem();
+    $fileSystem   = new NativeFileSystem($this->config);
     $cache        = (new CacheFactory($this->wpService))->createDefault();
 
     $reader       = new Reader($cache, $fileSystem);

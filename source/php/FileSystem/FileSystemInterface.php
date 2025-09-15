@@ -43,4 +43,11 @@ interface FileSystemInterface
      * @return string Temporary directory path
      */
     public function getTempDir(): string;
+
+    /**
+     * Get cache directory path.
+     *
+     * @return string Cache directory path
+     */
+    public function getCacheDir(): string;
 }

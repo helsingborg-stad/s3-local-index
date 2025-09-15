@@ -2,11 +2,22 @@
 
 namespace S3_Local_Index\FileSystem;
 
+use S3LocalIndex\Config\ConfigInterface;
+
 /**
  * Native PHP file system implementation
  */
 class NativeFileSystem implements FileSystemInterface
 {
+    /**
+     * Constructor with optional config dependency for cache directory configuration
+     *
+     * @param ConfigInterface|null $config Configuration provider for cache directory
+     */
+    public function __construct(
+        private ?ConfigInterface $config = null
+    ) {
+    }
     /**
      * Check if a file exists.
      *
@@ -59,6 +70,21 @@ class NativeFileSystem implements FileSystemInterface
      */
     public function getTempDir(): string
     {
+        return sys_get_temp_dir();
+    }
+
+    /**
+     * Get cache directory path.
+     *
+     * @return string Cache directory path
+     */
+    public function getCacheDir(): string
+    {
+        if ($this->config !== null) {
+            return $this->config->getCacheDirectory();
+        }
+        
+        // Fallback to temp directory if no config provided
         return sys_get_temp_dir();
     }
 }
