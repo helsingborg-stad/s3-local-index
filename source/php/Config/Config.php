@@ -31,6 +31,11 @@ class Config implements ConfigInterface
         );
     }
 
+    /**
+     * Get the CLI priority.
+     *
+     * @return int The priority for the CLI init hook.
+     */
     public function getCliPriority(): int
     {
         return $this->wpService->applyFilters(
@@ -39,6 +44,11 @@ class Config implements ConfigInterface
         );
     }
 
+    /**
+     * Get the plugin priority.
+     *
+     * @return int The priority for the plugins_loaded hook.
+     */
     public function getPluginPriority(): int
     {
         return $this->wpService->applyFilters(

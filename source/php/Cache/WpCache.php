@@ -3,6 +3,7 @@
 namespace S3_Local_Index\Cache;
 
 use WpService\Contracts\Cache;
+use WpService\WpService;
 
 /**
  * WordPress object cache implementation
@@ -15,9 +16,9 @@ class WpCache implements CacheInterface {
     /**
      * Constructor.
      *
-     * @param Cache $wpService The WordPress cache service.
+     * @param WpService $wpService The WordPress cache service.
      */
-    public function __construct(private Cache $wpService) {}
+    public function __construct(private WpService $wpService) {}
 
     /**
      * Get data from cache
@@ -39,10 +40,7 @@ class WpCache implements CacheInterface {
      * @return bool True on success, false on failure
      */
     public function set(string $key, $data, int $ttl = 0): bool {
-        // WordPress cache expiration: 0 means use default, empty string means no expiration
-        $expiration = $ttl > 0 ? $ttl : 0;
-        
-        return $this->wpService->wpCacheSet($key, $data, $this->group, $expiration);
+        return $this->wpService->wpCacheSet($key, $data, $this->group, ($ttl > 0 ? $ttl : 0));
     }
 
     /**
@@ -71,14 +69,10 @@ class WpCache implements CacheInterface {
      * @return bool True on success, false on failure
      */
     public function clear(): bool {
-        // Try group-specific flush first
         $result = $this->wpService->wpCacheFlushGroup($this->group);
-        
-        // Fallback: wp_cache_flush clears entire cache
         if (!$result) {
             return $this->wpService->wpCacheFlush();
         }
-        
         return $result;
     }
 }

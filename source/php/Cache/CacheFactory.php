@@ -2,7 +2,7 @@
 
 namespace S3_Local_Index\Cache;
 
-use WpService\Contracts\Cache;
+use WpService\WpService;
 
 /**
  * Cache factory for creating cache instances using dependency injection
@@ -12,9 +12,9 @@ class CacheFactory {
     /**
      * Constructor
      *
-     * @param Cache $wpService WordPress cache service
+     * @param WpService $wpService WordPress cache service
      */
-    public function __construct(private Cache $wpService) {}
+    public function __construct(private WpService $wpService) {}
     
     /**
      * Create a composite cache with StaticCache and WpCache
