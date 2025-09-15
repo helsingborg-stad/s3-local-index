@@ -8,7 +8,6 @@ use S3_Local_Index\FileSystem\NativeFileSystem;
 use WP_CLI;
 use S3_Local_Index\CLI\Command;
 use S3_Local_Index\Stream\Wrapper;
-use S3_Local_Index\Stream\Reader;
 use S3_Local_Index\Cache\CacheFactory;
 use S3_Uploads\Plugin as S3Plugin;
 
@@ -46,11 +45,16 @@ class App implements HookableInterface
   public function initCli(): void
   {
     $fileSystem = new NativeFileSystem();
+    $rebuildTracker = new \S3_Local_Index\Rebuild\RebuildTracker($fileSystem);
+    $cacheFactory = new CacheFactory($this->wpService);
+    
     $cliCommand = new Command(
       $this->wpService,
       S3Plugin::class,
       WP_CLI::class,
-      $fileSystem
+      $fileSystem,
+      $rebuildTracker,
+      $cacheFactory
     );
     WP_CLI::add_command('s3-index', $cliCommand);
   }
@@ -63,8 +67,13 @@ class App implements HookableInterface
   public function initPlugin(): void
   {
     $fileSystem = new NativeFileSystem();
-    Reader::setCache(CacheFactory::createDefault($this->wpService));
-    Reader::setFileSystem($fileSystem);
-    Wrapper::init();
+    $cacheFactory = new CacheFactory($this->wpService);
+    $cache = $cacheFactory->createDefault();
+    
+    $reader = new \S3_Local_Index\Stream\Reader($cache, $fileSystem);
+    $directory = new \S3_Local_Index\Stream\Directory($reader);
+    $wrapper = new Wrapper($reader, $directory);
+    
+    $wrapper->init();
   }
 }
