@@ -10,6 +10,9 @@ use S3_Local_Index\CLI\Command;
 use S3_Local_Index\Stream\Wrapper;
 use S3_Local_Index\Cache\CacheFactory;
 use S3_Uploads\Plugin as S3Plugin;
+use S3_Local_Index\Rebuild\RebuildTracker;
+use S3_Local_Index\Stream\Reader;
+use S3_Local_Index\Stream\Directory;
 
 /**
  * Main application class for S3 Local Index plugin.
@@ -64,7 +67,7 @@ class App implements HookableInterface
   public function initCli(): void
   {
     $fileSystem = new NativeFileSystem();
-    $rebuildTracker = new \S3_Local_Index\Rebuild\RebuildTracker($fileSystem);
+    $rebuildTracker = new RebuildTracker($fileSystem);
     $cacheFactory = new CacheFactory($this->wpService);
     
     $cliCommand = new Command(
@@ -88,14 +91,13 @@ class App implements HookableInterface
    */
   public function initPlugin(): void
   {
-    $fileSystem = new NativeFileSystem();
-    $cacheFactory = new CacheFactory($this->wpService);
-    $cache = $cacheFactory->createDefault();
-    
-    $reader = new \S3_Local_Index\Stream\Reader($cache, $fileSystem);
-    $directory = new \S3_Local_Index\Stream\Directory($reader);
-    $wrapper = new Wrapper($reader, $directory);
-    
+    $fileSystem   = new NativeFileSystem();
+    $cache        = (new CacheFactory($this->wpService))->createDefault();
+
+    $reader       = new Reader($cache, $fileSystem);
+    $directory    = new Directory($reader);
+    $wrapper      = new Wrapper($reader, $directory);
+
     $wrapper->init();
   }
 }

@@ -4,6 +4,9 @@ namespace S3_Local_Index\CLI;
 use S3_Uploads\Plugin;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\FileSystem\NativeFileSystem;
+use S3_Local_Index\Cache\CacheFactory;
+use S3_Local_Index\Rebuild\RebuildTracker;
+
 use WP_CLI;
 use Exception;
 use WpService\WpService;
@@ -31,14 +34,10 @@ class Command {
     private WpService $wpService, 
     private Plugin $s3, 
     private WP_CLI $cli,
-    private ?FileSystemInterface $fileSystem = null,
-    private ?\S3_Local_Index\Rebuild\RebuildTracker $rebuildTracker = null,
-    private ?\S3_Local_Index\Cache\CacheFactory $cacheFactory = null
-  ) {
-    $this->fileSystem ??= new NativeFileSystem();
-    $this->rebuildTracker ??= new \S3_Local_Index\Rebuild\RebuildTracker($this->fileSystem);
-    $this->cacheFactory ??= new \S3_Local_Index\Cache\CacheFactory($this->wpService);
-  }
+    private FileSystemInterface $fileSystem,
+    private RebuildTracker $rebuildTracker,
+    private CacheFactory $cacheFactory
+  ) {}
 
     /**
      * Create a complete S3 index by scanning all objects in the bucket.
@@ -110,7 +109,7 @@ class Command {
             }
         }
 
-        $this->cli::success("Index created successfully. Total objects: {$count}");
+        $this->cli::success("[S3 Local Index] Index created successfully. Total objects: {$count}");
         $this->cli::log("[S3 Local Index] Cache will be populated on next access.");
     }
 
