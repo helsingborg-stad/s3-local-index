@@ -12,20 +12,20 @@ class RebuildTracker {
     /**
      * Add an index to the rebuild list
      *
-     * @param string $blog_id Blog ID
+     * @param string $blogId Blog ID
      * @param string $year Year
      * @param string $month Month
      * @return bool True on success, false on failure
      */
-    public static function addToRebuildList(string $blog_id, string $year, string $month): bool {
-        $rebuild_list = self::getRebuildList();
-        $key = "{$blog_id}-{$year}-{$month}";
+    public static function addToRebuildList(string $blogId, string $year, string $month): bool {
+        $rebuildList = self::getRebuildList();
+        $key = "{$blogId}-{$year}-{$month}";
         
-        if (!in_array($key, $rebuild_list, true)) {
-            $rebuild_list[] = $key;
+        if (!in_array($key, $rebuildList, true)) {
+            $rebuildList[] = $key;
         }
         
-        return self::saveRebuildList($rebuild_list);
+        return self::saveRebuildList($rebuildList);
     }
     
     /**
@@ -53,7 +53,7 @@ class RebuildTracker {
     /**
      * Get the current rebuild list
      *
-     * @return array Array of rebuild keys in format "blog_id-year-month"
+     * @return array Array of rebuild keys in format "blogId-year-month"
      */
     public static function getRebuildList(): array {
         $file = self::getRebuildListFile();
@@ -86,22 +86,22 @@ class RebuildTracker {
     /**
      * Remove an item from the rebuild list
      *
-     * @param string $blog_id Blog ID
+     * @param string $blogId Blog ID
      * @param string $year Year  
      * @param string $month Month
      * @return bool True on success, false on failure
      */
-    public static function removeFromRebuildList(string $blog_id, string $year, string $month): bool {
-        $rebuild_list = self::getRebuildList();
-        $key = "{$blog_id}-{$year}-{$month}";
+    public static function removeFromRebuildList(string $blogId, string $year, string $month): bool {
+        $rebuildList = self::getRebuildList();
+        $key = "{$blogId}-{$year}-{$month}";
         
-        $index = array_search($key, $rebuild_list, true);
+        $index = array_search($key, $rebuildList, true);
         if ($index !== false) {
-            unset($rebuild_list[$index]);
-            $rebuild_list = array_values($rebuild_list); // Re-index array
+            unset($rebuildList[$index]);
+            $rebuildList = array_values($rebuildList); // Re-index array
         }
         
-        return self::saveRebuildList($rebuild_list);
+        return self::saveRebuildList($rebuildList);
     }
     
     /**
@@ -116,12 +116,12 @@ class RebuildTracker {
     /**
      * Save the rebuild list to file
      *
-     * @param array $rebuild_list Array of rebuild keys
+     * @param array $rebuildList Array of rebuild keys
      * @return bool True on success, false on failure
      */
-    private static function saveRebuildList(array $rebuild_list): bool {
+    private static function saveRebuildList(array $rebuildList): bool {
         $file = self::getRebuildListFile();
-        $data = json_encode($rebuild_list, JSON_PRETTY_PRINT);
+        $data = json_encode($rebuildList, JSON_PRETTY_PRINT);
         
         return file_put_contents($file, $data) !== false;
     }

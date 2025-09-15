@@ -9,7 +9,7 @@ namespace S3_Local_Index\Cache;
 class StaticCache implements CacheInterface {
     
     private static array $cache = [];
-    private static array $ttl_cache = [];
+    private static array $ttlCache = [];
 
     /**
      * Get data from cache
@@ -38,10 +38,10 @@ class StaticCache implements CacheInterface {
         self::$cache[$key] = $data;
         
         if ($ttl > 0) {
-            self::$ttl_cache[$key] = time() + $ttl;
+            self::$ttlCache[$key] = time() + $ttl;
         } else {
             // No expiration
-            unset(self::$ttl_cache[$key]);
+            unset(self::$ttlCache[$key]);
         }
 
         return true;
@@ -60,11 +60,11 @@ class StaticCache implements CacheInterface {
         }
 
         // Check expiration if TTL is set
-        if (isset(self::$ttl_cache[$key])) {
-            if (time() > self::$ttl_cache[$key]) {
+        if (isset(self::$ttlCache[$key])) {
+            if (time() > self::$ttlCache[$key]) {
                 // Expired, remove from cache
                 unset(self::$cache[$key]);
-                unset(self::$ttl_cache[$key]);
+                unset(self::$ttlCache[$key]);
                 return false;
             }
         }
@@ -80,7 +80,7 @@ class StaticCache implements CacheInterface {
      */
     public function delete(string $key): bool {
         unset(self::$cache[$key]);
-        unset(self::$ttl_cache[$key]);
+        unset(self::$ttlCache[$key]);
         return true;
     }
 
@@ -91,7 +91,7 @@ class StaticCache implements CacheInterface {
      */
     public function clear(): bool {
         self::$cache = [];
-        self::$ttl_cache = [];
+        self::$ttlCache = [];
         return true;
     }
 }

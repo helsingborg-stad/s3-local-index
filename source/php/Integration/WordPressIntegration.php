@@ -14,15 +14,15 @@ class WordPressIntegration {
     /**
      * Handle file upload - flush cache and optionally add to rebuild list
      *
-     * @param string $file_path The uploaded file path
-     * @param bool $add_to_rebuild Whether to add to rebuild list
+     * @param string $filePath The uploaded file path
+     * @param bool $addToRebuild Whether to add to rebuild list
      * @return bool True if cache was flushed
      */
-    public static function onFileUpload(string $file_path, bool $add_to_rebuild = false): bool {
-        $flushed = Reader::flushCacheForPath($file_path);
+    public static function onFileUpload(string $filePath, bool $addToRebuild = false): bool {
+        $flushed = Reader::flushCacheForPath($filePath);
         
-        if ($flushed && $add_to_rebuild) {
-            RebuildTracker::addPathToRebuildList($file_path);
+        if ($flushed && $addToRebuild) {
+            RebuildTracker::addPathToRebuildList($filePath);
         }
         
         return $flushed;
@@ -31,14 +31,14 @@ class WordPressIntegration {
     /**
      * Handle file deletion - flush cache and add to rebuild list
      *
-     * @param string $file_path The deleted file path
+     * @param string $filePath The deleted file path
      * @return bool True if cache was flushed
      */
-    public static function onFileDelete(string $file_path): bool {
-        $flushed = Reader::flushCacheForPath($file_path);
+    public static function onFileDelete(string $filePath): bool {
+        $flushed = Reader::flushCacheForPath($filePath);
         
         if ($flushed) {
-            RebuildTracker::addPathToRebuildList($file_path);
+            RebuildTracker::addPathToRebuildList($filePath);
         }
         
         return $flushed;
@@ -56,20 +56,20 @@ class WordPressIntegration {
         add_action('wp_handle_upload', function($upload) {
             if (isset($upload['url'])) {
                 // Extract S3 path from upload URL
-                $s3_path = self::extractS3PathFromUrl($upload['url']);
-                if ($s3_path) {
-                    self::onFileUpload($s3_path, true);
+                $s3Path = self::extractS3PathFromUrl($upload['url']);
+                if ($s3Path) {
+                    self::onFileUpload($s3Path, true);
                 }
             }
         });
         
         // Example hook for file deletions
         add_action('delete_attachment', function($attachment_id) {
-            $file_url = wp_get_attachment_url($attachment_id);
-            if ($file_url) {
-                $s3_path = self::extractS3PathFromUrl($file_url);
-                if ($s3_path) {
-                    self::onFileDelete($s3_path);
+            $fileUrl = wp_get_attachment_url($attachment_id);
+            if ($fileUrl) {
+                $s3Path = self::extractS3PathFromUrl($fileUrl);
+                if ($s3Path) {
+                    self::onFileDelete($s3Path);
                 }
             }
         });
@@ -86,8 +86,8 @@ class WordPressIntegration {
         // This is a simplified example
         // Real implementation would parse the actual S3 URL format used by the site
         if (strpos($url, 'uploads/') !== false) {
-            $path_start = strpos($url, 'uploads/');
-            return substr($url, $path_start);
+            $pathStart = strpos($url, 'uploads/');
+            return substr($url, $pathStart);
         }
         
         return null;
