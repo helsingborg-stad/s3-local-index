@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "682336aa9d91c471356f5e46fe9378c3",
+    "content-hash": "387a0506e450876bdbf8244bc0f3ec02",
     "packages": [
         {
             "name": "helsingborg-stad/wpservice",
