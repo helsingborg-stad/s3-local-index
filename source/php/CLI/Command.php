@@ -3,6 +3,7 @@
 namespace S3_Local_Index\CLI;
 
 use S3_Uploads\Plugin;
+use S3_Local_Index\Stream\Reader;
 use WP_CLI;
 
 class Command {
@@ -26,6 +27,11 @@ class Command {
         $bucket = Plugin::get_instance()->get_s3_bucket();
 
         WP_CLI::log("[S3 Local Index] Creating index for bucket: {$bucket}");
+
+        // Clear cache before rebuilding index
+        $cache = Reader::getCache();
+        $cache->clear();
+        WP_CLI::log("[S3 Local Index] Cache cleared.");
 
         $temp_dir = sys_get_temp_dir() . '/s3-index-temp';
         if (!is_dir($temp_dir)) {
@@ -65,5 +71,6 @@ class Command {
         }
 
         WP_CLI::success("Index created successfully. Total objects: {$count}");
+        WP_CLI::log("[S3 Local Index] Cache will be populated on next access.");
     }
 }
