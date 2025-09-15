@@ -4,6 +4,7 @@ namespace S3LocalIndex;
 
 use WpService\WpService;
 use S3LocalIndex\Config\ConfigInterface;
+use S3_Local_Index\FileSystem\NativeFileSystem;
 use WP_CLI;
 use S3_Local_Index\CLI\Command;
 use S3_Local_Index\Stream\Wrapper;
@@ -44,10 +45,12 @@ class App implements HookableInterface
    */
   public function initCli(): void
   {
+    $fileSystem = new NativeFileSystem();
     $cliCommand = new Command(
       $this->wpService,
       S3Plugin::class,
-      WP_CLI::class
+      WP_CLI::class,
+      $fileSystem
     );
     WP_CLI::add_command('s3-index', $cliCommand);
   }
@@ -59,7 +62,9 @@ class App implements HookableInterface
    */
   public function initPlugin(): void
   {
-    Reader::setCache(CacheFactory::createDefault());
+    $fileSystem = new NativeFileSystem();
+    Reader::setCache(CacheFactory::createDefault($this->wpService));
+    Reader::setFileSystem($fileSystem);
     Wrapper::init();
   }
 }

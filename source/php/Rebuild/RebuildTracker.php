@@ -2,12 +2,37 @@
 
 namespace S3_Local_Index\Rebuild;
 
+use S3_Local_Index\FileSystem\FileSystemInterface;
+use S3_Local_Index\FileSystem\NativeFileSystem;
+
 /**
  * Tracks indexes that need to be rebuilt
  */
 class RebuildTracker {
     
     private const REBUILD_LIST_FILE = 's3-index-rebuild-list.json';
+    private static ?FileSystemInterface $fileSystem = null;
+
+    /**
+     * Set the file system implementation.
+     *
+     * @param FileSystemInterface $fileSystem
+     */
+    public static function setFileSystem(FileSystemInterface $fileSystem): void {
+        self::$fileSystem = $fileSystem;
+    }
+
+    /**
+     * Get the file system implementation.
+     *
+     * @return FileSystemInterface
+     */
+    private static function getFileSystem(): FileSystemInterface {
+        if (self::$fileSystem === null) {
+            self::$fileSystem = new NativeFileSystem();
+        }
+        return self::$fileSystem;
+    }
     
     /**
      * Add an index to the rebuild list
@@ -57,11 +82,13 @@ class RebuildTracker {
      */
     public static function getRebuildList(): array {
         $file = self::getRebuildListFile();
-        if (!file_exists($file)) {
+        $fileSystem = self::getFileSystem();
+        
+        if (!$fileSystem->fileExists($file)) {
             return [];
         }
         
-        $data = file_get_contents($file);
+        $data = $fileSystem->fileGetContents($file);
         if ($data === false) {
             return [];
         }
@@ -77,8 +104,10 @@ class RebuildTracker {
      */
     public static function clearRebuildList(): bool {
         $file = self::getRebuildListFile();
-        if (file_exists($file)) {
-            return unlink($file);
+        $fileSystem = self::getFileSystem();
+        
+        if ($fileSystem->fileExists($file)) {
+            return $fileSystem->unlink($file);
         }
         return true;
     }
@@ -110,7 +139,8 @@ class RebuildTracker {
      * @return string Full path to rebuild list file
      */
     private static function getRebuildListFile(): string {
-        return sys_get_temp_dir() . '/' . self::REBUILD_LIST_FILE;
+        $fileSystem = self::getFileSystem();
+        return $fileSystem->getTempDir() . '/' . self::REBUILD_LIST_FILE;
     }
     
     /**
@@ -122,7 +152,8 @@ class RebuildTracker {
     private static function saveRebuildList(array $rebuildList): bool {
         $file = self::getRebuildListFile();
         $data = json_encode($rebuildList, JSON_PRETTY_PRINT);
+        $fileSystem = self::getFileSystem();
         
-        return file_put_contents($file, $data) !== false;
+        return $fileSystem->filePutContents($file, $data) !== false;
     }
 }

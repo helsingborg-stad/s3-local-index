@@ -4,11 +4,14 @@ namespace S3_Local_Index\Stream;
 
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\Cache\CacheFactory;
+use S3_Local_Index\FileSystem\FileSystemInterface;
+use S3_Local_Index\FileSystem\NativeFileSystem;
 
 class Reader {
 
     private static array $index = [];
     private static ?CacheInterface $cache = null;
+    private static ?FileSystemInterface $fileSystem = null;
 
     private string $key = '';
     private int $position = 0;
@@ -23,12 +26,34 @@ class Reader {
     }
 
     /**
+     * Set the file system instance to use
+     *
+     * @param FileSystemInterface $fileSystem
+     */
+    public static function setFileSystem(FileSystemInterface $fileSystem): void {
+        self::$fileSystem = $fileSystem;
+    }
+
+    /**
+     * Get the current file system instance or create default
+     *
+     * @return FileSystemInterface
+     */
+    private static function getFileSystem(): FileSystemInterface {
+        if (self::$fileSystem === null) {
+            self::$fileSystem = new NativeFileSystem();
+        }
+        return self::$fileSystem;
+    }
+
+    /**
      * Get the current cache instance or create default
      *
      * @return CacheInterface
      */
     public static function getCache(): CacheInterface {
         if (self::$cache === null) {
+            // Fallback to create default without wpService for backward compatibility
             self::$cache = CacheFactory::createDefault();
         }
         return self::$cache;
@@ -118,12 +143,13 @@ class Reader {
         }
 
         // Load from file if not in cache
-        $file = sys_get_temp_dir() . "/s3-index-temp/s3-index-{$blogId}-{$year}-{$month}.json";
-        if (!file_exists($file)) {
+        $fileSystem = self::getFileSystem();
+        $file = $fileSystem->getTempDir() . "/s3-index-temp/s3-index-{$blogId}-{$year}-{$month}.json";
+        if (!$fileSystem->fileExists($file)) {
             return [];
         }
 
-        $data = file_get_contents($file);
+        $data = $fileSystem->fileGetContents($file);
         $index = json_decode($data, true) ?: [];
         
         // Store in cache for next time (cache for 1 hour)
