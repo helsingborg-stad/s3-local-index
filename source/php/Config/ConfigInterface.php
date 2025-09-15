@@ -31,4 +31,11 @@ interface ConfigInterface
      * @return int The priority level for WordPress plugin initialization hooks
      */
     public function getPluginPriority(): int;
+
+    /**
+     * Get the cache directory path.
+     * 
+     * @return string The directory path for cache storage
+     */
+    public function getCacheDirectory(): string;
 }

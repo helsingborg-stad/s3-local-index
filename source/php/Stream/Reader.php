@@ -121,7 +121,7 @@ class Reader {
         }
 
         // Load from file if not in cache
-        $file = $this->fileSystem->getTempDir() . "/s3-index-temp/s3-index-{$blogId}-{$year}-{$month}.json";
+        $file = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
         if (!$this->fileSystem->fileExists($file)) {
             return [];
         }

@@ -58,7 +58,26 @@ add_filter('S3LocalIndex/Config/GetCliPriority', function() {
 add_filter('S3LocalIndex/Config/GetPluginPriority', function() {
     return 25;
 });
+
+// Set custom cache directory (default: temp directory with unique site identifier)
+add_filter('S3LocalIndex/Config/GetCacheDirectory', function() {
+    return '/path/to/custom/cache/directory';
+});
 ```
+
+### Cache Directory Configuration
+
+The plugin automatically prevents collisions between multiple sites on the same server by using unique cache directories. Each site gets its own cache directory based on its document root:
+
+```
+/tmp/s3-index-{8-character-uuid}/
+```
+
+**Examples:**
+- Site 1: `/tmp/s3-index-0f256ede/`
+- Site 2: `/tmp/s3-index-b9ba97a4/`
+
+You can override this behavior using the `S3LocalIndex/Config/GetCacheDirectory` filter to specify a custom cache directory location.
 
 ## CLI Commands
 
@@ -118,7 +137,9 @@ The plugin creates JSON index files organized by:
 - **Year**: 4-digit year (e.g., `2023`)
 - **Month**: 2-digit month (e.g., `01`)
 
-Index files are stored as: `/tmp/s3-index-temp/s3-index-{blogId}-{year}-{month}.json`
+Index files are stored as: `{cache-directory}/s3-index-{blogId}-{year}-{month}.json`
+
+The cache directory is automatically generated to be unique per site (e.g., `/tmp/s3-index-0f256ede/`) to prevent collisions when multiple sites run on the same server.
 
 ### File Path Patterns
 
@@ -218,17 +239,22 @@ The plugin follows PSR-4 autoloading and PSR-12 coding standards. All classes us
 **Plugin not working:**
 - Ensure S3 Uploads plugin is installed and active
 - Check that S3 credentials are properly configured
-- Verify WordPress has write permissions to the temp directory
+- Verify WordPress has write permissions to the cache directory
 
 **Index files not created:**
 - Run `wp s3-index create` to generate initial indexes
 - Check error logs for permission issues
-- Ensure sufficient disk space in temp directory
+- Ensure sufficient disk space in the cache directory
 
 **Performance issues:**
 - Verify cache is working: check WordPress object cache status
 - Consider increasing cache TTL for static content
-- Monitor temp directory size and clean up old indexes periodically
+- Monitor cache directory size and clean up old indexes periodically
+
+**Multiple sites on same server:**
+- Each site automatically gets its own cache directory to prevent collisions
+- Cache directories are generated as `/tmp/s3-index-{8-char-uuid}/`
+- You can verify your site's cache directory with: `wp eval "echo (new S3LocalIndex\Config\Config(new WpService\WpService()))->getCacheDirectory();"`
 
 ### Debug Logging
 

@@ -76,6 +76,30 @@ class Config implements ConfigInterface
     }
 
     /**
+     * Get the cache directory path.
+     * 
+     * Returns a unique cache directory for this site to prevent collisions
+     * when multiple sites run on the same server. Uses document root to
+     * generate a UUID for uniqueness.
+     * Can be customized via the 'S3LocalIndex/Config/GetCacheDirectory' filter.
+     * 
+     * @return string The directory path for cache storage
+     */
+    public function getCacheDirectory(): string
+    {
+        // Generate unique identifier from document root
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? getcwd();
+        $siteUuid = substr(md5($documentRoot), 0, 8); // Use first 8 characters of MD5 hash
+        
+        $defaultCacheDir = sys_get_temp_dir() . "/s3-index-{$siteUuid}";
+        
+        return $this->wpService->applyFilters(
+            $this->createFilterKey(__FUNCTION__),
+            $defaultCacheDir
+        );
+    }
+
+    /**
      * Create a filter key with the configured prefix.
      *
      * @param string $filter The filter name to append to the prefix

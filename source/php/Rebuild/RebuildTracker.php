@@ -124,7 +124,7 @@ class RebuildTracker {
      * @return string Full path to rebuild list file
      */
     private function getRebuildListFile(): string {
-        return $this->fileSystem->getTempDir() . '/' . self::REBUILD_LIST_FILE;
+        return $this->fileSystem->getCacheDir() . '/' . self::REBUILD_LIST_FILE;
     }
     
     /**

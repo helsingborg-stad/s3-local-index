@@ -72,9 +72,9 @@ class Command {
         $cache->clear();
         $this->cli::log("[S3 Local Index] Cache cleared.");
 
-        $tempDir = $this->fileSystem->getTempDir() . '/s3-index-temp';
-        if (!is_dir($tempDir)) {
-            mkdir($tempDir, 0777, true);
+        $cacheDir = $this->fileSystem->getCacheDir();
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0777, true);
         }
 
         $filesBySite = [];
@@ -102,7 +102,7 @@ class Command {
         foreach ($filesBySite as $blogId => $years) {
             foreach ($years as $year => $months) {
                 foreach ($months as $month => $keys) {
-                    $file = "{$tempDir}/s3-index-{$blogId}-{$year}-{$month}.json";
+                    $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$month}.json";
                     $this->fileSystem->filePutContents($file, json_encode($keys, JSON_PRETTY_PRINT));
                     $this->cli::log("Written index for blog {$blogId} {$year}-{$month}, count: " . count($keys));
                 }
@@ -216,10 +216,10 @@ class Command {
 
         $s3 = $this->s3::get_instance()->s3();
         $bucket = $this->s3::get_instance()->get_s3_bucket();
-        $tempDir = $this->fileSystem->getTempDir() . '/s3-index-temp';
+        $cacheDir = $this->fileSystem->getCacheDir();
         
-        if (!is_dir($tempDir)) {
-            mkdir($tempDir, 0777, true);
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0777, true);
         }
 
         $this->cli::log("[S3 Local Index] Rebuilding " . count($rebuildList) . " specific indexes...");
@@ -270,7 +270,7 @@ class Command {
                 }
 
                 // Write the index file
-                $file = "{$tempDir}/s3-index-{$blogId}-{$year}-{$month}.json";
+                $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$month}.json";
                 $this->fileSystem->filePutContents($file, json_encode($files, JSON_PRETTY_PRINT));
                 
                 $this->cli::log("[S3 Local Index] Rebuilt index for blog {$blogId} {$year}-{$month}, count: {$count}");
