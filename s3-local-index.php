@@ -2,7 +2,7 @@
 /**
  * Plugin Name: S3 Local Index
  * Description: Provides local indexing of S3 files and a CLI command.
- * Version: 1.0.0
+ * Version: 0.1.3
  */
 
 use S3_Local_Index\CLI\Command;
