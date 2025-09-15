@@ -2,8 +2,6 @@
 
 namespace S3_Local_Index\CLI;
 use S3_Uploads\Plugin;
-use S3_Local_Index\Stream\Reader;
-use S3_Local_Index\Rebuild\RebuildTracker;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\FileSystem\NativeFileSystem;
 use WP_CLI;
@@ -16,9 +14,11 @@ class Command {
     private WpService $wpService, 
     private Plugin $s3, 
     private WP_CLI $cli,
-    private ?FileSystemInterface $fileSystem = null
+    private ?FileSystemInterface $fileSystem = null,
+    private ?\S3_Local_Index\Rebuild\RebuildTracker $rebuildTracker = null
   ) {
     $this->fileSystem ??= new NativeFileSystem();
+    $this->rebuildTracker ??= new \S3_Local_Index\Rebuild\RebuildTracker($this->fileSystem);
   }
 
     public function create($args = [], $assoc_args = []) {
@@ -29,7 +29,7 @@ class Command {
         $this->cli::log("[S3 Local Index] Creating index for bucket: {$bucket}");
 
         // Clear cache before rebuilding index
-        $cache = Reader::getCache();
+        $cache = \S3_Local_Index\Cache\CacheFactory::createDefault($this->wpService);
         $cache->clear();
         $this->cli::log("[S3 Local Index] Cache cleared.");
 
@@ -99,7 +99,7 @@ class Command {
 
         if ($path === null) {
             // Show current rebuild list
-            $rebuildList = RebuildTracker::getRebuildList();
+            $rebuildList = $this->rebuildTracker->getRebuildList();
             if (empty($rebuildList)) {
                 $this->cli::log("[S3 Local Index] No items in rebuild list.");
             } else {
@@ -111,8 +111,12 @@ class Command {
             return;
         }
 
+        // Create reader instance to flush cache
+        $cache = \S3_Local_Index\Cache\CacheFactory::createDefault($this->wpService);
+        $reader = new \S3_Local_Index\Stream\Reader($cache, $this->fileSystem);
+        
         // Flush cache for the specific path
-        $flushed = Reader::flushCacheForPath($path);
+        $flushed = $reader->flushCacheForPath($path);
         if ($flushed) {
             $this->cli::success("[S3 Local Index] Cache flushed for path: {$path}");
         } else {
@@ -122,7 +126,7 @@ class Command {
 
         // Add to rebuild list if requested
         if ($addToRebuild) {
-            $added = RebuildTracker::addPathToRebuildList($path);
+            $added = $this->rebuildTracker->addPathToRebuildList($path);
             if ($added) {
                 $this->cli::log("[S3 Local Index] Added to rebuild list: {$path}");
             } else {
@@ -159,13 +163,13 @@ class Command {
             $this->cli::log("[S3 Local Index] Rebuilding all indexes...");
             $this->create($args, $assoc_args);
             if ($clearList) {
-                RebuildTracker::clearRebuildList();
+                $this->rebuildTracker->clearRebuildList();
                 $this->cli::log("[S3 Local Index] Rebuild list cleared.");
             }
             return;
         }
 
-        $rebuildList = RebuildTracker::getRebuildList();
+        $rebuildList = $this->rebuildTracker->getRebuildList();
         if (empty($rebuildList)) {
             $this->cli::log("[S3 Local Index] No items in rebuild list.");
             return;
@@ -192,7 +196,7 @@ class Command {
             
             // Flush cache for this specific index
             $cacheKey = "index_{$blogId}_{$year}_{$month}";
-            $cache = Reader::getCache();
+            $cache = \S3_Local_Index\Cache\CacheFactory::createDefault($this->wpService);
             $cache->delete($cacheKey);
 
             // Rebuild this specific index
@@ -233,7 +237,7 @@ class Command {
                 $this->cli::log("[S3 Local Index] Rebuilt index for blog {$blogId} {$year}-{$month}, count: {$count}");
 
                 // Remove from rebuild list
-                RebuildTracker::removeFromRebuildList($blogId, $year, $month);
+                $this->rebuildTracker->removeFromRebuildList($blogId, $year, $month);
 
             } catch (Exception $e) {
                 $this->cli::warning("[S3 Local Index] Failed to rebuild {$item}: " . $e->getMessage());
@@ -241,7 +245,7 @@ class Command {
         }
 
         if ($clearList) {
-            RebuildTracker::clearRebuildList();
+            $this->rebuildTracker->clearRebuildList();
             $this->cli::log("[S3 Local Index] Rebuild list cleared.");
         }
 

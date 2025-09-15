@@ -3,60 +3,24 @@
 namespace S3_Local_Index\Stream;
 
 use S3_Local_Index\Cache\CacheInterface;
-use S3_Local_Index\Cache\CacheFactory;
 use S3_Local_Index\FileSystem\FileSystemInterface;
-use S3_Local_Index\FileSystem\NativeFileSystem;
 
 class Reader {
 
-    private static array $index = [];
-    private static ?CacheInterface $cache = null;
-    private static ?FileSystemInterface $fileSystem = null;
-
+    private array $index = [];
     private string $key = '';
     private int $position = 0;
 
     /**
-     * Set the cache instance to use
+     * Constructor with dependency injection
      *
      * @param CacheInterface $cache
-     */
-    public static function setCache(CacheInterface $cache): void {
-        self::$cache = $cache;
-    }
-
-    /**
-     * Set the file system instance to use
-     *
      * @param FileSystemInterface $fileSystem
      */
-    public static function setFileSystem(FileSystemInterface $fileSystem): void {
-        self::$fileSystem = $fileSystem;
-    }
-
-    /**
-     * Get the current file system instance or create default
-     *
-     * @return FileSystemInterface
-     */
-    private static function getFileSystem(): FileSystemInterface {
-        if (self::$fileSystem === null) {
-            self::$fileSystem = new NativeFileSystem();
-        }
-        return self::$fileSystem;
-    }
-
-    /**
-     * Get the current cache instance or create default
-     *
-     * @return CacheInterface
-     */
-    public static function getCache(): CacheInterface {
-        if (self::$cache === null) {
-            // Fallback to create default without wpService for backward compatibility
-            self::$cache = CacheFactory::createDefault();
-        }
-        return self::$cache;
+    public function __construct(
+        private CacheInterface $cache,
+        private FileSystemInterface $fileSystem
+    ) {
     }
 
     /**
@@ -65,7 +29,7 @@ class Reader {
      * @param string $path S3 file path
      * @return array|null Array with blogId, year, month or null if path doesn't match pattern
      */
-    public static function extractIndexDetails(string $path): ?array {
+    public function extractIndexDetails(string $path): ?array {
         $path = ltrim($path, '/');
         
         // Try multisite pattern first
@@ -95,16 +59,15 @@ class Reader {
      * @param string $path S3 file path
      * @return bool True if cache was flushed, false if path doesn't match pattern
      */
-    public static function flushCacheForPath(string $path): bool {
-        $details = self::extractIndexDetails($path);
+    public function flushCacheForPath(string $path): bool {
+        $details = $this->extractIndexDetails($path);
         if ($details === null) {
             return false;
         }
 
         $cacheKey = "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
-        $cache = self::getCache();
         
-        return $cache->delete($cacheKey);
+        return $this->cache->delete($cacheKey);
     }
 
     /**
@@ -113,8 +76,8 @@ class Reader {
      * @param string $path S3 file path
      * @return string|null Cache key or null if path doesn't match pattern
      */
-    public static function getCacheKeyForPath(string $path): ?string {
-        $details = self::extractIndexDetails($path);
+    public function getCacheKeyForPath(string $path): ?string {
+        $details = $this->extractIndexDetails($path);
         if ($details === null) {
             return null;
         }
@@ -122,7 +85,7 @@ class Reader {
         return "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
     }
 
-    public static function loadIndex(string $path): array {
+    public function loadIndex(string $path): array {
         $path = ltrim($path, '/');
         if (!preg_match('#uploads(?:/networks/\d+/sites/(\d+))?/(\d{4})/(\d{2})/#', $path, $m)) {
             return [];
@@ -136,32 +99,30 @@ class Reader {
         $cacheKey = "index_{$blogId}_{$year}_{$month}";
         
         // Try to get from cache first
-        $cache = self::getCache();
-        $cachedData = $cache->get($cacheKey);
+        $cachedData = $this->cache->get($cacheKey);
         if ($cachedData !== null) {
             return $cachedData;
         }
 
         // Load from file if not in cache
-        $fileSystem = self::getFileSystem();
-        $file = $fileSystem->getTempDir() . "/s3-index-temp/s3-index-{$blogId}-{$year}-{$month}.json";
-        if (!$fileSystem->fileExists($file)) {
+        $file = $this->fileSystem->getTempDir() . "/s3-index-temp/s3-index-{$blogId}-{$year}-{$month}.json";
+        if (!$this->fileSystem->fileExists($file)) {
             return [];
         }
 
-        $data = $fileSystem->fileGetContents($file);
+        $data = $this->fileSystem->fileGetContents($file);
         $index = json_decode($data, true) ?: [];
         
         // Store in cache for next time (cache for 1 hour)
-        $cache->set($cacheKey, $index, 3600);
+        $this->cache->set($cacheKey, $index, 3600);
         
         return $index;
     }
 
     public function stream_open(string $path, string $mode, int $options, &$opened_path): bool {
-        self::$index = self::loadIndex($path);
+        $this->index = $this->loadIndex($path);
         $normalized = $this->normalize($path);
-        if (!isset(self::$index[$normalized])) {
+        if (!isset($this->index[$normalized])) {
             return false;
         }
 
@@ -183,9 +144,9 @@ class Reader {
     }
 
     public function url_stat(string $path, int $flags) {
-        self::$index = self::loadIndex($path);
+        $this->index = $this->loadIndex($path);
         $normalized = $this->normalize($path);
-        return isset(self::$index[$normalized]) ? ['size' => 1, 'mtime' => time()] : false;
+        return isset($this->index[$normalized]) ? ['size' => 1, 'mtime' => time()] : false;
     }
 
     private function normalize(string $path): string {

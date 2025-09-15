@@ -2,8 +2,6 @@
 
 namespace S3_Local_Index\Integration;
 
-use S3_Local_Index\Stream\Reader;
-use S3_Local_Index\Rebuild\RebuildTracker;
 use WpService\Contracts\AddAction;
 
 /**
@@ -16,8 +14,14 @@ class WordPressIntegration {
      * Constructor.
      *
      * @param AddAction $wpService WordPress service for adding actions
+     * @param \S3_Local_Index\Stream\Reader $reader Reader instance for cache operations
+     * @param \S3_Local_Index\Rebuild\RebuildTracker $rebuildTracker Rebuild tracker instance
      */
-    public function __construct(private AddAction $wpService) {}
+    public function __construct(
+        private AddAction $wpService,
+        private \S3_Local_Index\Stream\Reader $reader,
+        private \S3_Local_Index\Rebuild\RebuildTracker $rebuildTracker
+    ) {}
     
     /**
      * Handle file upload - flush cache and optionally add to rebuild list
@@ -27,10 +31,10 @@ class WordPressIntegration {
      * @return bool True if cache was flushed
      */
     public function onFileUpload(string $filePath, bool $addToRebuild = false): bool {
-        $flushed = Reader::flushCacheForPath($filePath);
+        $flushed = $this->reader->flushCacheForPath($filePath);
         
         if ($flushed && $addToRebuild) {
-            RebuildTracker::addPathToRebuildList($filePath);
+            $this->rebuildTracker->addPathToRebuildList($filePath);
         }
         
         return $flushed;
@@ -43,10 +47,10 @@ class WordPressIntegration {
      * @return bool True if cache was flushed
      */
     public function onFileDelete(string $filePath): bool {
-        $flushed = Reader::flushCacheForPath($filePath);
+        $flushed = $this->reader->flushCacheForPath($filePath);
         
         if ($flushed) {
-            RebuildTracker::addPathToRebuildList($filePath);
+            $this->rebuildTracker->addPathToRebuildList($filePath);
         }
         
         return $flushed;
