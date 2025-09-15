@@ -8,6 +8,14 @@
             "email": "sebastian.thulin@helsingborg.se"
         }
     ],
+    "scripts": {
+        "test": "phpunit --no-coverage --testdox",
+        "test:coverage": "XDEBUG_MODE=coverage phpunit --testdox",
+        "lint": "vendor/bin/phpcs",
+        "lint:changed": "vendor/bin/phpcs-changed origin/main",
+        "fix": "vendor/bin/phpcbf",
+        "fix:changed": "vendor/bin/phpcbf-changed origin/main"
+    },
     "require": {
         "helsingborg-stad/wpservice": "^2.0"
     },

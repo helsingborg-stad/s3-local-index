@@ -243,9 +243,9 @@ class CommandTest extends TestCase
         };
     }
 
-    private function getRebuildTracker(): RebuildTracker
+    private function getRebuildTracker(): RebuildTrackerInterface
     {
-        return new class implements \S3_Local_Index\Rebuild\RebuildTracker {
+        return new class implements \S3_Local_Index\Rebuild\RebuildTrackerInterface {
             public function getRebuildList(): array
             {
                 return [];
