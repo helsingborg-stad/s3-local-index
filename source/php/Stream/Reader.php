@@ -34,6 +34,69 @@ class Reader {
         return self::$cache;
     }
 
+    /**
+     * Extract index details from a file path
+     *
+     * @param string $path S3 file path
+     * @return array|null Array with blog_id, year, month or null if path doesn't match pattern
+     */
+    public static function extractIndexDetails(string $path): ?array {
+        $path = ltrim($path, '/');
+        
+        // Try multisite pattern first
+        if (preg_match('#uploads/networks/\d+/sites/(\d+)/(\d{4})/(\d{2})/#', $path, $m)) {
+            return [
+                'blog_id' => $m[1],
+                'year' => $m[2],
+                'month' => $m[3]
+            ];
+        }
+        
+        // Try single site pattern
+        if (preg_match('#uploads/(\d{4})/(\d{2})/#', $path, $m)) {
+            return [
+                'blog_id' => '1',
+                'year' => $m[1],
+                'month' => $m[2]
+            ];
+        }
+        
+        return null;
+    }
+
+    /**
+     * Flush cache for a specific file path
+     *
+     * @param string $path S3 file path
+     * @return bool True if cache was flushed, false if path doesn't match pattern
+     */
+    public static function flushCacheForPath(string $path): bool {
+        $details = self::extractIndexDetails($path);
+        if ($details === null) {
+            return false;
+        }
+
+        $cache_key = "index_{$details['blog_id']}_{$details['year']}_{$details['month']}";
+        $cache = self::getCache();
+        
+        return $cache->delete($cache_key);
+    }
+
+    /**
+     * Get cache key for a specific file path
+     *
+     * @param string $path S3 file path
+     * @return string|null Cache key or null if path doesn't match pattern
+     */
+    public static function getCacheKeyForPath(string $path): ?string {
+        $details = self::extractIndexDetails($path);
+        if ($details === null) {
+            return null;
+        }
+
+        return "index_{$details['blog_id']}_{$details['year']}_{$details['month']}";
+    }
+
     public static function loadIndex(string $path): array {
         $path = ltrim($path, '/');
         if (!preg_match('#uploads(?:/networks/\d+/sites/(\d+))?/(\d{4})/(\d{2})/#', $path, $m)) {
