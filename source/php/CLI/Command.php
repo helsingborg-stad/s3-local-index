@@ -15,10 +15,12 @@ class Command {
     private Plugin $s3, 
     private WP_CLI $cli,
     private ?FileSystemInterface $fileSystem = null,
-    private ?\S3_Local_Index\Rebuild\RebuildTracker $rebuildTracker = null
+    private ?\S3_Local_Index\Rebuild\RebuildTracker $rebuildTracker = null,
+    private ?\S3_Local_Index\Cache\CacheFactory $cacheFactory = null
   ) {
     $this->fileSystem ??= new NativeFileSystem();
     $this->rebuildTracker ??= new \S3_Local_Index\Rebuild\RebuildTracker($this->fileSystem);
+    $this->cacheFactory ??= new \S3_Local_Index\Cache\CacheFactory($this->wpService);
   }
 
     public function create($args = [], $assoc_args = []) {
@@ -29,7 +31,7 @@ class Command {
         $this->cli::log("[S3 Local Index] Creating index for bucket: {$bucket}");
 
         // Clear cache before rebuilding index
-        $cache = \S3_Local_Index\Cache\CacheFactory::createDefault($this->wpService);
+        $cache = $this->cacheFactory->createDefault();
         $cache->clear();
         $this->cli::log("[S3 Local Index] Cache cleared.");
 
@@ -112,7 +114,7 @@ class Command {
         }
 
         // Create reader instance to flush cache
-        $cache = \S3_Local_Index\Cache\CacheFactory::createDefault($this->wpService);
+        $cache = $this->cacheFactory->createDefault();
         $reader = new \S3_Local_Index\Stream\Reader($cache, $this->fileSystem);
         
         // Flush cache for the specific path
@@ -196,7 +198,7 @@ class Command {
             
             // Flush cache for this specific index
             $cacheKey = "index_{$blogId}_{$year}_{$month}";
-            $cache = \S3_Local_Index\Cache\CacheFactory::createDefault($this->wpService);
+            $cache = $this->cacheFactory->createDefault();
             $cache->delete($cacheKey);
 
             // Rebuild this specific index

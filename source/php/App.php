@@ -46,13 +46,15 @@ class App implements HookableInterface
   {
     $fileSystem = new NativeFileSystem();
     $rebuildTracker = new \S3_Local_Index\Rebuild\RebuildTracker($fileSystem);
+    $cacheFactory = new CacheFactory($this->wpService);
     
     $cliCommand = new Command(
       $this->wpService,
       S3Plugin::class,
       WP_CLI::class,
       $fileSystem,
-      $rebuildTracker
+      $rebuildTracker,
+      $cacheFactory
     );
     WP_CLI::add_command('s3-index', $cliCommand);
   }
@@ -65,7 +67,8 @@ class App implements HookableInterface
   public function initPlugin(): void
   {
     $fileSystem = new NativeFileSystem();
-    $cache = CacheFactory::createDefault($this->wpService);
+    $cacheFactory = new CacheFactory($this->wpService);
+    $cache = $cacheFactory->createDefault();
     
     $reader = new \S3_Local_Index\Stream\Reader($cache, $fileSystem);
     $directory = new \S3_Local_Index\Stream\Directory($reader);

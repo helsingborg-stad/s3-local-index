@@ -5,27 +5,28 @@ namespace S3_Local_Index\Cache;
 use WpService\Contracts\Cache;
 
 /**
- * Cache factory for creating cache instances
+ * Cache factory for creating cache instances using dependency injection
  */
 class CacheFactory {
     
     /**
+     * Constructor
+     *
+     * @param Cache $wpService WordPress cache service
+     */
+    public function __construct(private Cache $wpService) {}
+    
+    /**
      * Create a composite cache with StaticCache and WpCache
      *
-     * @param Cache|null $wpService WordPress cache service
      * @return CacheInterface
      */
-    public static function createDefault(?Cache $wpService = null): CacheInterface {
+    public function createDefault(): CacheInterface {
         $staticCache = new StaticCache();
-        
-        if ($wpService === null) {
-            // Fallback to static cache only if no wp service is provided
-            return $staticCache;
-        }
         
         return new CompositeCache(
             $staticCache,
-            new WpCache($wpService)
+            new WpCache($this->wpService)
         );
     }
 
@@ -34,18 +35,17 @@ class CacheFactory {
      *
      * @return CacheInterface
      */
-    public static function createStatic(): CacheInterface {
+    public function createStatic(): CacheInterface {
         return new StaticCache();
     }
 
     /**
      * Create a WpCache instance
      *
-     * @param Cache $wpService WordPress cache service
      * @return CacheInterface
      */
-    public static function createWp(Cache $wpService): CacheInterface {
-        return new WpCache($wpService);
+    public function createWp(): CacheInterface {
+        return new WpCache($this->wpService);
     }
 
     /**
@@ -54,7 +54,7 @@ class CacheFactory {
      * @param CacheInterface ...$caches
      * @return CacheInterface
      */
-    public static function createComposite(CacheInterface ...$caches): CacheInterface {
+    public function createComposite(CacheInterface ...$caches): CacheInterface {
         return new CompositeCache(...$caches);
     }
 }
