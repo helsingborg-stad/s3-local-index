@@ -9,6 +9,7 @@ use S3_Local_Index\CLI\Command;
 use S3_Local_Index\Stream\Wrapper;
 use S3_Local_Index\Stream\Reader;
 use S3_Local_Index\Cache\CacheFactory;
+use S3_Uploads\Plugin as S3Plugin;
 
 class App implements HookableInterface
 {
@@ -43,7 +44,12 @@ class App implements HookableInterface
    */
   public function initCli(): void
   {
-    WP_CLI::add_command('s3-index', Command::class);
+    $cliCommand = new Command(
+      $this->wpService,
+      S3Plugin::class,
+      WP_CLI::class
+    );
+    WP_CLI::add_command('s3-index', $cliCommand);
   }
 
   /**

@@ -1,39 +1,28 @@
 <?php
 
 namespace S3_Local_Index\CLI;
-
 use S3_Uploads\Plugin;
 use S3_Local_Index\Stream\Reader;
 use S3_Local_Index\Rebuild\RebuildTracker;
 use WP_CLI;
 use Exception;
+use WpService\WpService;
 
 class Command {
 
-    /**
-     * Creates the S3 index and stores it in the system temp directory.
-     *
-     * ## EXAMPLES
-     *
-     *     wp s3-index create
-     *
-     * @when after_wp_load
-     */
+  public function __construct(private WpService $wpService, private Plugin $s3, private WP_CLI $cli) {}
+
     public function create($args = [], $assoc_args = []) {
-        if (!class_exists(Plugin::class)) {
-            WP_CLI::error('S3_Uploads plugin not loaded yet.');
-            return;
-        }
 
-        $s3 = Plugin::get_instance()->s3();
-        $bucket = Plugin::get_instance()->get_s3_bucket();
+        $s3     = $this->s3::get_instance()->s3();
+        $bucket = $this->s3::get_instance()->get_s3_bucket();
 
-        WP_CLI::log("[S3 Local Index] Creating index for bucket: {$bucket}");
+        $this->cli::log("[S3 Local Index] Creating index for bucket: {$bucket}");
 
         // Clear cache before rebuilding index
         $cache = Reader::getCache();
         $cache->clear();
-        WP_CLI::log("[S3 Local Index] Cache cleared.");
+        $this->cli::log("[S3 Local Index] Cache cleared.");
 
         $tempDir = sys_get_temp_dir() . '/s3-index-temp';
         if (!is_dir($tempDir)) {
@@ -56,7 +45,7 @@ class Command {
                     }
                     $count++;
                     if ($count % 1000 === 0) {
-                        WP_CLI::log("[S3 Local Index] Indexed {$count} objects...");
+                        $this->cli::log("[S3 Local Index] Indexed {$count} objects...");
                     }
                 }
             }
@@ -67,13 +56,13 @@ class Command {
                 foreach ($months as $month => $keys) {
                     $file = "{$tempDir}/s3-index-{$blogId}-{$year}-{$month}.json";
                     file_put_contents($file, json_encode($keys, JSON_PRETTY_PRINT));
-                    WP_CLI::log("Written index for blog {$blogId} {$year}-{$month}, count: " . count($keys));
+                    $this->cli::log("Written index for blog {$blogId} {$year}-{$month}, count: " . count($keys));
                 }
             }
         }
 
-        WP_CLI::success("Index created successfully. Total objects: {$count}");
-        WP_CLI::log("[S3 Local Index] Cache will be populated on next access.");
+        $this->cli::success("Index created successfully. Total objects: {$count}");
+        $this->cli::log("[S3 Local Index] Cache will be populated on next access.");
     }
 
     /**
@@ -103,11 +92,11 @@ class Command {
             // Show current rebuild list
             $rebuildList = RebuildTracker::getRebuildList();
             if (empty($rebuildList)) {
-                WP_CLI::log("[S3 Local Index] No items in rebuild list.");
+                $this->cli::log("[S3 Local Index] No items in rebuild list.");
             } else {
-                WP_CLI::log("[S3 Local Index] Current rebuild list:");
+                $this->cli::log("[S3 Local Index] Current rebuild list:");
                 foreach ($rebuildList as $item) {
-                    WP_CLI::log("  - {$item}");
+                    $this->cli::log("  - {$item}");
                 }
             }
             return;
@@ -116,9 +105,9 @@ class Command {
         // Flush cache for the specific path
         $flushed = Reader::flushCacheForPath($path);
         if ($flushed) {
-            WP_CLI::success("[S3 Local Index] Cache flushed for path: {$path}");
+            $this->cli::success("[S3 Local Index] Cache flushed for path: {$path}");
         } else {
-            WP_CLI::warning("[S3 Local Index] Path does not match expected pattern: {$path}");
+            $this->cli::warning("[S3 Local Index] Path does not match expected pattern: {$path}");
             return;
         }
 
@@ -126,9 +115,9 @@ class Command {
         if ($addToRebuild) {
             $added = RebuildTracker::addPathToRebuildList($path);
             if ($added) {
-                WP_CLI::log("[S3 Local Index] Added to rebuild list: {$path}");
+                $this->cli::log("[S3 Local Index] Added to rebuild list: {$path}");
             } else {
-                WP_CLI::warning("[S3 Local Index] Failed to add to rebuild list: {$path}");
+                $this->cli::warning("[S3 Local Index] Failed to add to rebuild list: {$path}");
             }
         }
     }
@@ -153,44 +142,40 @@ class Command {
      * @when after_wp_load
      */
     public function rebuild($args = [], $assoc_args = []) {
-        if (!class_exists(Plugin::class)) {
-            WP_CLI::error('S3_Uploads plugin not loaded yet.');
-            return;
-        }
 
         $clearList = isset($assoc_args['clear']);
         $rebuildAll = isset($assoc_args['all']);
 
         if ($rebuildAll) {
-            WP_CLI::log("[S3 Local Index] Rebuilding all indexes...");
+            $this->cli::log("[S3 Local Index] Rebuilding all indexes...");
             $this->create($args, $assoc_args);
             if ($clearList) {
                 RebuildTracker::clearRebuildList();
-                WP_CLI::log("[S3 Local Index] Rebuild list cleared.");
+                $this->cli::log("[S3 Local Index] Rebuild list cleared.");
             }
             return;
         }
 
         $rebuildList = RebuildTracker::getRebuildList();
         if (empty($rebuildList)) {
-            WP_CLI::log("[S3 Local Index] No items in rebuild list.");
+            $this->cli::log("[S3 Local Index] No items in rebuild list.");
             return;
         }
 
-        $s3 = Plugin::get_instance()->s3();
-        $bucket = Plugin::get_instance()->get_s3_bucket();
+        $s3 = $this->s3::get_instance()->s3();
+        $bucket = $this->s3::get_instance()->get_s3_bucket();
         $tempDir = sys_get_temp_dir() . '/s3-index-temp';
         
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0777, true);
         }
 
-        WP_CLI::log("[S3 Local Index] Rebuilding " . count($rebuildList) . " specific indexes...");
+        $this->cli::log("[S3 Local Index] Rebuilding " . count($rebuildList) . " specific indexes...");
 
         foreach ($rebuildList as $item) {
             $parts = explode('-', $item);
             if (count($parts) !== 3) {
-                WP_CLI::warning("[S3 Local Index] Invalid rebuild item format: {$item}");
+                $this->cli::warning("[S3 Local Index] Invalid rebuild item format: {$item}");
                 continue;
             }
 
@@ -236,21 +221,21 @@ class Command {
                 $file = "{$tempDir}/s3-index-{$blogId}-{$year}-{$month}.json";
                 file_put_contents($file, json_encode($files, JSON_PRETTY_PRINT));
                 
-                WP_CLI::log("[S3 Local Index] Rebuilt index for blog {$blogId} {$year}-{$month}, count: {$count}");
+                $this->cli::log("[S3 Local Index] Rebuilt index for blog {$blogId} {$year}-{$month}, count: {$count}");
 
                 // Remove from rebuild list
                 RebuildTracker::removeFromRebuildList($blogId, $year, $month);
 
             } catch (Exception $e) {
-                WP_CLI::warning("[S3 Local Index] Failed to rebuild {$item}: " . $e->getMessage());
+                $this->cli::warning("[S3 Local Index] Failed to rebuild {$item}: " . $e->getMessage());
             }
         }
 
         if ($clearList) {
             RebuildTracker::clearRebuildList();
-            WP_CLI::log("[S3 Local Index] Rebuild list cleared.");
+            $this->cli::log("[S3 Local Index] Rebuild list cleared.");
         }
 
-        WP_CLI::success("[S3 Local Index] Selective rebuild completed.");
+        $this->cli::success("[S3 Local Index] Selective rebuild completed.");
     }
 }
