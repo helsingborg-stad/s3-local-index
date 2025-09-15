@@ -5,13 +5,20 @@ namespace S3LocalIndex\Config;
 use S3LocalIndex\Config\ConfigInterface;
 use WpService\Contracts\ApplyFilters;
 
+/**
+ * Configuration provider for S3 Local Index plugin.
+ * 
+ * This class implements the configuration interface and provides default
+ * values while allowing customization through WordPress filters. It determines
+ * whether the plugin should be active and sets integration priorities.
+ */
 class Config implements ConfigInterface
 {
     /**
      * Constructor.
      *
-     * @param ApplyFilters $wpService               A wp service instance.
-     * @param string $filterPrefix                  The prefix for config filters.
+     * @param ApplyFilters $wpService   A wp service instance for filter operations.
+     * @param string $filterPrefix      The prefix for config filters.
      */
     public function __construct(
         private ApplyFilters $wpService,
@@ -20,7 +27,12 @@ class Config implements ConfigInterface
     }
 
     /**
-     * If the image conversion is enabled.
+     * Check if the S3 Local Index plugin is enabled.
+     * 
+     * The plugin is enabled by default if the S3_Uploads plugin class exists,
+     * but this can be overridden via the 'S3LocalIndex/Config/IsEnabled' filter.
+     * 
+     * @return bool True if the plugin should be active, false otherwise
      */
     public function isEnabled(): bool
     {
@@ -32,9 +44,12 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Get the CLI priority.
-     *
-     * @return int The priority for the CLI init hook.
+     * Get the priority for CLI command registration.
+     * 
+     * Returns the priority level used when registering CLI commands with WordPress.
+     * Can be customized via the 'S3LocalIndex/Config/GetCliPriority' filter.
+     * 
+     * @return int The priority level for WordPress CLI hooks (default: 10)
      */
     public function getCliPriority(): int
     {
@@ -45,9 +60,12 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Get the plugin priority.
-     *
-     * @return int The priority for the plugins_loaded hook.
+     * Get the priority for plugin initialization.
+     * 
+     * Returns the priority level used when initializing the plugin functionality.
+     * Can be customized via the 'S3LocalIndex/Config/GetPluginPriority' filter.
+     * 
+     * @return int The priority level for WordPress plugin initialization hooks (default: 20)
      */
     public function getPluginPriority(): int
     {
@@ -58,9 +76,10 @@ class Config implements ConfigInterface
     }
 
     /**
-     * Create a prefix for image conversion filter.
+     * Create a filter key with the configured prefix.
      *
-     * @return string
+     * @param string $filter The filter name to append to the prefix
+     * @return string The complete filter key
      */
     public function createFilterKey(string $filter = ""): string
     {
