@@ -2,12 +2,37 @@
 
 namespace S3_Local_Index\Stream;
 
+use S3_Local_Index\Cache\CacheInterface;
+use S3_Local_Index\Cache\CacheFactory;
+
 class Reader {
 
     private static array $index = [];
+    private static ?CacheInterface $cache = null;
 
     private string $key = '';
     private int $position = 0;
+
+    /**
+     * Set the cache instance to use
+     *
+     * @param CacheInterface $cache
+     */
+    public static function setCache(CacheInterface $cache): void {
+        self::$cache = $cache;
+    }
+
+    /**
+     * Get the current cache instance or create default
+     *
+     * @return CacheInterface
+     */
+    public static function getCache(): CacheInterface {
+        if (self::$cache === null) {
+            self::$cache = CacheFactory::createDefault();
+        }
+        return self::$cache;
+    }
 
     public static function loadIndex(string $path): array {
         $path = ltrim($path, '/');
@@ -19,13 +44,29 @@ class Reader {
         $year    = $m[2];
         $month   = $m[3];
 
+        // Create cache key
+        $cache_key = "index_{$blog_id}_{$year}_{$month}";
+        
+        // Try to get from cache first
+        $cache = self::getCache();
+        $cached_data = $cache->get($cache_key);
+        if ($cached_data !== null) {
+            return $cached_data;
+        }
+
+        // Load from file if not in cache
         $file = sys_get_temp_dir() . "/s3-index-temp/s3-index-{$blog_id}-{$year}-{$month}.json";
         if (!file_exists($file)) {
             return [];
         }
 
         $data = file_get_contents($file);
-        return json_decode($data, true) ?: [];
+        $index = json_decode($data, true) ?: [];
+        
+        // Store in cache for next time (cache for 1 hour)
+        $cache->set($cache_key, $index, 3600);
+        
+        return $index;
     }
 
     public function stream_open(string $path, string $mode, int $options, &$opened_path): bool {
