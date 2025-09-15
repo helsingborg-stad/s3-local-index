@@ -38,7 +38,7 @@ class Reader {
      * Extract index details from a file path
      *
      * @param string $path S3 file path
-     * @return array|null Array with blog_id, year, month or null if path doesn't match pattern
+     * @return array|null Array with blogId, year, month or null if path doesn't match pattern
      */
     public static function extractIndexDetails(string $path): ?array {
         $path = ltrim($path, '/');
@@ -46,7 +46,7 @@ class Reader {
         // Try multisite pattern first
         if (preg_match('#uploads/networks/\d+/sites/(\d+)/(\d{4})/(\d{2})/#', $path, $m)) {
             return [
-                'blog_id' => $m[1],
+                'blogId' => $m[1],
                 'year' => $m[2],
                 'month' => $m[3]
             ];
@@ -55,7 +55,7 @@ class Reader {
         // Try single site pattern
         if (preg_match('#uploads/(\d{4})/(\d{2})/#', $path, $m)) {
             return [
-                'blog_id' => '1',
+                'blogId' => '1',
                 'year' => $m[1],
                 'month' => $m[2]
             ];
@@ -76,10 +76,10 @@ class Reader {
             return false;
         }
 
-        $cache_key = "index_{$details['blog_id']}_{$details['year']}_{$details['month']}";
+        $cacheKey = "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
         $cache = self::getCache();
         
-        return $cache->delete($cache_key);
+        return $cache->delete($cacheKey);
     }
 
     /**
@@ -94,7 +94,7 @@ class Reader {
             return null;
         }
 
-        return "index_{$details['blog_id']}_{$details['year']}_{$details['month']}";
+        return "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
     }
 
     public static function loadIndex(string $path): array {
@@ -103,22 +103,22 @@ class Reader {
             return [];
         }
 
-        $blog_id = $m[1] ?? '1';
+        $blogId = $m[1] ?? '1';
         $year    = $m[2];
         $month   = $m[3];
 
         // Create cache key
-        $cache_key = "index_{$blog_id}_{$year}_{$month}";
+        $cacheKey = "index_{$blogId}_{$year}_{$month}";
         
         // Try to get from cache first
         $cache = self::getCache();
-        $cached_data = $cache->get($cache_key);
-        if ($cached_data !== null) {
-            return $cached_data;
+        $cachedData = $cache->get($cacheKey);
+        if ($cachedData !== null) {
+            return $cachedData;
         }
 
         // Load from file if not in cache
-        $file = sys_get_temp_dir() . "/s3-index-temp/s3-index-{$blog_id}-{$year}-{$month}.json";
+        $file = sys_get_temp_dir() . "/s3-index-temp/s3-index-{$blogId}-{$year}-{$month}.json";
         if (!file_exists($file)) {
             return [];
         }
@@ -127,7 +127,7 @@ class Reader {
         $index = json_decode($data, true) ?: [];
         
         // Store in cache for next time (cache for 1 hour)
-        $cache->set($cache_key, $index, 3600);
+        $cache->set($cacheKey, $index, 3600);
         
         return $index;
     }
