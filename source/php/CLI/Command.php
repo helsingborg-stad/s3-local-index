@@ -4,13 +4,22 @@ namespace S3_Local_Index\CLI;
 use S3_Uploads\Plugin;
 use S3_Local_Index\Stream\Reader;
 use S3_Local_Index\Rebuild\RebuildTracker;
+use S3_Local_Index\FileSystem\FileSystemInterface;
+use S3_Local_Index\FileSystem\NativeFileSystem;
 use WP_CLI;
 use Exception;
 use WpService\WpService;
 
 class Command {
 
-  public function __construct(private WpService $wpService, private Plugin $s3, private WP_CLI $cli) {}
+  public function __construct(
+    private WpService $wpService, 
+    private Plugin $s3, 
+    private WP_CLI $cli,
+    private ?FileSystemInterface $fileSystem = null
+  ) {
+    $this->fileSystem ??= new NativeFileSystem();
+  }
 
     public function create($args = [], $assoc_args = []) {
 
@@ -24,7 +33,7 @@ class Command {
         $cache->clear();
         $this->cli::log("[S3 Local Index] Cache cleared.");
 
-        $tempDir = sys_get_temp_dir() . '/s3-index-temp';
+        $tempDir = $this->fileSystem->getTempDir() . '/s3-index-temp';
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0777, true);
         }
@@ -55,7 +64,7 @@ class Command {
             foreach ($years as $year => $months) {
                 foreach ($months as $month => $keys) {
                     $file = "{$tempDir}/s3-index-{$blogId}-{$year}-{$month}.json";
-                    file_put_contents($file, json_encode($keys, JSON_PRETTY_PRINT));
+                    $this->fileSystem->filePutContents($file, json_encode($keys, JSON_PRETTY_PRINT));
                     $this->cli::log("Written index for blog {$blogId} {$year}-{$month}, count: " . count($keys));
                 }
             }
@@ -164,7 +173,7 @@ class Command {
 
         $s3 = $this->s3::get_instance()->s3();
         $bucket = $this->s3::get_instance()->get_s3_bucket();
-        $tempDir = sys_get_temp_dir() . '/s3-index-temp';
+        $tempDir = $this->fileSystem->getTempDir() . '/s3-index-temp';
         
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0777, true);
@@ -219,7 +228,7 @@ class Command {
 
                 // Write the index file
                 $file = "{$tempDir}/s3-index-{$blogId}-{$year}-{$month}.json";
-                file_put_contents($file, json_encode($files, JSON_PRETTY_PRINT));
+                $this->fileSystem->filePutContents($file, json_encode($files, JSON_PRETTY_PRINT));
                 
                 $this->cli::log("[S3 Local Index] Rebuilt index for blog {$blogId} {$year}-{$month}, count: {$count}");
 
