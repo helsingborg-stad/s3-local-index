@@ -2,6 +2,8 @@
 
 namespace S3_Local_Index\Stream;
 
+use S3_Local_Index\Logger\LoggerInterface;
+
 /**
  * S3 stream wrapper with local index support.
  * 
@@ -18,6 +20,7 @@ class Wrapper implements WrapperInterface
 
     private static ReaderInterface $reader;
     private static DirectoryInterface $directory;
+    private static LoggerInterface $logger;
     
     /**
      * Keep a reference to the original wrapper under a backup name
@@ -47,11 +50,13 @@ class Wrapper implements WrapperInterface
      *
      * @param ReaderInterface    $reader    Stream reader for file operations
      * @param DirectoryInterface $directory Directory handler for directory operations
+     * @param LoggerInterface    $logger    Logger for debug messages
      */
-    public static function setDependencies(ReaderInterface $reader, DirectoryInterface $directory): void
+    public static function setDependencies(ReaderInterface $reader, DirectoryInterface $directory, LoggerInterface $logger): void
     {
         self::$reader = $reader;
         self::$directory = $directory;
+        self::$logger = $logger;
     }
 
     /**
@@ -86,37 +91,38 @@ class Wrapper implements WrapperInterface
     public function init(): void
     {
         if (!class_exists('S3_Uploads\Plugin')) {
-            error_log('[S3 Local Index] S3_Uploads plugin not found, wrapper not registered.');
+            self::$logger->log('[S3 Local Index] S3_Uploads plugin not found, wrapper not registered.');
             return;
         }
 
         if (!self::$registered) {
             // Store instance for static method access
             self::setInstance($this);
-
+          
             // Backup original S3 wrapper
             if (!in_array(self::BACKUP_PROTOCOL, stream_get_wrappers(), true)) {
                 if (in_array(self::ORIGINAL_PROTOCOL, stream_get_wrappers(), true)) {
                     @stream_wrapper_unregister(self::ORIGINAL_PROTOCOL);
                     // The original S3 wrapper class is likely named 'S3'
                     if (!@stream_wrapper_register(self::BACKUP_PROTOCOL, 'S3')) {
-                        error_log('[S3 Local Index] Failed to register original S3 wrapper for fallback.');
+                        self::$logger->log('[S3 Local Index] Failed to register original S3 wrapper for fallback.');
                     } else {
-                        error_log('[S3 Local Index] Original S3 wrapper backed up as ' . self::BACKUP_PROTOCOL . '://');
+                        self::$logger->log('[S3 Local Index] Original S3 wrapper backed up as ' . self::BACKUP_PROTOCOL . '://');
                     }
                 } else {
-                    error_log('[S3 Local Index] No existing S3 wrapper found to backup.');
+                  self::$logger->log('[S3 Local Index] No existing S3 wrapper found to backup.');
                 }
             }
 
             // Register custom wrapper
             if (!stream_wrapper_register(self::ORIGINAL_PROTOCOL, self::class)) {
-                error_log('[S3 Local Index] Failed to register custom stream wrapper.');
+                self::$logger->log('[S3 Local Index] Failed to register stream wrapper.');
                 return;
             }
 
             self::$registered = true;
-            error_log('[S3 Local Index] Custom S3 stream wrapper registered.');
+
+            self::$logger->log('[S3 Local Index] Stream wrapper registered.');
         }
     }
 

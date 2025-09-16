@@ -13,6 +13,7 @@ use S3_Uploads\Plugin as S3Plugin;
 use S3_Local_Index\Rebuild\RebuildTracker;
 use S3_Local_Index\Stream\Reader;
 use S3_Local_Index\Stream\Directory;
+use S3_Local_Index\Logger\Logger;
 
 /**
  * Main application class for S3 Local Index plugin.
@@ -95,13 +96,14 @@ class App implements HookableInterface
     {
         $fileSystem   = new NativeFileSystem($this->config);
         $cache        = (new CacheFactory($this->wpService))->createDefault();
+        $logger       = new Logger();
 
         $reader       = new Reader($cache, $fileSystem);
         $directory    = new Directory($reader);
 
         //Setup and register the stream wrapper
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory);
+        $wrapper->setDependencies($reader, $directory, $logger);
 
         $wrapper->init();
     }

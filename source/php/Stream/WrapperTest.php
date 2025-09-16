@@ -3,6 +3,7 @@
 namespace S3_Local_Index\Stream;
 
 use PHPUnit\Framework\TestCase;
+use S3_Local_Index\Logger\LoggerInterface;
 
 class WrapperTest extends TestCase
 {
@@ -20,8 +21,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
+        $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory);
+        $wrapper->setDependencies($reader, $directory, $logger);
 
         $this->assertInstanceOf(Wrapper::class, $wrapper);
     }
@@ -33,8 +35,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
+        $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory);
+        $wrapper->setDependencies($reader, $directory, $logger);
 
         Wrapper::setInstance($wrapper);
 
@@ -58,8 +61,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
+        $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory);
+        $wrapper->setDependencies($reader, $directory, $logger);
 
         Wrapper::setInstance($wrapper);
         $result = Wrapper::getInstance();
@@ -74,8 +78,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
+        $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory);
+        $wrapper->setDependencies($reader, $directory, $logger);
 
         try {
             $wrapper->init();
@@ -92,8 +97,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
+        $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory);
+        $wrapper->setDependencies($reader, $directory, $logger);
 
         if (method_exists($wrapper, 'stream_open')) {
             try {
@@ -115,8 +121,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
+        $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory);
+        $wrapper->setDependencies($reader, $directory, $logger);
 
         if (method_exists($wrapper, 'url_stat')) {
             try {
@@ -137,8 +144,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
+        $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory);
+        $wrapper->setDependencies($reader, $directory, $logger);
 
         if (method_exists($wrapper, 'dir_opendir')) {
             try {
@@ -221,6 +229,16 @@ class WrapperTest extends TestCase
             }
 
             public function dir_closedir(): void
+            {
+                // No action needed for this stub
+            }
+        };
+    }
+
+    private function createLogger(): LoggerInterface
+    {
+        return new class implements LoggerInterface {
+            public function log(string $message): void
             {
                 // No action needed for this stub
             }
