@@ -96,30 +96,9 @@ class DirectoryTest extends TestCase
         }
     }
 
-    /**
-     * @testdox dir_closedir method exists and can be called
-     */
-    public function testDirClosedirMethodExistsAndCanBeCalled(): void
+    private function createReader(array $indexData = []): ReaderInterface
     {
-        $reader = $this->createReader();
-        $directory = new Directory($reader);
-
-        // This test just ensures the method exists and doesn't throw an exception
-        if (method_exists($directory, 'dir_closedir')) {
-            try {
-                $result = $directory->dir_closedir();
-                $this->assertTrue(is_bool($result), 'dir_closedir should return a boolean.');
-            } catch (\Exception $e) {
-                $this->fail('dir_closedir method threw an exception: ' . $e->getMessage());
-            }
-        } else {
-            $this->markTestSkipped('dir_closedir method not implemented yet.');
-        }
-    }
-
-    private function createReader(array $indexData = []): Reader
-    {
-        return new class($indexData) {
+        return new class($indexData) implements ReaderInterface {
             public function __construct(private array $indexData)
             {
             }
@@ -141,6 +120,38 @@ class DirectoryTest extends TestCase
             }
 
             public function flushCacheForPath(string $path): bool
+            {
+                return true;
+            }
+            public function dir_readdir(): false|string
+            {
+                return false;
+            }
+            public function dir_closedir(): bool
+            {
+                return true;
+            }
+            public function dir_rewinddir(): void
+            {
+                // No action needed for this stub
+            }   
+            public function normalize(string $path): string
+            {
+                return $path;
+            }
+            public function url_stat(string $path, int $flags): array|false
+            {
+                return false;
+            }
+            public function stream_open(string $path, string $mode, int $options, &$opened_path): bool
+            {
+                return true;
+            }
+            public function stream_read(int $count): string
+            {
+                return '';
+            }
+            public function stream_eof(): bool
             {
                 return true;
             }

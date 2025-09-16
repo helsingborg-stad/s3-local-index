@@ -57,7 +57,7 @@ class ConfigTest extends TestCase
         
         $cacheDir = $config->getCacheDirectory();
         $this->assertIsString($cacheDir);
-        $this->assertStringContains('s3-index-', $cacheDir);
+        $this->assertStringContainsString('s3-index-', $cacheDir);
     }
 
     /**

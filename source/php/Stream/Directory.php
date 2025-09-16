@@ -22,7 +22,7 @@ class Directory
      * @param Reader $reader Reader instance for loading index data
      */
     public function __construct(
-        private Reader $reader
+        private ReaderInterface $reader
     ) {
     }
 

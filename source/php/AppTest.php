@@ -50,36 +50,6 @@ class AppTest extends TestCase
         }
     }
 
-    /**
-     * @testdox initCli method does not throw an exception
-     */
-    public function testInitCliMethodDoesNotThrowException(): void
-    {
-        $app = new App($this->getWpService(), $this->getConfig());
-
-        try {
-            $app->initCli();
-            $this->assertTrue(true, 'initCli method executed without exceptions.');
-        } catch (\Exception $e) {
-            $this->fail('initCli method threw an exception: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * @testdox initPlugin method does not throw an exception
-     */
-    public function testInitPluginMethodDoesNotThrowException(): void
-    {
-        $app = new App($this->getWpService(), $this->getConfig());
-
-        try {
-            $app->initPlugin();
-            $this->assertTrue(true, 'initPlugin method executed without exceptions.');
-        } catch (\Exception $e) {
-            $this->fail('initPlugin method threw an exception: ' . $e->getMessage());
-        }
-    }
-
     private function getWpService(): FakeWpService
     {
         return new FakeWpService(

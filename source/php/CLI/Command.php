@@ -1,14 +1,13 @@
 <?php
 
 namespace S3_Local_Index\CLI;
+
 use S3_Uploads\Plugin;
 use S3_Local_Index\FileSystem\FileSystemInterface;
-use S3_Local_Index\FileSystem\NativeFileSystem;
 use S3_Local_Index\Cache\CacheFactory;
-use S3_Local_Index\Rebuild\RebuildTracker;
-
 use WP_CLI;
 use Exception;
+use S3_Local_Index\Rebuild\RebuildTrackerInterface;
 use WpService\WpService;
 
 /**
@@ -28,15 +27,15 @@ class Command
      * @param Plugin                                      $s3             The S3 Uploads plugin instance
      * @param WP_CLI                                      $cli            The WP-CLI interface
      * @param FileSystemInterface|null                    $fileSystem     File system handler (optional, defaults to NativeFileSystem)
-     * @param \S3_Local_Index\Rebuild\RebuildTracker|null $rebuildTracker Rebuild tracking service (optional)
-     * @param \S3_Local_Index\Cache\CacheFactory|null     $cacheFactory   Cache factory service (optional)
+     * @param RebuildTrackerInterface|null                $rebuildTracker Rebuild tracking service (optional)
+     * @param CacheFactory|null                           $cacheFactory   Cache factory service (optional)
      */
     public function __construct(
         private WpService $wpService, 
         private Plugin $s3, 
         private WP_CLI $cli,
         private FileSystemInterface $fileSystem,
-        private RebuildTracker $rebuildTracker,
+        private RebuildTrackerInterface $rebuildTracker,
         private CacheFactory $cacheFactory
     ) {
     }
