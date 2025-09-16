@@ -2,7 +2,7 @@
 /**
  * Plugin Name: S3 Local Index
  * Description: Provides local indexing of S3 files and a CLI command with cache flushing capabilities.
- * Version: 0.2.8
+ * Version: 0.2.10
  * 
  * CLI Commands:
  * - wp s3-index create                     : Create full S3 index
