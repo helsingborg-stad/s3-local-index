@@ -165,7 +165,7 @@ class ReaderTest extends TestCase
     {
         $cachedData = ['uploads/2023/01/image1.jpg', 'uploads/2023/01/image2.jpg'];
         $cache = $this->createCache(['index_1_2023_01' => $cachedData]);
-        $reader = new Reader($cache, $this->fileSystem);
+        $reader = new Reader($cache, $this->createFileSystem());
         
         $path = 'uploads/2023/01/image.jpg';
         $result = $reader->loadIndex($path);
@@ -179,11 +179,11 @@ class ReaderTest extends TestCase
     public function testLoadIndexLoadsFromFileWhenNotCached(): void
     {
         $indexData = ['uploads/2023/01/image1.jpg', 'uploads/2023/01/image2.jpg'];
-        $indexFile = $this->testDir . '/s3-index-1-2023-01.json';
+        $indexFile = $this->fileSystem->getCacheDir() . '/s3-index-1-2023-01.json';
         file_put_contents($indexFile, json_encode($indexData));
         
         $reader = new Reader($this->cache, $this->fileSystem);
-        
+
         $path = 'uploads/2023/01/image.jpg';
         $result = $reader->loadIndex($path);
 
@@ -221,9 +221,7 @@ class ReaderTest extends TestCase
     private function createCache(array $data = []): CacheInterface
     {
         return new class($data) implements CacheInterface {
-            public function __construct(private array $data)
-            {
-            }
+            public function __construct(private array $data) {}
 
             public function get(string $key)
             {
@@ -238,7 +236,7 @@ class ReaderTest extends TestCase
 
             public function has(string $key): bool
             {
-                return isset($this->data[$key]);
+                return array_key_exists($key, $this->data);
             }
 
             public function delete(string $key): bool

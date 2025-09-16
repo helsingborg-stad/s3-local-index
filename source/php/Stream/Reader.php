@@ -112,7 +112,7 @@ class Reader
             return [];
         }
 
-        $blogId = $m[1] ?? '1';
+        $blogId = $m[1] ?: '1';
         $year    = $m[2];
         $month   = $m[3];
 
