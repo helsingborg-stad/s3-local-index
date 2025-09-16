@@ -3,6 +3,7 @@
 namespace S3_Local_Index\Stream;
 
 use S3_Local_Index\Logger\LoggerInterface;
+use S3_Uploads\Stream_Wrapper;
 
 /**
  * S3 stream wrapper with local index support.
@@ -104,9 +105,9 @@ class Wrapper implements WrapperInterface
                 if (in_array(self::ORIGINAL_PROTOCOL, stream_get_wrappers(), true)) {
                     @stream_wrapper_unregister(self::ORIGINAL_PROTOCOL);
                     // The original S3 wrapper class is likely named 'S3'
-                    if (!@stream_wrapper_register(self::BACKUP_PROTOCOL, 'S3')) {
+                    if (!@stream_wrapper_register(self::BACKUP_PROTOCOL, \S3_Uploads\Stream_Wrapper::class)) {
                         self::$logger->log('[S3 Local Index] Failed to register original S3 wrapper for fallback.');
-                    } else {
+                    } else { 
                         self::$logger->log('[S3 Local Index] Original S3 wrapper backed up as ' . self::BACKUP_PROTOCOL . '://');
                     }
                 } else {
