@@ -74,7 +74,7 @@ class App implements HookableInterface
     
         $cliCommand = new Command(
             $this->wpService,
-            S3Plugin::class,
+            S3Plugin::get_instance(),
             WP_CLI::class,
             $fileSystem,
             $rebuildTracker,

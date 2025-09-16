@@ -64,8 +64,8 @@ class Command
     public function create($args = [], $assoc_args = [])
     {
 
-        $s3     = $this->s3::get_instance()->s3();
-        $bucket = $this->s3::get_instance()->get_s3_bucket();
+        $s3     = $this->s3->s3();
+        $bucket = $this->s3->get_s3_bucket();
 
         $this->cli::log("[S3 Local Index] Creating index for bucket: {$bucket}");
 
@@ -218,8 +218,8 @@ class Command
             return;
         }
 
-        $s3 = $this->s3::get_instance()->s3();
-        $bucket = $this->s3::get_instance()->get_s3_bucket();
+        $s3 = $this->s3->s3();
+        $bucket = $this->s3->get_s3_bucket();
         $cacheDir = $this->fileSystem->getCacheDir();
         
         if (!is_dir($cacheDir)) {
