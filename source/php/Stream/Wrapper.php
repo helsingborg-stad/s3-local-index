@@ -2,6 +2,8 @@
 
 namespace S3_Local_Index\Stream;
 
+use S3_Local_Index\Logger\LoggerInterface;
+
 /**
  * S3 stream wrapper with local index support.
  * 
@@ -18,6 +20,7 @@ class Wrapper implements WrapperInterface
 
     private static ReaderInterface $reader;
     private static DirectoryInterface $directory;
+    private static LoggerInterface $logger;
     
     /**
      * Parameterless constructor required by PHP stream wrapper system.
@@ -31,11 +34,13 @@ class Wrapper implements WrapperInterface
      *
      * @param ReaderInterface    $reader    Stream reader for file operations
      * @param DirectoryInterface $directory Directory handler for directory operations
+     * @param LoggerInterface    $logger    Logger for debug messages
      */
-    public static function setDependencies(ReaderInterface $reader, DirectoryInterface $directory): void
+    public static function setDependencies(ReaderInterface $reader, DirectoryInterface $directory, LoggerInterface $logger): void
     {
         self::$reader = $reader;
         self::$directory = $directory;
+        self::$logger = $logger;
     }
 
     /**
@@ -70,7 +75,7 @@ class Wrapper implements WrapperInterface
     public function init(): void
     {
         if (!class_exists('S3_Uploads\Plugin')) {
-            error_log('[S3 Local Index] S3_Uploads plugin not found, wrapper not registered.');
+            self::$logger->log('[S3 Local Index] S3_Uploads plugin not found, wrapper not registered.');
             return;
         }
 
@@ -80,16 +85,16 @@ class Wrapper implements WrapperInterface
             
             if (in_array('s3', stream_get_wrappers(), true)) {
                 @stream_wrapper_unregister('s3');
-                error_log('[S3 Local Index] Existing s3 wrapper unregistered.');
+                self::$logger->log('[S3 Local Index] Existing s3 wrapper unregistered.');
             }
 
             if (!stream_wrapper_register('s3', self::class)) {
-                error_log('[S3 Local Index] Failed to register stream wrapper.');
+                self::$logger->log('[S3 Local Index] Failed to register stream wrapper.');
                 return;
             }
 
             self::$registered = true;
-            error_log('[S3 Local Index] Stream wrapper registered.');
+            self::$logger->log('[S3 Local Index] Stream wrapper registered.');
         }
     }
 
