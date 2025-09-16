@@ -120,7 +120,9 @@ class DirectoryTest extends TestCase
     private function createReader(array $indexData = []): Reader
     {
         return new class($indexData) {
-            public function __construct(private array $indexData) {}
+            public function __construct(private array $indexData)
+            {
+            }
 
             public function loadIndex(string $path): array
             {

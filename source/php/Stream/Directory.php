@@ -9,7 +9,8 @@ namespace S3_Local_Index\Stream;
  * using a local index to quickly enumerate files without making
  * expensive S3 API calls.
  */
-class Directory {
+class Directory
+{
 
     private array $dirKeys = [];
     private int $dirPosition = 0;
@@ -31,11 +32,12 @@ class Directory {
      * Implementation of PHP's dir_opendir for the stream wrapper.
      * Loads the index and prepares file list for the given directory path.
      * 
-     * @param string $path Directory path to open
-     * @param int $options Stream options (unused)
+     * @param  string $path    Directory path to open
+     * @param  int    $options Stream options (unused)
      * @return bool True if directory opened successfully
      */
-    public function dir_opendir(string $path, int $options): bool {
+    public function dir_opendir(string $path, int $options): bool
+    {
         $this->index = $this->reader->loadIndex($path);
         $this->dirKeys = [];
 
@@ -58,7 +60,8 @@ class Directory {
      * 
      * @return string|false Next filename or false if no more entries
      */
-    public function dir_readdir(): false|string {
+    public function dir_readdir(): false|string
+    {
         if ($this->dirPosition < count($this->dirKeys)) {
             return $this->dirKeys[$this->dirPosition++];
         }
@@ -73,7 +76,8 @@ class Directory {
      * 
      * @return void
      */
-    public function dir_closedir(): void {
+    public function dir_closedir(): void
+    {
         $this->dirKeys = [];
     }
 }

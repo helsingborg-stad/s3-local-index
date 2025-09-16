@@ -205,7 +205,9 @@ class RebuildTrackerTest extends TestCase
     private function createFileSystem(): FileSystemInterface
     {
         return new class($this->testDir) implements FileSystemInterface {
-            public function __construct(private string $cacheDir) {}
+            public function __construct(private string $cacheDir)
+            {
+            }
 
             public function fileExists(string $path): bool
             {

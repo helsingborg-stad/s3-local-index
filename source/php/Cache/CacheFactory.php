@@ -7,21 +7,25 @@ use WpService\WpService;
 /**
  * Cache factory for creating cache instances using dependency injection
  */
-class CacheFactory {
+class CacheFactory
+{
     
     /**
      * Constructor
      *
      * @param WpService $wpService WordPress cache service
      */
-    public function __construct(private WpService $wpService) {}
+    public function __construct(private WpService $wpService)
+    {
+    }
     
     /**
      * Create a composite cache with StaticCache and WpCache
      *
      * @return CacheInterface
      */
-    public function createDefault(): CacheInterface {
+    public function createDefault(): CacheInterface
+    {
         $staticCache = new StaticCache();
         
         return new CompositeCache(
@@ -35,7 +39,8 @@ class CacheFactory {
      *
      * @return CacheInterface
      */
-    public function createStatic(): CacheInterface {
+    public function createStatic(): CacheInterface
+    {
         return new StaticCache();
     }
 
@@ -44,17 +49,19 @@ class CacheFactory {
      *
      * @return CacheInterface
      */
-    public function createWp(): CacheInterface {
+    public function createWp(): CacheInterface
+    {
         return new WpCache($this->wpService);
     }
 
     /**
      * Create a CompositeCache with custom cache instances
      *
-     * @param CacheInterface ...$caches
+     * @param  CacheInterface ...$caches
      * @return CacheInterface
      */
-    public function createComposite(CacheInterface ...$caches): CacheInterface {
+    public function createComposite(CacheInterface ...$caches): CacheInterface
+    {
         return new CompositeCache(...$caches);
     }
 }

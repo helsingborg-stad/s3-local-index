@@ -18,26 +18,28 @@ use WpService\WpService;
  * creating full indexes, flushing specific path caches, and rebuilding
  * selective indexes from a rebuild queue.
  */
-class Command {
+class Command
+{
 
-  /**
-   * Constructor for CLI Command.
-   *
-   * @param WpService $wpService The WordPress service provider
-   * @param Plugin $s3 The S3 Uploads plugin instance
-   * @param WP_CLI $cli The WP-CLI interface
-   * @param FileSystemInterface|null $fileSystem File system handler (optional, defaults to NativeFileSystem)
-   * @param \S3_Local_Index\Rebuild\RebuildTracker|null $rebuildTracker Rebuild tracking service (optional)
-   * @param \S3_Local_Index\Cache\CacheFactory|null $cacheFactory Cache factory service (optional)
-   */
-  public function __construct(
-    private WpService $wpService, 
-    private Plugin $s3, 
-    private WP_CLI $cli,
-    private FileSystemInterface $fileSystem,
-    private RebuildTracker $rebuildTracker,
-    private CacheFactory $cacheFactory
-  ) {}
+    /**
+     * Constructor for CLI Command.
+     *
+     * @param WpService                                   $wpService      The WordPress service provider
+     * @param Plugin                                      $s3             The S3 Uploads plugin instance
+     * @param WP_CLI                                      $cli            The WP-CLI interface
+     * @param FileSystemInterface|null                    $fileSystem     File system handler (optional, defaults to NativeFileSystem)
+     * @param \S3_Local_Index\Rebuild\RebuildTracker|null $rebuildTracker Rebuild tracking service (optional)
+     * @param \S3_Local_Index\Cache\CacheFactory|null     $cacheFactory   Cache factory service (optional)
+     */
+    public function __construct(
+        private WpService $wpService, 
+        private Plugin $s3, 
+        private WP_CLI $cli,
+        private FileSystemInterface $fileSystem,
+        private RebuildTracker $rebuildTracker,
+        private CacheFactory $cacheFactory
+    ) {
+    }
 
     /**
      * Create a complete S3 index by scanning all objects in the bucket.
@@ -54,13 +56,14 @@ class Command {
      * 
      *     wp s3-index create
      * 
-     * @param array $args Positional arguments (unused)
-     * @param array $assoc_args Associative arguments (unused)
+     * @param  array $args       Positional arguments (unused)
+     * @param  array $assoc_args Associative arguments (unused)
      * @return void
      * 
      * @when after_wp_load
      */
-    public function create($args = [], $assoc_args = []) {
+    public function create($args = [], $assoc_args = [])
+    {
 
         $s3     = $this->s3::get_instance()->s3();
         $bucket = $this->s3::get_instance()->get_s3_bucket();
@@ -132,7 +135,8 @@ class Command {
      *
      * @when after_wp_load
      */
-    public function flush($args = [], $assoc_args = []) {
+    public function flush($args = [], $assoc_args = [])
+    {
         $path = $args[0] ?? null;
         $addToRebuild = isset($assoc_args['add']);
 
@@ -193,7 +197,8 @@ class Command {
      *
      * @when after_wp_load
      */
-    public function rebuild($args = [], $assoc_args = []) {
+    public function rebuild($args = [], $assoc_args = [])
+    {
 
         $clearList = isset($assoc_args['clear']);
         $rebuildAll = isset($assoc_args['all']);
@@ -247,10 +252,12 @@ class Command {
             $count = 0;
 
             try {
-                $paginator = $s3->getPaginator('ListObjectsV2', [
+                $paginator = $s3->getPaginator(
+                    'ListObjectsV2', [
                     'Bucket' => $bucket,
                     'Prefix' => str_replace('*', '', $prefix) // Remove wildcard for actual query
-                ]);
+                    ]
+                );
 
                 foreach ($paginator as $page) {
                     if (!empty($page['Contents'])) {

@@ -84,10 +84,12 @@ class ConfigTest extends TestCase
 
     private function getWpService(): FakeWpService
     {
-        return new FakeWpService([
-            'applyFilters' => function($filter, $default) { 
+        return new FakeWpService(
+            [
+            'applyFilters' => function ($filter, $default) { 
                 return $default; 
             }
-        ]);
+            ]
+        );
     }
 }

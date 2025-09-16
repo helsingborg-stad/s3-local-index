@@ -17,8 +17,8 @@ class Config implements ConfigInterface
     /**
      * Constructor.
      *
-     * @param ApplyFilters $wpService   A wp service instance for filter operations.
-     * @param string $filterPrefix      The prefix for config filters.
+     * @param ApplyFilters $wpService    A wp service instance for filter operations.
+     * @param string       $filterPrefix The prefix for config filters.
      */
     public function __construct(
         private ApplyFilters $wpService,
@@ -102,7 +102,7 @@ class Config implements ConfigInterface
     /**
      * Create a filter key with the configured prefix.
      *
-     * @param string $filter The filter name to append to the prefix
+     * @param  string $filter The filter name to append to the prefix
      * @return string The complete filter key
      */
     public function createFilterKey(string $filter = ""): string

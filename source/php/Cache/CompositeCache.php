@@ -6,7 +6,8 @@ namespace S3_Local_Index\Cache;
  * Composite cache implementation that uses multiple cache layers
  * Tries caches in order, stores in all caches on set
  */
-class CompositeCache implements CacheInterface {
+class CompositeCache implements CacheInterface
+{
     
     private array $caches = [];
 
@@ -15,17 +16,19 @@ class CompositeCache implements CacheInterface {
      *
      * @param CacheInterface ...$caches Multiple cache implementations
      */
-    public function __construct(CacheInterface ...$caches) {
+    public function __construct(CacheInterface ...$caches)
+    {
         $this->caches = $caches;
     }
 
     /**
      * Get data from cache - tries each cache in order until found
      *
-     * @param string $key Cache key
+     * @param  string $key Cache key
      * @return mixed|null Returns cached data or null if not found
      */
-    public function get(string $key) {
+    public function get(string $key)
+    {
         foreach ($this->caches as $cache) {
             $data = $cache->get($key);
             if ($data !== null) {
@@ -41,12 +44,13 @@ class CompositeCache implements CacheInterface {
     /**
      * Set data in all caches
      *
-     * @param string $key Cache key
-     * @param mixed $data Data to cache
-     * @param int $ttl Time to live in seconds (optional)
+     * @param  string $key  Cache key
+     * @param  mixed  $data Data to cache
+     * @param  int    $ttl  Time to live in seconds (optional)
      * @return bool True if at least one cache succeeded, false if all failed
      */
-    public function set(string $key, $data, int $ttl = 0): bool {
+    public function set(string $key, $data, int $ttl = 0): bool
+    {
         $success = false;
         
         foreach ($this->caches as $cache) {
@@ -61,10 +65,11 @@ class CompositeCache implements CacheInterface {
     /**
      * Check if key exists in any cache
      *
-     * @param string $key Cache key
+     * @param  string $key Cache key
      * @return bool True if key exists in any cache, false otherwise
      */
-    public function has(string $key): bool {
+    public function has(string $key): bool
+    {
         foreach ($this->caches as $cache) {
             if ($cache->has($key)) {
                 return true;
@@ -77,10 +82,11 @@ class CompositeCache implements CacheInterface {
     /**
      * Delete data from all caches
      *
-     * @param string $key Cache key
+     * @param  string $key Cache key
      * @return bool True if at least one cache succeeded, false if all failed
      */
-    public function delete(string $key): bool {
+    public function delete(string $key): bool
+    {
         $success = false;
         
         foreach ($this->caches as $cache) {
@@ -97,7 +103,8 @@ class CompositeCache implements CacheInterface {
      *
      * @return bool True if at least one cache succeeded, false if all failed
      */
-    public function clear(): bool {
+    public function clear(): bool
+    {
         $success = false;
         
         foreach ($this->caches as $cache) {
@@ -112,10 +119,11 @@ class CompositeCache implements CacheInterface {
     /**
      * Populate earlier caches with data found in later cache
      *
-     * @param string $key Cache key
-     * @param mixed $data Data to populate
+     * @param string $key  Cache key
+     * @param mixed  $data Data to populate
      */
-    private function populateEarlierCaches(string $key, $data): void {
+    private function populateEarlierCaches(string $key, $data): void
+    {
         foreach ($this->caches as $cache) {
             if (!$cache->has($key)) {
                 $cache->set($key, $data);

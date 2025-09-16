@@ -7,7 +7,8 @@ use S3_Local_Index\FileSystem\FileSystemInterface;
 /**
  * Tracks indexes that need to be rebuilt
  */
-class RebuildTracker {
+class RebuildTracker
+{
     
     private const REBUILD_LIST_FILE = 's3-index-rebuild-list.json';
 
@@ -24,12 +25,13 @@ class RebuildTracker {
     /**
      * Add an index to the rebuild list
      *
-     * @param string $blogId Blog ID
-     * @param string $year Year
-     * @param string $month Month
+     * @param  string $blogId Blog ID
+     * @param  string $year   Year
+     * @param  string $month  Month
      * @return bool True on success, false on failure
      */
-    public function addToRebuildList(string $blogId, string $year, string $month): bool {
+    public function addToRebuildList(string $blogId, string $year, string $month): bool
+    {
         $rebuildList = $this->getRebuildList();
         $key = "{$blogId}-{$year}-{$month}";
         
@@ -43,10 +45,11 @@ class RebuildTracker {
     /**
      * Add index for a file path to the rebuild list
      *
-     * @param string $path S3 file path
+     * @param  string $path S3 file path
      * @return bool True if added to rebuild list, false if path doesn't match pattern
      */
-    public function addPathToRebuildList(string $path): bool {
+    public function addPathToRebuildList(string $path): bool
+    {
         $path = ltrim($path, '/');
         
         // Try multisite pattern first
@@ -67,7 +70,8 @@ class RebuildTracker {
      *
      * @return array Array of rebuild keys in format "blogId-year-month"
      */
-    public function getRebuildList(): array {
+    public function getRebuildList(): array
+    {
         $file = $this->getRebuildListFile();
         
         if (!$this->fileSystem->fileExists($file)) {
@@ -88,7 +92,8 @@ class RebuildTracker {
      *
      * @return bool True on success, false on failure
      */
-    public function clearRebuildList(): bool {
+    public function clearRebuildList(): bool
+    {
         $file = $this->getRebuildListFile();
         
         if ($this->fileSystem->fileExists($file)) {
@@ -100,12 +105,13 @@ class RebuildTracker {
     /**
      * Remove an item from the rebuild list
      *
-     * @param string $blogId Blog ID
-     * @param string $year Year  
-     * @param string $month Month
+     * @param  string $blogId Blog ID
+     * @param  string $year   Year  
+     * @param  string $month  Month
      * @return bool True on success, false on failure
      */
-    public function removeFromRebuildList(string $blogId, string $year, string $month): bool {
+    public function removeFromRebuildList(string $blogId, string $year, string $month): bool
+    {
         $rebuildList = $this->getRebuildList();
         $key = "{$blogId}-{$year}-{$month}";
         
@@ -123,17 +129,19 @@ class RebuildTracker {
      *
      * @return string Full path to rebuild list file
      */
-    private function getRebuildListFile(): string {
+    private function getRebuildListFile(): string
+    {
         return $this->fileSystem->getCacheDir() . '/' . self::REBUILD_LIST_FILE;
     }
     
     /**
      * Save the rebuild list to file
      *
-     * @param array $rebuildList Array of rebuild keys
+     * @param  array $rebuildList Array of rebuild keys
      * @return bool True on success, false on failure
      */
-    private function saveRebuildList(array $rebuildList): bool {
+    private function saveRebuildList(array $rebuildList): bool
+    {
         $file = $this->getRebuildListFile();
         $data = json_encode($rebuildList, JSON_PRETTY_PRINT);
         

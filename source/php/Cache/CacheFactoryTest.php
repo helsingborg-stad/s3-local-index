@@ -97,11 +97,13 @@ class CacheFactoryTest extends TestCase
 
     private function getWpService(): FakeWpService
     {
-        return new FakeWpService([
+        return new FakeWpService(
+            [
             'wpCacheGet' => false,
             'wpCacheSet' => true,
             'wpCacheDelete' => true,
             'wpCacheFlush' => true
-        ]);
+            ]
+        );
     }
 }

@@ -11,9 +11,9 @@
     "scripts": {
         "test": "phpunit --no-coverage --testdox",
         "test:coverage": "XDEBUG_MODE=coverage phpunit --testdox",
-        "lint": "vendor/bin/phpcs",
+        "lint": "./vendor/bin/phpcs source/php",
         "lint:changed": "vendor/bin/phpcs-changed origin/main",
-        "fix": "vendor/bin/phpcbf",
+        "fix": "vendor/bin/phpcbf source/php",
         "fix:changed": "vendor/bin/phpcbf-changed origin/main"
     },
     "require": {

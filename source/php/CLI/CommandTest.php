@@ -164,26 +164,34 @@ class CommandTest extends TestCase
 
     private function getWpService(): FakeWpService
     {
-        return new FakeWpService([
+        return new FakeWpService(
+            [
             'addAction' => true,
             'addFilter' => true
-        ]);
+            ]
+        );
     }
 
     private function getS3Plugin(): Plugin
     {
         return new class extends Plugin {
-            public static function get_instance() {
+            public static function get_instance()
+            {
                 return new static();
             }
             
-            public function s3() {
+            public function s3()
+            {
                 return new class {
-                    public function getPaginator($operation, $args) {
+                    public function getPaginator($operation, $args)
+                    {
                         // Return empty paginator
                         return new class {
-                            public function __construct() {}
-                            public function getIterator() {
+                            public function __construct()
+                            {
+                            }
+                            public function getIterator()
+                            {
                                 return new \ArrayIterator([]);
                             }
                         };
@@ -191,7 +199,8 @@ class CommandTest extends TestCase
                 };
             }
             
-            public function get_s3_bucket() {
+            public function get_s3_bucket()
+            {
                 return 'test-bucket';
             }
         };
@@ -200,16 +209,24 @@ class CommandTest extends TestCase
     private function getCli(): WP_CLI
     {
         return new class extends WP_CLI {
-            public static function log($message) {}
-            public static function success($message) {}
-            public static function warning($message) {}
+            public static function log($message)
+            {
+            }
+            public static function success($message)
+            {
+            }
+            public static function warning($message)
+            {
+            }
         };
     }
 
     private function getFileSystem(): FileSystemInterface
     {
         return new class($this->testDir) implements FileSystemInterface {
-            public function __construct(private string $cacheDir) {}
+            public function __construct(private string $cacheDir)
+            {
+            }
 
             public function fileExists(string $path): bool
             {
@@ -276,18 +293,34 @@ class CommandTest extends TestCase
     private function getCacheFactory(): CacheFactory
     {
         return new class($this->getWpService()) extends CacheFactory {
-            public function __construct($wpService) {
+            public function __construct($wpService)
+            {
                 // Don't call parent constructor to avoid dependency issues
             }
 
             public function createDefault(): \S3_Local_Index\Cache\CacheInterface
             {
                 return new class implements \S3_Local_Index\Cache\CacheInterface {
-                    public function get(string $key) { return null; }
-                    public function set(string $key, $data, int $ttl = 0): bool { return true; }
-                    public function has(string $key): bool { return false; }
-                    public function delete(string $key): bool { return true; }
-                    public function clear(): bool { return true; }
+                    public function get(string $key)
+                    {
+                        return null; 
+                    }
+                    public function set(string $key, $data, int $ttl = 0): bool
+                    {
+                        return true; 
+                    }
+                    public function has(string $key): bool
+                    {
+                        return false; 
+                    }
+                    public function delete(string $key): bool
+                    {
+                        return true; 
+                    }
+                    public function clear(): bool
+                    {
+                        return true; 
+                    }
                 };
             }
         };

@@ -82,17 +82,23 @@ class AppTest extends TestCase
 
     private function getWpService(): FakeWpService
     {
-        return new FakeWpService([
+        return new FakeWpService(
+            [
             'addAction' => true,
             'addFilter' => true,
-            'applyFilters' => function($filter, $default) { return $default; }
-        ]);
+            'applyFilters' => function ($filter, $default) {
+                return $default; 
+            }
+            ]
+        );
     }
 
     private function getConfig(bool $enabled = true): ConfigInterface
     {
         return new class($enabled) implements ConfigInterface {
-            public function __construct(private bool $enabled) {}
+            public function __construct(private bool $enabled)
+            {
+            }
             
             public function isEnabled(): bool
             {

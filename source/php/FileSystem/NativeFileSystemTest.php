@@ -167,7 +167,9 @@ class NativeFileSystemTest extends TestCase
     private function getConfig(): ConfigInterface
     {
         return new class($this->testDir) implements ConfigInterface {
-            public function __construct(private string $cacheDir) {}
+            public function __construct(private string $cacheDir)
+            {
+            }
             
             public function isEnabled(): bool
             {

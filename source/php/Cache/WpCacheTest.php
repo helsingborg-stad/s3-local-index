@@ -117,10 +117,12 @@ class WpCacheTest extends TestCase
      */
     public function testClearFallsBackToWpCacheFlushWhenFlushGroupFails(): void
     {
-        $wpService = $this->getWpService([
+        $wpService = $this->getWpService(
+            [
             'wpCacheFlushGroup' => false,
             'wpCacheFlush' => true
-        ]);
+            ]
+        );
         $wpCache = new WpCache($wpService);
         
         $result = $wpCache->clear();

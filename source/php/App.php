@@ -23,81 +23,83 @@ use S3_Local_Index\Stream\Directory;
  */
 class App implements HookableInterface
 {
-  /**
-   * Constructor for the main application.
-   *
-   * @param WpService $wpService The WordPress service provider
-   * @param ConfigInterface $config The configuration provider
-   */
-  public function __construct(private WpService $wpService, private ConfigInterface $config){}
-
-  /**
-   * Add hooks to WordPress.
-   * 
-   * Registers WordPress action hooks for CLI and plugin initialization
-   * if the plugin is enabled according to configuration.
-   * 
-   * @return void
-   */
-  public function addHooks(): void
-  {
-    if (!$this->config->isEnabled()) {
-      return;
+    /**
+     * Constructor for the main application.
+     *
+     * @param WpService       $wpService The WordPress service provider
+     * @param ConfigInterface $config    The configuration provider
+     */
+    public function __construct(private WpService $wpService, private ConfigInterface $config)
+    {
     }
 
-    $this->wpService->addAction(
-      'cli_init', [$this, 'initCli'], 
-      $this->config->getCliPriority()
-    );
+    /**
+     * Add hooks to WordPress.
+     * 
+     * Registers WordPress action hooks for CLI and plugin initialization
+     * if the plugin is enabled according to configuration.
+     * 
+     * @return void
+     */
+    public function addHooks(): void
+    {
+        if (!$this->config->isEnabled()) {
+            return;
+        }
 
-    $this->wpService->addAction(
-      'plugins_loaded', [$this, 'initPlugin'], 
-      $this->config->getPluginPriority()
-    );
-  }
+        $this->wpService->addAction(
+            'cli_init', [$this, 'initCli'], 
+            $this->config->getCliPriority()
+        );
 
-  /**
-   * Initialize the CLI commands.
-   *
-   * Sets up the WP-CLI command interface for managing S3 indexes,
-   * including create, flush, and rebuild operations.
-   *
-   * @return void
-   */
-  public function initCli(): void
-  {
-    $fileSystem = new NativeFileSystem($this->config);
-    $rebuildTracker = new RebuildTracker($fileSystem);
-    $cacheFactory = new CacheFactory($this->wpService);
+        $this->wpService->addAction(
+            'plugins_loaded', [$this, 'initPlugin'], 
+            $this->config->getPluginPriority()
+        );
+    }
+
+    /**
+     * Initialize the CLI commands.
+     *
+     * Sets up the WP-CLI command interface for managing S3 indexes,
+     * including create, flush, and rebuild operations.
+     *
+     * @return void
+     */
+    public function initCli(): void
+    {
+        $fileSystem = new NativeFileSystem($this->config);
+        $rebuildTracker = new RebuildTracker($fileSystem);
+        $cacheFactory = new CacheFactory($this->wpService);
     
-    $cliCommand = new Command(
-      $this->wpService,
-      S3Plugin::class,
-      WP_CLI::class,
-      $fileSystem,
-      $rebuildTracker,
-      $cacheFactory
-    );
-    WP_CLI::add_command('s3-index', $cliCommand);
-  }
+        $cliCommand = new Command(
+            $this->wpService,
+            S3Plugin::class,
+            WP_CLI::class,
+            $fileSystem,
+            $rebuildTracker,
+            $cacheFactory
+        );
+        WP_CLI::add_command('s3-index', $cliCommand);
+    }
 
-  /**
-   * Initialize the plugin functionality.
-   *
-   * Sets up the stream wrapper that provides transparent access to S3 files
-   * through the WordPress filesystem API, with caching support.
-   *
-   * @return void
-   */
-  public function initPlugin(): void
-  {
-    $fileSystem   = new NativeFileSystem($this->config);
-    $cache        = (new CacheFactory($this->wpService))->createDefault();
+    /**
+     * Initialize the plugin functionality.
+     *
+     * Sets up the stream wrapper that provides transparent access to S3 files
+     * through the WordPress filesystem API, with caching support.
+     *
+     * @return void
+     */
+    public function initPlugin(): void
+    {
+        $fileSystem   = new NativeFileSystem($this->config);
+        $cache        = (new CacheFactory($this->wpService))->createDefault();
 
-    $reader       = new Reader($cache, $fileSystem);
-    $directory    = new Directory($reader);
-    $wrapper      = new Wrapper($reader, $directory);
+        $reader       = new Reader($cache, $fileSystem);
+        $directory    = new Directory($reader);
+        $wrapper      = new Wrapper($reader, $directory);
 
-    $wrapper->init();
-  }
+        $wrapper->init();
+    }
 }

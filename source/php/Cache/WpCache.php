@@ -9,7 +9,8 @@ use WpService\WpService;
  * WordPress object cache implementation
  * Uses WordPress's wp_cache_* functions for persistent caching
  */
-class WpCache implements CacheInterface {
+class WpCache implements CacheInterface
+{
     
     private string $group = 's3_local_index';
 
@@ -18,15 +19,18 @@ class WpCache implements CacheInterface {
      *
      * @param WpService $wpService The WordPress cache service.
      */
-    public function __construct(private WpService $wpService) {}
+    public function __construct(private WpService $wpService)
+    {
+    }
 
     /**
      * Get data from cache
      *
-     * @param string $key Cache key
+     * @param  string $key Cache key
      * @return mixed|null Returns cached data or null if not found
      */
-    public function get(string $key) {
+    public function get(string $key)
+    {
         $data = $this->wpService->wpCacheGet($key, $this->group);
         return $data === false ? null : $data;
     }
@@ -34,32 +38,35 @@ class WpCache implements CacheInterface {
     /**
      * Set data in cache
      *
-     * @param string $key Cache key
-     * @param mixed $data Data to cache
-     * @param int $ttl Time to live in seconds (optional, 0 = default expiration)
+     * @param  string $key  Cache key
+     * @param  mixed  $data Data to cache
+     * @param  int    $ttl  Time to live in seconds (optional, 0 = default expiration)
      * @return bool True on success, false on failure
      */
-    public function set(string $key, $data, int $ttl = 0): bool {
+    public function set(string $key, $data, int $ttl = 0): bool
+    {
         return $this->wpService->wpCacheSet($key, $data, $this->group, ($ttl > 0 ? $ttl : 0));
     }
 
     /**
      * Check if key exists in cache
      *
-     * @param string $key Cache key
+     * @param  string $key Cache key
      * @return bool True if key exists, false otherwise
      */
-    public function has(string $key): bool {
+    public function has(string $key): bool
+    {
         return $this->get($key) !== null;
     }
 
     /**
      * Delete data from cache
      *
-     * @param string $key Cache key
+     * @param  string $key Cache key
      * @return bool True on success, false on failure
      */
-    public function delete(string $key): bool {
+    public function delete(string $key): bool
+    {
         return $this->wpService->wpCacheDelete($key, $this->group);
     }
 
@@ -68,7 +75,8 @@ class WpCache implements CacheInterface {
      *
      * @return bool True on success, false on failure
      */
-    public function clear(): bool {
+    public function clear(): bool
+    {
         $result = $this->wpService->wpCacheFlushGroup($this->group);
         if (!$result) {
             return $this->wpService->wpCacheFlush();

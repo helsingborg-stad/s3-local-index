@@ -209,11 +209,26 @@ class CompositeCacheTest extends TestCase
     private function createFailingCache(): CacheInterface
     {
         return new class implements CacheInterface {
-            public function get(string $key) { return null; }
-            public function set(string $key, $data, int $ttl = 0): bool { return false; }
-            public function has(string $key): bool { return false; }
-            public function delete(string $key): bool { return false; }
-            public function clear(): bool { return false; }
+            public function get(string $key)
+            {
+                return null; 
+            }
+            public function set(string $key, $data, int $ttl = 0): bool
+            {
+                return false; 
+            }
+            public function has(string $key): bool
+            {
+                return false; 
+            }
+            public function delete(string $key): bool
+            {
+                return false; 
+            }
+            public function clear(): bool
+            {
+                return false; 
+            }
         };
     }
 }

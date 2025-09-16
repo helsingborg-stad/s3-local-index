@@ -12,8 +12,8 @@ interface DirectoryInterface
     /**
      * Open a directory for reading.
      *
-     * @param string $path Directory path to open
-     * @param int $options Stream options
+     * @param  string $path    Directory path to open
+     * @param  int    $options Stream options
      * @return bool True if directory opened successfully
      */
     public function dir_opendir(string $path, int $options): bool;

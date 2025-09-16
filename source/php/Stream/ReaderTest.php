@@ -221,7 +221,9 @@ class ReaderTest extends TestCase
     private function createCache(array $data = []): CacheInterface
     {
         return new class($data) implements CacheInterface {
-            public function __construct(private array $data) {}
+            public function __construct(private array $data)
+            {
+            }
 
             public function get(string $key)
             {
@@ -256,7 +258,9 @@ class ReaderTest extends TestCase
     private function createFileSystem(): FileSystemInterface
     {
         return new class($this->testDir) implements FileSystemInterface {
-            public function __construct(private string $cacheDir) {}
+            public function __construct(private string $cacheDir)
+            {
+            }
 
             public function fileExists(string $path): bool
             {

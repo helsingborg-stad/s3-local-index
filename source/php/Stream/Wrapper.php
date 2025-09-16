@@ -9,7 +9,8 @@ namespace S3_Local_Index\Stream;
  * for fast file operations. It replaces the default S3 wrapper to provide
  * better performance for file existence checks and directory listings.
  */
-class Wrapper {
+class Wrapper
+{
 
     private static bool $registered = false;
     private static ?Wrapper $instance = null;
@@ -17,7 +18,7 @@ class Wrapper {
     /**
      * Constructor with dependency injection
      *
-     * @param ReaderInterface $reader Stream reader for file operations
+     * @param ReaderInterface    $reader    Stream reader for file operations
      * @param DirectoryInterface $directory Directory handler for directory operations
      */
     public function __construct(
@@ -29,10 +30,11 @@ class Wrapper {
     /**
      * Set the singleton instance
      * 
-     * @param Wrapper $instance The wrapper instance to store
+     * @param  Wrapper $instance The wrapper instance to store
      * @return void
      */
-    public static function setInstance(?Wrapper $instance): void {
+    public static function setInstance(?Wrapper $instance): void
+    {
         self::$instance = $instance;
     }
 
@@ -41,7 +43,8 @@ class Wrapper {
      * 
      * @return Wrapper|null The stored wrapper instance or null if not set
      */
-    public static function getInstance(): ?Wrapper {
+    public static function getInstance(): ?Wrapper
+    {
         return self::$instance;
     }
 
@@ -53,7 +56,8 @@ class Wrapper {
      * 
      * @return void
      */
-    public function init(): void {
+    public function init(): void
+    {
         if (!class_exists('S3_Uploads\Plugin')) {
             error_log('[S3 Local Index] S3_Uploads plugin not found, wrapper not registered.');
             return;
@@ -83,13 +87,14 @@ class Wrapper {
     /**
      * Stream wrapper: Open file or URL.
      * 
-     * @param string $path The file or URL to open
-     * @param string $mode The file mode
-     * @param int $options Options bitmask
-     * @param string|null $opened_path The full path actually opened
+     * @param  string      $path        The file or URL to open
+     * @param  string      $mode        The file mode
+     * @param  int         $options     Options bitmask
+     * @param  string|null $opened_path The full path actually opened
      * @return bool True on success, false on failure
      */
-    public function stream_open($path, $mode, $options, &$opened_path) {
+    public function stream_open($path, $mode, $options, &$opened_path)
+    {
         $instance = self::getInstance();
         return $instance ? $instance->reader->stream_open($path, $mode, $options, $opened_path) : false;
     }
@@ -97,10 +102,11 @@ class Wrapper {
     /**
      * Stream wrapper: Read from stream.
      * 
-     * @param int $count Maximum number of bytes to read
+     * @param  int $count Maximum number of bytes to read
      * @return string Data read from stream
      */
-    public function stream_read($count) {
+    public function stream_read($count)
+    {
         $instance = self::getInstance();
         return $instance ? $instance->reader->stream_read($count) : '';
     }
@@ -110,7 +116,8 @@ class Wrapper {
      * 
      * @return bool True if end-of-file reached, false otherwise
      */
-    public function stream_eof() {
+    public function stream_eof()
+    {
         $instance = self::getInstance();
         return $instance ? $instance->reader->stream_eof() : true;
     }
@@ -118,11 +125,12 @@ class Wrapper {
     /**
      * Stream wrapper: Retrieve information about a file.
      * 
-     * @param string $path The file path to stat
-     * @param int $flags Flags
+     * @param  string $path  The file path to stat
+     * @param  int    $flags Flags
      * @return array|false File statistics or false on failure
      */
-    public function url_stat($path, $flags) {
+    public function url_stat($path, $flags)
+    {
         $instance = self::getInstance();
         return $instance ? $instance->reader->url_stat($path, $flags) : false;
     }
@@ -130,11 +138,12 @@ class Wrapper {
     /**
      * Stream wrapper: Open directory for reading.
      * 
-     * @param string $path The directory path to open
-     * @param int $options Options
+     * @param  string $path    The directory path to open
+     * @param  int    $options Options
      * @return bool True on success, false on failure
      */
-    public function dir_opendir($path, $options) {
+    public function dir_opendir($path, $options)
+    {
         $instance = self::getInstance();
         return $instance ? $instance->directory->dir_opendir($path, $options) : false;
     }
@@ -144,7 +153,8 @@ class Wrapper {
      * 
      * @return string|false Next filename or false when done
      */
-    public function dir_readdir() {
+    public function dir_readdir()
+    {
         $instance = self::getInstance();
         return $instance ? $instance->directory->dir_readdir() : false;
     }
@@ -154,7 +164,8 @@ class Wrapper {
      * 
      * @return void
      */
-    public function dir_closedir() {
+    public function dir_closedir()
+    {
         $instance = self::getInstance();
         if ($instance) {
             $instance->directory->dir_closedir();
