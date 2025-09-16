@@ -169,14 +169,22 @@ class Reader implements ReaderInterface
      * Read data from the stream.
      * 
      * Implementation of PHP's stream_read for the stream wrapper.
-     * Reads data from the actual S3 file.
+     * Reads data from the actual S3 file via fallback wrapper.
      * 
      * @param  int $count Number of bytes to read
      * @return string Data read from the stream
      */
     public function stream_read(int $count): string
     {
-        $data = file_get_contents('s3://' . $this->key);
+        // Use backup protocol to avoid recursion
+        $fallbackPath = 's3_backup://' . $this->key;
+        $data = @file_get_contents($fallbackPath);
+        
+        // If fallback fails, return empty string
+        if ($data === false) {
+            return '';
+        }
+        
         $chunk = substr($data, $this->position, $count);
         $this->position += strlen($chunk);
         return $chunk;
@@ -186,12 +194,21 @@ class Reader implements ReaderInterface
      * Check if end of file has been reached.
      * 
      * Implementation of PHP's stream_eof for the stream wrapper.
+     * Uses fallback wrapper to avoid recursion.
      * 
      * @return bool True if at end of file, false otherwise
      */
     public function stream_eof(): bool
     {
-        $data = file_get_contents('s3://' . $this->key);
+        // Use backup protocol to avoid recursion
+        $fallbackPath = 's3_backup://' . $this->key;
+        $data = @file_get_contents($fallbackPath);
+        
+        // If fallback fails, consider it EOF
+        if ($data === false) {
+            return true;
+        }
+        
         return $this->position >= strlen($data);
     }
 
