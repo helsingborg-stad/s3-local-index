@@ -12,7 +12,7 @@ use S3_Local_Index\FileSystem\FileSystemInterface;
  * for fast file existence checks and metadata operations. It supports both
  * single-site and multisite WordPress configurations.
  */
-class Reader
+class Reader implements ReaderInterface
 {
 
     private array $index = [];
@@ -205,7 +205,7 @@ class Reader
      * @param  int    $flags Stat flags
      * @return array|false File statistics or false if file doesn't exist
      */
-    public function url_stat(string $path, int $flags)
+    public function url_stat(string $path, int $flags) : array|false
     {
         $this->index = $this->loadIndex($path);
         $normalized = $this->normalize($path);
@@ -218,7 +218,7 @@ class Reader
      * @param  string $path Path to normalize
      * @return string Normalized path
      */
-    private function normalize(string $path): string
+    public function normalize(string $path): string
     {
         return ltrim(str_replace('s3://', '', $path), '/');
     }

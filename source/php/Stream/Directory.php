@@ -9,7 +9,7 @@ namespace S3_Local_Index\Stream;
  * using a local index to quickly enumerate files without making
  * expensive S3 API calls.
  */
-class Directory
+class Directory implements DirectoryInterface
 {
 
     private array $dirKeys = [];

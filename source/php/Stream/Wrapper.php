@@ -9,7 +9,7 @@ namespace S3_Local_Index\Stream;
  * for fast file operations. It replaces the default S3 wrapper to provide
  * better performance for file existence checks and directory listings.
  */
-class Wrapper
+class Wrapper implements WrapperInterface
 {
 
     private static bool $registered = false;

@@ -11,10 +11,11 @@
  */
 
 use S3LocalIndex\App;
+use WpService\Implementations\NativeWpService;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$wpService  = new WpService\WpService();
+$wpService  = new NativeWpService();
 $config     = new S3LocalIndex\Config\Config($wpService);
 
 $app = new App($wpService, $config);
