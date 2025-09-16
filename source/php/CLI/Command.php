@@ -33,7 +33,7 @@ class Command
     public function __construct(
         private WpService $wpService, 
         private Plugin $s3, 
-        private WP_CLI $cli,
+        private $cli,
         private FileSystemInterface $fileSystem,
         private RebuildTrackerInterface $rebuildTracker,
         private CacheFactory $cacheFactory
