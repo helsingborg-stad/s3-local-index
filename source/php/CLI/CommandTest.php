@@ -5,7 +5,7 @@ namespace S3_Local_Index\CLI;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 use S3_Local_Index\FileSystem\FileSystemInterface;
-use S3_Local_Index\Rebuild\RebuildTracker;
+use S3_Local_Index\Rebuild\RebuildTrackerInterface;
 use S3_Local_Index\Cache\CacheFactory;
 use S3_Uploads\Plugin;
 use WP_CLI;

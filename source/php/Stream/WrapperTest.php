@@ -145,9 +145,9 @@ class WrapperTest extends TestCase
         }
     }
 
-    private function createReader(): Reader
+    private function createReader(): ReaderInterface
     {
-        return new class {
+        return new class implements ReaderInterface {
             public function loadIndex(string $path): array
             {
                 return [];
@@ -168,28 +168,42 @@ class WrapperTest extends TestCase
                 return true;
             }
 
-            // Mock stream methods
             public function stream_open(string $path, string $mode, int $options, &$opened_path): bool
             {
                 return true;
             }
 
-            public function url_stat(string $path, int $flags)
+            public function url_stat(string $path, int $flags): array|false
             {
                 return false;
+            }
+
+            public function normalize(string $path): string
+            {
+                return $path;
+            }
+
+            public function stream_read(int $count): string
+            {
+                return '';
+            }
+
+            public function stream_eof(): bool
+            {
+                return true;
             }
         };
     }
 
-    private function createDirectory(): Directory
+    private function createDirectory(): DirectoryInterface
     {
-        return new class {
+        return new class implements DirectoryInterface {
             public function dir_opendir(string $path, int $options): bool
             {
                 return true;
             }
 
-            public function dir_readdir()
+            public function dir_readdir(): false|string
             {
                 return false;
             }
@@ -199,9 +213,9 @@ class WrapperTest extends TestCase
                 return true;
             }
 
-            public function dir_closedir(): bool
+            public function dir_closedir(): void
             {
-                return true;
+                // No action needed for this stub
             }
         };
     }

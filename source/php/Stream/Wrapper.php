@@ -17,12 +17,12 @@ class Wrapper {
     /**
      * Constructor with dependency injection
      *
-     * @param Reader $reader Stream reader for file operations
-     * @param Directory $directory Directory handler for directory operations
+     * @param ReaderInterface $reader Stream reader for file operations
+     * @param DirectoryInterface $directory Directory handler for directory operations
      */
     public function __construct(
-        private Reader $reader,
-        private Directory $directory
+        private ReaderInterface $reader,
+        private DirectoryInterface $directory
     ) {
     }
 
@@ -32,7 +32,7 @@ class Wrapper {
      * @param Wrapper $instance The wrapper instance to store
      * @return void
      */
-    public static function setInstance(Wrapper $instance): void {
+    public static function setInstance(?Wrapper $instance): void {
         self::$instance = $instance;
     }
 
