@@ -20,7 +20,8 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
-        $wrapper = new Wrapper($reader, $directory);
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $directory);
 
         $this->assertInstanceOf(Wrapper::class, $wrapper);
     }
@@ -32,7 +33,8 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
-        $wrapper = new Wrapper($reader, $directory);
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $directory);
 
         Wrapper::setInstance($wrapper);
 
@@ -56,7 +58,8 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
-        $wrapper = new Wrapper($reader, $directory);
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $directory);
 
         Wrapper::setInstance($wrapper);
         $result = Wrapper::getInstance();
@@ -71,7 +74,8 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
-        $wrapper = new Wrapper($reader, $directory);
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $directory);
 
         try {
             $wrapper->init();
@@ -88,7 +92,8 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
-        $wrapper = new Wrapper($reader, $directory);
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $directory);
 
         if (method_exists($wrapper, 'stream_open')) {
             try {
@@ -110,7 +115,8 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
-        $wrapper = new Wrapper($reader, $directory);
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $directory);
 
         if (method_exists($wrapper, 'url_stat')) {
             try {
@@ -131,7 +137,8 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $directory = $this->createDirectory();
-        $wrapper = new Wrapper($reader, $directory);
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $directory);
 
         if (method_exists($wrapper, 'dir_opendir')) {
             try {

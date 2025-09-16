@@ -98,7 +98,10 @@ class App implements HookableInterface
 
         $reader       = new Reader($cache, $fileSystem);
         $directory    = new Directory($reader);
-        $wrapper      = new Wrapper($reader, $directory);
+
+        //Setup and register the stream wrapper
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $directory);
 
         $wrapper->init();
     }

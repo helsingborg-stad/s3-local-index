@@ -7,7 +7,7 @@ use S3_Local_Index\FileSystem\FileSystemInterface;
 /**
  * Tracks indexes that need to be rebuilt
  */
-class RebuildTracker
+class RebuildTracker implements RebuildTrackerInterface
 {
     
     private const REBUILD_LIST_FILE = 's3-index-rebuild-list.json';

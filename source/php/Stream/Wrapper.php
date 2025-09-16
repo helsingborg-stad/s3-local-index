@@ -14,17 +14,27 @@ class Wrapper implements WrapperInterface
 
     private static bool $registered = false;
     private static ?Wrapper $instance = null;
+
+    private static ReaderInterface $reader;
+    private static DirectoryInterface $directory;
     
     /**
-     * Constructor with dependency injection
+     * Parameterless constructor required by PHP stream wrapper system.
+     */
+    public function __construct()
+    {
+    }
+
+    /**
+     * Set dependencies statically.
      *
      * @param ReaderInterface    $reader    Stream reader for file operations
      * @param DirectoryInterface $directory Directory handler for directory operations
      */
-    public function __construct(
-        private ReaderInterface $reader,
-        private DirectoryInterface $directory
-    ) {
+    public static function setDependencies(ReaderInterface $reader, DirectoryInterface $directory): void
+    {
+        self::$reader = $reader;
+        self::$directory = $directory;
     }
 
     /**
@@ -95,8 +105,7 @@ class Wrapper implements WrapperInterface
      */
     public function stream_open($path, $mode, $options, &$opened_path)
     {
-        $instance = self::getInstance();
-        return $instance ? $instance->reader->stream_open($path, $mode, $options, $opened_path) : false;
+        return self::$reader->stream_open($path, $mode, $options, $opened_path);
     }
 
     /**
@@ -107,8 +116,7 @@ class Wrapper implements WrapperInterface
      */
     public function stream_read($count)
     {
-        $instance = self::getInstance();
-        return $instance ? $instance->reader->stream_read($count) : '';
+        return self::$reader->stream_read($count);
     }
 
     /**
@@ -118,8 +126,7 @@ class Wrapper implements WrapperInterface
      */
     public function stream_eof()
     {
-        $instance = self::getInstance();
-        return $instance ? $instance->reader->stream_eof() : true;
+        return self::$reader->stream_eof();
     }
 
     /**
@@ -131,8 +138,7 @@ class Wrapper implements WrapperInterface
      */
     public function url_stat($path, $flags)
     {
-        $instance = self::getInstance();
-        return $instance ? $instance->reader->url_stat($path, $flags) : false;
+        return self::$reader->url_stat($path, $flags);
     }
 
     /**
@@ -144,8 +150,7 @@ class Wrapper implements WrapperInterface
      */
     public function dir_opendir($path, $options)
     {
-        $instance = self::getInstance();
-        return $instance ? $instance->directory->dir_opendir($path, $options) : false;
+        return self::$directory->dir_opendir($path, $options);
     }
 
     /**
@@ -155,8 +160,7 @@ class Wrapper implements WrapperInterface
      */
     public function dir_readdir()
     {
-        $instance = self::getInstance();
-        return $instance ? $instance->directory->dir_readdir() : false;
+        return self::$directory->dir_readdir();
     }
 
     /**
@@ -166,9 +170,6 @@ class Wrapper implements WrapperInterface
      */
     public function dir_closedir()
     {
-        $instance = self::getInstance();
-        if ($instance) {
-            $instance->directory->dir_closedir();
-        }
+        self::$directory->dir_closedir();
     }
 }
