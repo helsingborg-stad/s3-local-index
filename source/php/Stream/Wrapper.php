@@ -11,6 +11,7 @@ namespace S3_Local_Index\Stream;
  */
 class Wrapper implements WrapperInterface
 {
+    public $context; // Required for PHP stream wrapper
 
     private static bool $registered = false;
     private static ?Wrapper $instance = null;
