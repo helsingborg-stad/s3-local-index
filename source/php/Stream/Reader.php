@@ -134,16 +134,8 @@ class Reader implements ReaderInterface
         $normalized = $this->normalize($path);
         $index      = $this->loadIndex($normalized);
         
-        //No index found, return false to delegate to original wrapper
         if (empty($index)) {
             return false;
-        }
-
-        if (has_filter('image_downsize')) {
-            return isset($index[$normalized]) ? [
-                'size' => 1,
-                'mtime' => time()
-            ] : false;
         }
 
         return isset($index[$normalized]) ? [
@@ -179,7 +171,7 @@ class Reader implements ReaderInterface
             return false;
         }
 
-        $blogId = $details['blogId'] ?: '1';
+        $blogId = $details['blogId'];
         $year   = $details['year'];
         $month  = $details['month'];
 
@@ -215,7 +207,7 @@ class Reader implements ReaderInterface
             return false;
         }
 
-        $blogId = $details['blogId'] ?: '1';
+        $blogId = $details['blogId'];
         $year   = $details['year'];
         $month  = $details['month'];
 
