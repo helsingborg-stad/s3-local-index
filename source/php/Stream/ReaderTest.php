@@ -5,6 +5,8 @@ namespace S3_Local_Index\Stream;
 use PHPUnit\Framework\TestCase;
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
+use S3LocalIndex\Parser\Parser;
+use S3_Local_Index\Logger\Logger;
 
 class ReaderTest extends TestCase
 {
@@ -40,7 +42,7 @@ class ReaderTest extends TestCase
      */
     public function testClassCanBeInstantiated(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
 
         $this->assertInstanceOf(Reader::class, $reader);
     }
@@ -50,7 +52,7 @@ class ReaderTest extends TestCase
      */
     public function testExtractIndexDetailsWorksWithMultisitePattern(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'uploads/networks/1/sites/5/2023/01/image.jpg';
         $result = $reader->extractIndexDetails($path);
@@ -66,7 +68,7 @@ class ReaderTest extends TestCase
      */
     public function testExtractIndexDetailsWorksWithSingleSitePattern(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'uploads/2023/01/image.jpg';
         $result = $reader->extractIndexDetails($path);
@@ -82,7 +84,7 @@ class ReaderTest extends TestCase
      */
     public function testExtractIndexDetailsHandlesLeadingSlash(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = '/uploads/2023/01/image.jpg';
         $result = $reader->extractIndexDetails($path);
@@ -98,7 +100,7 @@ class ReaderTest extends TestCase
      */
     public function testExtractIndexDetailsReturnsNullForInvalidPattern(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'invalid/path/structure.jpg';
         $result = $reader->extractIndexDetails($path);
@@ -111,7 +113,7 @@ class ReaderTest extends TestCase
      */
     public function testGetCacheKeyForPathReturnsCorrectCacheKey(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'uploads/2023/01/image.jpg';
         $result = $reader->getCacheKeyForPath($path);
@@ -124,7 +126,7 @@ class ReaderTest extends TestCase
      */
     public function testGetCacheKeyForPathReturnsNullForInvalidPattern(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'invalid/path/structure.jpg';
         $result = $reader->getCacheKeyForPath($path);
@@ -137,7 +139,7 @@ class ReaderTest extends TestCase
      */
     public function testFlushCacheForPathDeletesCacheKey(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'uploads/2023/01/image.jpg';
         $result = $reader->flushCacheForPath($path);
@@ -150,7 +152,7 @@ class ReaderTest extends TestCase
      */
     public function testFlushCacheForPathReturnsFalseForInvalidPattern(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'invalid/path/structure.jpg';
         $result = $reader->flushCacheForPath($path);
@@ -165,7 +167,7 @@ class ReaderTest extends TestCase
     {
         $cachedData = ['uploads/2023/01/image1.jpg', 'uploads/2023/01/image2.jpg'];
         $cache = $this->createCache(['index_1_2023_01' => $cachedData]);
-        $reader = new Reader($cache, $this->createFileSystem());
+        $reader = new Reader($cache, $this->createFileSystem(), new Logger(), new Parser());
         
         $path = 'uploads/2023/01/image.jpg';
         $result = $reader->loadIndex($path);
@@ -182,7 +184,7 @@ class ReaderTest extends TestCase
         $indexFile = $this->fileSystem->getCacheDir() . '/s3-index-1-2023-01.json';
         file_put_contents($indexFile, json_encode($indexData));
         
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
 
         $path = 'uploads/2023/01/image.jpg';
         $result = $reader->loadIndex($path);
@@ -195,7 +197,7 @@ class ReaderTest extends TestCase
      */
     public function testLoadIndexReturnsEmptyArrayWhenFileDoesNotExist(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'uploads/2023/01/image.jpg';
         $result = $reader->loadIndex($path);
@@ -209,7 +211,7 @@ class ReaderTest extends TestCase
      */
     public function testLoadIndexReturnsEmptyArrayForInvalidPattern(): void
     {
-        $reader = new Reader($this->cache, $this->fileSystem);
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
         
         $path = 'invalid/path/structure.jpg';
         $result = $reader->loadIndex($path);

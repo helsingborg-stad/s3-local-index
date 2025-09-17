@@ -5,6 +5,7 @@ namespace S3_Local_Index\Stream;
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Logger\LoggerInterface;
+use S3LocalIndex\Parser\ParserInterface;
 
 /**
  * Stream reader for S3 files with local index support.
@@ -20,11 +21,14 @@ class Reader implements ReaderInterface
      *
      * @param CacheInterface      $cache      Cache interface for storing index data
      * @param FileSystemInterface $fileSystem File system interface for accessing index files
+     * @param LoggerInterface     $logger     Logger interface for debugging messages
+     * @param ParserInterface     $parser     Parser interface for path operations
      */
     public function __construct(
         private CacheInterface $cache,
         private FileSystemInterface $fileSystem,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private ParserInterface $parser
     ) {
     }
 
@@ -36,16 +40,7 @@ class Reader implements ReaderInterface
      */
     public function extractIndexDetails(string $path): ?array
     {
-        $path = ltrim($path, '/');
-        if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $path, $m)) {
-            return [
-                'blogId' => $m[1] ?? '1', // if multisite captured, use it; otherwise default to 1
-                'year'   => $m[2],
-                'month'  => $m[3],
-            ];
-        }
-        
-        return null;
+        return $this->parser->getPathDetails($path);
     }
 
     /**
@@ -61,7 +56,7 @@ class Reader implements ReaderInterface
             return false;
         }
 
-        $cacheKey = "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
+        $cacheKey = $this->parser->createCacheIdentifier($details);
         
         return $this->cache->delete($cacheKey);
     }
@@ -79,7 +74,7 @@ class Reader implements ReaderInterface
             return null;
         }
 
-        return "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
+        return $this->parser->createCacheIdentifier($details);
     }
 
     /**
@@ -100,9 +95,9 @@ class Reader implements ReaderInterface
 
         $blogId  = $indexDetails['blogId'] ?: '1';
         $year    = $indexDetails['year'];
-        $month   = $indexDetails['month'];
+        $month   = sprintf('%02d', $indexDetails['month']); // Format month with leading zero
 
-        $cacheKey   = "index_{$blogId}_{$year}_{$month}";
+        $cacheKey   = $this->parser->createCacheIdentifier($indexDetails);
         $cachedData = $this->cache->get($cacheKey);
         if ($cachedData !== null) {
             return $cachedData;
@@ -168,6 +163,6 @@ class Reader implements ReaderInterface
      */
     public function normalize(string $path): string
     {
-        return ltrim(str_replace('s3://', '', $path), '/');
+        return $this->parser->normalizePath($path);
     }
 }

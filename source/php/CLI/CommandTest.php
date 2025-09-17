@@ -9,6 +9,8 @@ use S3_Local_Index\Rebuild\RebuildTrackerInterface;
 use S3_Local_Index\Cache\CacheFactory;
 use S3_Uploads\Plugin;
 use WP_CLI;
+use S3LocalIndex\Parser\Parser;
+use S3_Local_Index\Logger\Logger;
 
 class CommandTest extends TestCase
 {
@@ -46,7 +48,9 @@ class CommandTest extends TestCase
             $this->getCli(),
             $this->getFileSystem(),
             $this->getRebuildTracker(),
-            $this->getCacheFactory()
+            $this->getCacheFactory(),
+            $this->getParser(),
+            $this->getLogger()
         );
 
         $this->assertInstanceOf(Command::class, $command);
@@ -63,7 +67,9 @@ class CommandTest extends TestCase
             $this->getCli(),
             $this->getFileSystem(),
             $this->getRebuildTracker(),
-            $this->getCacheFactory()
+            $this->getCacheFactory(),
+            $this->getParser(),
+            $this->getLogger()
         );
 
         try {
@@ -85,7 +91,9 @@ class CommandTest extends TestCase
             $this->getCli(),
             $this->getFileSystem(),
             $this->getRebuildTracker(),
-            $this->getCacheFactory()
+            $this->getCacheFactory(),
+            $this->getParser(),
+            $this->getLogger()
         );
 
         try {
@@ -107,7 +115,9 @@ class CommandTest extends TestCase
             $this->getCli(),
             $this->getFileSystem(),
             $this->getRebuildTracker(),
-            $this->getCacheFactory()
+            $this->getCacheFactory(),
+            $this->getParser(),
+            $this->getLogger()
         );
 
         try {
@@ -129,7 +139,9 @@ class CommandTest extends TestCase
             $this->getCli(),
             $this->getFileSystem(),
             $this->getRebuildTracker(),
-            $this->getCacheFactory()
+            $this->getCacheFactory(),
+            $this->getParser(),
+            $this->getLogger()
         );
 
         try {
@@ -151,7 +163,9 @@ class CommandTest extends TestCase
             $this->getCli(),
             $this->getFileSystem(),
             $this->getRebuildTracker(),
-            $this->getCacheFactory()
+            $this->getCacheFactory(),
+            $this->getParser(),
+            $this->getLogger()
         );
 
         try {
@@ -324,5 +338,15 @@ class CommandTest extends TestCase
                 };
             }
         };
+    }
+
+    private function getParser(): Parser
+    {
+        return new Parser();
+    }
+
+    private function getLogger(): Logger
+    {
+        return new Logger();
     }
 }

@@ -9,6 +9,8 @@ use WP_CLI;
 use Exception;
 use S3_Local_Index\Rebuild\RebuildTrackerInterface;
 use WpService\WpService;
+use S3LocalIndex\Parser\ParserInterface;
+use S3_Local_Index\Logger\LoggerInterface;
 
 /**
  * WP-CLI command handler for S3 Local Index operations.
@@ -29,6 +31,8 @@ class Command
      * @param FileSystemInterface|null                    $fileSystem     File system handler (optional, defaults to NativeFileSystem)
      * @param RebuildTrackerInterface|null                $rebuildTracker Rebuild tracking service (optional)
      * @param CacheFactory|null                           $cacheFactory   Cache factory service (optional)
+     * @param ParserInterface|null                        $parser         Parser for path operations (optional)
+     * @param LoggerInterface|null                        $logger         Logger for debug messages (optional)
      */
     public function __construct(
         private WpService $wpService, 
@@ -36,7 +40,9 @@ class Command
         private $cli,
         private FileSystemInterface $fileSystem,
         private RebuildTrackerInterface $rebuildTracker,
-        private CacheFactory $cacheFactory
+        private CacheFactory $cacheFactory,
+        private ParserInterface $parser,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -95,13 +101,7 @@ class Command
                 foreach ($page['Contents'] as $obj) {
                     $key = $obj['Key'];
 
-                    if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $key, $m)) {
-                        $locationDetails = [
-                            'blogId' => $m[1] ?? '1', // if multisite captured, use it; otherwise default to 1
-                            'year'   => $m[2],
-                            'month'  => $m[3],
-                        ];
-                    }
+                    $locationDetails = $this->parser->getPathDetails($key);
                     
                     if (!empty($locationDetails)) {
                         extract($locationDetails);
@@ -119,9 +119,10 @@ class Command
         foreach ($filesBySite as $blogId => $years) {
             foreach ($years as $year => $months) {
                 foreach ($months as $month => $keys) {
-                    $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$month}.json";
+                    $formattedMonth = sprintf('%02d', $month); // Ensure leading zero format
+                    $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$formattedMonth}.json";
                     $this->fileSystem->filePutContents($file, json_encode($keys, JSON_PRETTY_PRINT));
-                    $this->cli::log("Written index for blog {$blogId} {$year}-{$month}. [File: {$file}] [Items: " . count($keys) . "]");
+                    $this->cli::log("Written index for blog {$blogId} {$year}-{$formattedMonth}. [File: {$file}] [Items: " . count($keys) . "]");
                 }
             }
         }
@@ -170,7 +171,7 @@ class Command
 
         // Create reader instance to flush cache
         $cache = $this->cacheFactory->createDefault();
-        $reader = new \S3_Local_Index\Stream\Reader($cache, $this->fileSystem);
+        $reader = new \S3_Local_Index\Stream\Reader($cache, $this->fileSystem, $this->logger, $this->parser);
         
         // Flush cache for the specific path
         $flushed = $reader->flushCacheForPath($path);
@@ -253,7 +254,12 @@ class Command
             [$blogId, $year, $month] = $parts;
             
             // Flush cache for this specific index
-            $cacheKey = "index_{$blogId}_{$year}_{$month}";
+            $details = [
+                'blogId' => (int) $blogId,
+                'year' => (int) $year,
+                'month' => (int) $month,
+            ];
+            $cacheKey = $this->parser->createCacheIdentifier($details);
             $cache = $this->cacheFactory->createDefault();
             $cache->delete($cacheKey);
 
@@ -291,10 +297,11 @@ class Command
                 }
 
                 // Write the index file
-                $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$month}.json";
+                $formattedMonth = sprintf('%02d', $month); // Ensure leading zero format
+                $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$formattedMonth}.json";
                 $this->fileSystem->filePutContents($file, json_encode($files, JSON_PRETTY_PRINT));
                 
-                $this->cli::log("[S3 Local Index] Rebuilt index for blog {$blogId} {$year}-{$month}, count: {$count}");
+                $this->cli::log("[S3 Local Index] Rebuilt index for blog {$blogId} {$year}-{$formattedMonth}, count: {$count}");
 
                 // Remove from rebuild list
                 $this->rebuildTracker->removeFromRebuildList($blogId, $year, $month);
