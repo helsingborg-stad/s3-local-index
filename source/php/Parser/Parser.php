@@ -1,11 +1,5 @@
 <?php
 
-/**
- * Parser implementation for S3 file paths.
- * 
- * @package S3LocalIndex
- */
-
 namespace S3LocalIndex\Parser;
 
 /**
@@ -31,9 +25,9 @@ class Parser implements ParserInterface
         $path = ltrim($path, '/');
         if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $path, $m)) {
             return [
-            'blogId' => (int) $m[1] ?: 1,
-            'year'   => (int) $m[2],
-            'month'  => (int) $m[3],
+            'blogId' => $m[1] ?: 1,
+            'year'   => $m[2],
+            'month'  => $m[3],
             ];
         }
         return null;
@@ -58,7 +52,6 @@ class Parser implements ParserInterface
      */
     public function createCacheIdentifier(array $details): string
     {
-        $month = sprintf('%02d', $details['month']); // Ensure leading zero format
-        return "index_{$details['blogId']}_{$details['year']}_{$month}";
+        return "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
     }
 }

@@ -1,11 +1,5 @@
 <?php
 
-/**
- * Interface for parsing S3 file paths and extracting path details.
- * 
- * @package S3LocalIndex
- */
-
 namespace S3LocalIndex\Parser;
 
 /**
