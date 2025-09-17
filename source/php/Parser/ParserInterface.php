@@ -19,4 +19,12 @@ interface ParserInterface
    * @return string
    */
   public function normalizePath(string $path): string;
+
+  /**
+   * Create a cache identifier from path details.
+   *
+   * @param array $details
+   * @return string
+   */
+  public function createCacheIdentifier(array $details): string;
 }

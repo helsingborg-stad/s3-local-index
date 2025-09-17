@@ -32,4 +32,11 @@ class Parser implements ParserInterface
     return ltrim(preg_replace('#^s3://#', '', $path), '/');
   }
 
+  /**
+   * @inheritDoc
+   */
+  public function createCacheIdentifier(array $details): string
+  {
+    return "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
+  }
 }
