@@ -5,7 +5,6 @@ namespace S3_Local_Index\CLI;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 use S3_Local_Index\FileSystem\FileSystemInterface;
-use S3_Local_Index\Rebuild\RebuildTrackerInterface;
 use S3_Local_Index\Cache\CacheFactory;
 use S3_Uploads\Plugin;
 use WP_CLI;
@@ -47,7 +46,6 @@ class CommandTest extends TestCase
             $this->getS3Plugin(),
             $this->getCli(),
             $this->getFileSystem(),
-            $this->getRebuildTracker(),
             $this->getCacheFactory(),
             $this->getParser(),
             $this->getLogger()
@@ -66,7 +64,6 @@ class CommandTest extends TestCase
             $this->getS3Plugin(),
             $this->getCli(),
             $this->getFileSystem(),
-            $this->getRebuildTracker(),
             $this->getCacheFactory(),
             $this->getParser(),
             $this->getLogger()
@@ -90,7 +87,6 @@ class CommandTest extends TestCase
             $this->getS3Plugin(),
             $this->getCli(),
             $this->getFileSystem(),
-            $this->getRebuildTracker(),
             $this->getCacheFactory(),
             $this->getParser(),
             $this->getLogger()
@@ -114,7 +110,6 @@ class CommandTest extends TestCase
             $this->getS3Plugin(),
             $this->getCli(),
             $this->getFileSystem(),
-            $this->getRebuildTracker(),
             $this->getCacheFactory(),
             $this->getParser(),
             $this->getLogger()
@@ -125,54 +120,6 @@ class CommandTest extends TestCase
             $this->assertTrue(true, 'flush method executed without exceptions.');
         } catch (\Exception $e) {
             $this->fail('flush method threw an exception: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * @testdox rebuild method does not throw an exception
-     */
-    public function testRebuildMethodDoesNotThrowException(): void
-    {
-        $command = new Command(
-            $this->getWpService(),
-            $this->getS3Plugin(),
-            $this->getCli(),
-            $this->getFileSystem(),
-            $this->getRebuildTracker(),
-            $this->getCacheFactory(),
-            $this->getParser(),
-            $this->getLogger()
-        );
-
-        try {
-            $command->rebuild();
-            $this->assertTrue(true, 'rebuild method executed without exceptions.');
-        } catch (\Exception $e) {
-            $this->fail('rebuild method threw an exception: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * @testdox rebuild method with all flag does not throw an exception
-     */
-    public function testRebuildMethodWithAllFlagDoesNotThrowException(): void
-    {
-        $command = new Command(
-            $this->getWpService(),
-            $this->getS3Plugin(),
-            $this->getCli(),
-            $this->getFileSystem(),
-            $this->getRebuildTracker(),
-            $this->getCacheFactory(),
-            $this->getParser(),
-            $this->getLogger()
-        );
-
-        try {
-            $command->rebuild([], ['all' => true]);
-            $this->assertTrue(true, 'rebuild method with all flag executed without exceptions.');
-        } catch (\Exception $e) {
-            $this->fail('rebuild method with all flag threw an exception: ' . $e->getMessage());
         }
     }
 
@@ -270,36 +217,6 @@ class CommandTest extends TestCase
             public function getCacheDir(): string
             {
                 return $this->cacheDir;
-            }
-        };
-    }
-
-    private function getRebuildTracker(): RebuildTrackerInterface
-    {
-        return new class implements \S3_Local_Index\Rebuild\RebuildTrackerInterface {
-            public function getRebuildList(): array
-            {
-                return [];
-            }
-
-            public function addToRebuildList(string $blogId, string $year, string $month): bool
-            {
-                return true;
-            }
-
-            public function addPathToRebuildList(string $path): bool
-            {
-                return true;
-            }
-
-            public function clearRebuildList(): bool
-            {
-                return true;
-            }
-
-            public function removeFromRebuildList(string $blogId, string $year, string $month): bool
-            {
-                return true;
             }
         };
     }

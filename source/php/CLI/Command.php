@@ -7,7 +7,6 @@ use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Cache\CacheFactory;
 use WP_CLI;
 use Exception;
-use S3_Local_Index\Rebuild\RebuildTrackerInterface;
 use WpService\WpService;
 use S3LocalIndex\Parser\ParserInterface;
 use S3_Local_Index\Logger\LoggerInterface;
@@ -15,9 +14,7 @@ use S3_Local_Index\Logger\LoggerInterface;
 /**
  * WP-CLI command handler for S3 Local Index operations.
  * 
- * This class provides CLI commands for managing S3 file indexes, including
- * creating full indexes, flushing specific path caches, and rebuilding
- * selective indexes from a rebuild queue.
+ * This class provides CLI commands for creating s3 index.
  */
 class Command
 {
@@ -29,7 +26,6 @@ class Command
      * @param Plugin                                      $s3             The S3 Uploads plugin instance
      * @param WP_CLI                                      $cli            The WP-CLI interface
      * @param FileSystemInterface|null                    $fileSystem     File system handler (optional, defaults to NativeFileSystem)
-     * @param RebuildTrackerInterface|null                $rebuildTracker Rebuild tracking service (optional)
      * @param CacheFactory|null                           $cacheFactory   Cache factory service (optional)
      * @param ParserInterface|null                        $parser         Parser for path operations (optional)
      * @param LoggerInterface|null                        $logger         Logger for debug messages (optional)
@@ -39,7 +35,6 @@ class Command
         private Plugin $s3, 
         private $cli,
         private FileSystemInterface $fileSystem,
-        private RebuildTrackerInterface $rebuildTracker,
         private CacheFactory $cacheFactory,
         private ParserInterface $parser,
         private LoggerInterface $logger

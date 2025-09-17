@@ -61,9 +61,7 @@ class Wrapper implements WrapperInterface
     }
 
     /**
-     * Handle stream flush and update index when files are written
-     * 
-     * @return bool
+     * @inheritDoc
      */
     public function stream_flush(): bool
     {
@@ -90,10 +88,7 @@ class Wrapper implements WrapperInterface
     }
 
     /**
-     * Handle file deletion and remove from index
-     * 
-     * @param string $path
-     * @return bool
+     * @inheritDoc
      */
     public function unlink(string $path): bool
     {
