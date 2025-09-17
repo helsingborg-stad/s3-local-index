@@ -61,6 +61,58 @@ class Wrapper implements WrapperInterface
     }
 
     /**
+     * Handle stream flush and update index when files are written
+     * 
+     * @return bool
+     */
+    public function stream_flush(): bool
+    {
+        $this->delegate->context = $this->context;
+        $result = $this->delegate->stream_flush();
+
+        if ($result) {
+            try {
+                $options = stream_context_get_options($this->context);
+                $bucket  = $options['s3']['Bucket'] ?? null;
+                $key     = $options['s3']['Key'] ?? null;
+
+                if ($bucket && $key) {
+                    $path = "s3://{$bucket}/{$key}";
+                    self::$reader->updateIndex($path);
+                    self::$logger->log("Index updated for {$path}");
+                }
+            } catch (\Throwable $e) {
+                self::$logger->log("Failed updating index: " . $e->getMessage());
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Handle file deletion and remove from index
+     * 
+     * @param string $path
+     * @return bool
+     */
+    public function unlink(string $path): bool
+    {
+        $this->delegate->context = $this->context;
+        $result = $this->delegate->unlink($path);
+
+        if ($result) {
+            try {
+                self::$reader->removeFromIndex($path);
+                self::$logger->log("Index updated (removed) for {$path}");
+            } catch (\Throwable $e) {
+                self::$logger->log("Failed removing from index: " . $e->getMessage());
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Magic method to delegate calls to the original stream wrapper.
      *
      * @param string $name Method name

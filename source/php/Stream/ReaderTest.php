@@ -220,6 +220,122 @@ class ReaderTest extends TestCase
         $this->assertEmpty($result);
     }
 
+    /**
+     * @testdox updateIndex adds file to index
+     */
+    public function testUpdateIndexAddsFileToIndex(): void
+    {
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
+        
+        $path = 'uploads/2023/01/image.jpg';
+        $result = $reader->updateIndex($path);
+
+        $this->assertTrue($result);
+        
+        // Verify the index was updated
+        $index = $reader->loadIndex($path);
+        $normalized = $reader->normalize($path);
+        $this->assertTrue(isset($index[$normalized]));
+    }
+
+    /**
+     * @testdox updateIndex returns false for invalid path pattern
+     */
+    public function testUpdateIndexReturnsFalseForInvalidPathPattern(): void
+    {
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
+        
+        $path = 'invalid/path/structure.jpg';
+        $result = $reader->updateIndex($path);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * @testdox updateIndex preserves existing entries in index
+     */
+    public function testUpdateIndexPreservesExistingEntriesInIndex(): void
+    {
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
+        
+        // Add first file
+        $path1 = 'uploads/2023/01/image1.jpg';
+        $reader->updateIndex($path1);
+        
+        // Add second file
+        $path2 = 'uploads/2023/01/image2.jpg';
+        $reader->updateIndex($path2);
+
+        // Verify both files exist in index
+        $index = $reader->loadIndex($path1);
+        $normalized1 = $reader->normalize($path1);
+        $normalized2 = $reader->normalize($path2);
+        
+        $this->assertTrue(isset($index[$normalized1]));
+        $this->assertTrue(isset($index[$normalized2]));
+    }
+
+    /**
+     * @testdox removeFromIndex removes file from index
+     */
+    public function testRemoveFromIndexRemovesFileFromIndex(): void
+    {
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
+        
+        $path = 'uploads/2023/01/image.jpg';
+        
+        // First add the file
+        $reader->updateIndex($path);
+        
+        // Then remove it
+        $result = $reader->removeFromIndex($path);
+
+        $this->assertTrue($result);
+        
+        // Verify the file was removed from index
+        $index = $reader->loadIndex($path);
+        $normalized = $reader->normalize($path);
+        $this->assertFalse(isset($index[$normalized]));
+    }
+
+    /**
+     * @testdox removeFromIndex returns false for invalid path pattern
+     */
+    public function testRemoveFromIndexReturnsFalseForInvalidPathPattern(): void
+    {
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
+        
+        $path = 'invalid/path/structure.jpg';
+        $result = $reader->removeFromIndex($path);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * @testdox removeFromIndex preserves other entries in index
+     */
+    public function testRemoveFromIndexPreservesOtherEntriesInIndex(): void
+    {
+        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
+        
+        // Add two files
+        $path1 = 'uploads/2023/01/image1.jpg';
+        $path2 = 'uploads/2023/01/image2.jpg';
+        $reader->updateIndex($path1);
+        $reader->updateIndex($path2);
+        
+        // Remove one file
+        $reader->removeFromIndex($path1);
+
+        // Verify only the second file remains
+        $index = $reader->loadIndex($path2);
+        $normalized1 = $reader->normalize($path1);
+        $normalized2 = $reader->normalize($path2);
+        
+        $this->assertFalse(isset($index[$normalized1]));
+        $this->assertTrue(isset($index[$normalized2]));
+    }
+
     private function createCache(array $data = []): CacheInterface
     {
         return new class($data) implements CacheInterface {

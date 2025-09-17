@@ -165,4 +165,76 @@ class Reader implements ReaderInterface
     {
         return $this->parser->normalizePath($path);
     }
+
+    /**
+     * Update the local index with a new file path.
+     *
+     * @param string $path S3 file path
+     * @return bool True if updated, false if path is invalid
+     */
+    public function updateIndex(string $path): bool
+    {
+        $details = $this->extractIndexDetails($path);
+        if ($details === null) {
+            return false;
+        }
+
+        $blogId = $details['blogId'] ?: '1';
+        $year   = $details['year'];
+        $month  = sprintf('%02d', $details['month']);
+
+        $cacheKey = $this->parser->createCacheIdentifier($details);
+        $file     = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
+
+        // Load existing index (from cache or file)
+        $index = $this->loadIndex($path);
+
+        // Normalize and add new path
+        $normalized = $this->normalize($path);
+        $index[$normalized] = true;
+
+        // Save to filesystem
+        $this->fileSystem->filePutContents($file, json_encode($index));
+
+        // Update cache
+        $this->cache->set($cacheKey, $index, 3600);
+
+        return true;
+    }
+
+    /**
+     * Remove a file path from the local index.
+     *
+     * @param string $path S3 file path
+     * @return bool True if removed, false if path is invalid
+     */
+    public function removeFromIndex(string $path): bool
+    {
+        $details = $this->extractIndexDetails($path);
+        if ($details === null) {
+            return false;
+        }
+
+        $blogId = $details['blogId'] ?: '1';
+        $year   = $details['year'];
+        $month  = sprintf('%02d', $details['month']);
+
+        $cacheKey = $this->parser->createCacheIdentifier($details);
+        $file     = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
+
+        // Load existing index (from cache or file)
+        $index = $this->loadIndex($path);
+
+        // Normalize and remove path
+        $normalized = $this->normalize($path);
+        unset($index[$normalized]);
+
+        // Save to filesystem
+        $this->fileSystem->filePutContents($file, json_encode($index));
+
+        // Update cache
+        $this->cache->set($cacheKey, $index, 3600);
+
+        return true;
+    }
 }

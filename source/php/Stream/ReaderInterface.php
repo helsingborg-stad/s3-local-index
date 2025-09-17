@@ -55,4 +55,20 @@ interface ReaderInterface
      * @return string Normalized path
      */
     public function normalize(string $path): string;
+
+    /**
+     * Update the local index with a new file path.
+     *
+     * @param string $path S3 file path
+     * @return bool True if updated, false if path is invalid
+     */
+    public function updateIndex(string $path): bool;
+
+    /**
+     * Remove a file path from the local index.
+     *
+     * @param string $path S3 file path
+     * @return bool True if removed, false if path is invalid
+     */
+    public function removeFromIndex(string $path): bool;
 }
