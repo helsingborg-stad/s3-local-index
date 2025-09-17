@@ -95,7 +95,7 @@ class Reader implements ReaderInterface
 
         $blogId  = $indexDetails['blogId'] ?: '1';
         $year    = $indexDetails['year'];
-        $month   = sprintf('%02d', $indexDetails['month']); // Format month with leading zero
+        $month   = $details['month'];
 
         $cacheKey   = $this->parser->createCacheIdentifier($indexDetails);
         $cachedData = $this->cache->get($cacheKey);
@@ -181,7 +181,7 @@ class Reader implements ReaderInterface
 
         $blogId = $details['blogId'] ?: '1';
         $year   = $details['year'];
-        $month  = sprintf('%02d', $details['month']);
+        $month  = $details['month'];
 
         $cacheKey = $this->parser->createCacheIdentifier($details);
         $file     = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
@@ -217,7 +217,7 @@ class Reader implements ReaderInterface
 
         $blogId = $details['blogId'] ?: '1';
         $year   = $details['year'];
-        $month  = sprintf('%02d', $details['month']);
+        $month  = $details['month'];
 
         $cacheKey = $this->parser->createCacheIdentifier($details);
         $file     = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";

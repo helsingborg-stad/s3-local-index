@@ -25,9 +25,9 @@ class Parser implements ParserInterface
         $path = ltrim($path, '/');
         if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $path, $m)) {
             return [
-            'blogId' => $m[1] ?: 1,
-            'year'   => $m[2],
-            'month'  => $m[3],
+                'blogId' => $m[1] ?: '1',
+                'year'   => $m[2] ?: '1970',
+                'month'  => $m[3] ?: '01',
             ];
         }
         return null;

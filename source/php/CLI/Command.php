@@ -114,10 +114,9 @@ class Command
         foreach ($filesBySite as $blogId => $years) {
             foreach ($years as $year => $months) {
                 foreach ($months as $month => $keys) {
-                    $formattedMonth = sprintf('%02d', $month); // Ensure leading zero format
-                    $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$formattedMonth}.json";
+                    $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$month}.json";
                     $this->fileSystem->filePutContents($file, json_encode($keys, JSON_PRETTY_PRINT));
-                    $this->cli::log("Written index for blog {$blogId} {$year}-{$formattedMonth}. [File: {$file}] [Items: " . count($keys) . "]");
+                    $this->cli::log("Written index for blog {$blogId} {$year}-{$month}. [File: {$file}] [Items: " . count($keys) . "]");
                 }
             }
         }
