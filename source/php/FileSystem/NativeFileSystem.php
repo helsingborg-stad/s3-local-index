@@ -100,6 +100,6 @@ class NativeFileSystem implements FileSystemInterface
         $year   = $details['year'];
         $month  = $details['month'];
 
-        return $this->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
+        return "s3-index-{$blogId}-{$year}-{$month}.json";
     }
 }

@@ -36,9 +36,9 @@ interface ReaderInterface
      *
      * @param  string $path  Path to stat
      * @param  int    $flags Stat flags
-     * @return array|false File statistics or false if file doesn't exist
+     * @return array|string File statistics or 'not_found' if file doesn't exist 'no_index' if no index found
      */
-    public function url_stat(string $path, int $flags) : array|false;
+    public function url_stat(string $path, int $flags) : string|array;
 
     /**
      * Normalize a path by removing protocol and leading slashes.

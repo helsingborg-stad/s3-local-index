@@ -36,7 +36,7 @@ class Wrapper implements WrapperInterface
 
     public static function register(): void
     {
-        if (self::$registered) {
+        if (self::$registered === true) {
             return;
         }
 
@@ -45,6 +45,12 @@ class Wrapper implements WrapperInterface
             stream_wrapper_unregister($protocol);
         }
         self::$registered = stream_wrapper_register($protocol, static::class, STREAM_IS_URL);
+
+        if(self::$registered) {
+            self::$logger->log("Stream wrapper for {$protocol} successfully registered.");
+        } else {
+            self::$logger->log("Failed to register stream wrapper for {$protocol}.");
+        }
     }
 
     /**
@@ -52,10 +58,18 @@ class Wrapper implements WrapperInterface
      */
     public function url_stat($uri, $flags) : array|false
     {
-        $matchingIndexFound = self::$reader->url_stat($uri, $flags);
-        if ($matchingIndexFound !== false) {
-            return $matchingIndexFound;
+        $response = self::$reader->url_stat($uri, $flags);
+
+        self::$logger->log("url_stat called for {$uri} with flags {$flags}. Given response " . json_encode($response));
+
+        if ($response !== 'not_found') {
+            return false;
         }
+        if (is_array($response)) {
+            return $response;
+        }
+
+        //$response === 'no_index'
         $this->delegate->context = $this->context;
         return $this->delegate->url_stat($uri, $flags);
     }
@@ -84,6 +98,8 @@ class Wrapper implements WrapperInterface
             }
         }
 
+        self::$logger->log("stream_flush called, result: " . ($result ? 'true' : 'false'));
+
         return $result;
     }
 
@@ -104,6 +120,8 @@ class Wrapper implements WrapperInterface
             }
         }
 
+        self::$logger->log("unlink called for {$path}, result: " . ($result ? 'true' : 'false'));
+
         return $result;
     }
 
@@ -118,6 +136,9 @@ class Wrapper implements WrapperInterface
     public function __call($name, $args)
     {
         if (method_exists($this->delegate, $name)) {
+
+            self::$logger->log("Delegating call to {$name} with args: " . json_encode($args));
+
             $this->delegate->context = $this->context;
             return $this->delegate->$name(...$args);
         }

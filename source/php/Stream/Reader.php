@@ -114,21 +114,37 @@ class Reader implements ReaderInterface
      * @param  int    $flags Stat flags
      * @return array|false File statistics or false if file doesn't exist
      */
-    public function url_stat(string $path, int $flags) : array|false
+    public function url_stat(string $path, int $flags) : string|array
     {
         $normalized = $this->normalize($path);
         $index      = $this->loadIndex($normalized);
         
         if (empty($index)) {
-            return false;
+            return 'no_index';
         }
 
-        return isset($index[$normalized]) ? [
-            'size' => 1,
-            'mtime' => time()
-        ] : [
-            'size' => 0,
-            'mtime' => time()
+        if (!isset($index[$normalized])) {
+            return 'not_found';
+        }
+
+        return [
+            0 => 0,    // dev
+            1 => 0,    // ino
+            2 => 0100644, // mode (regular file, 644 perms)
+            7 => 0,    // size
+            9 => time(), // mtime
+
+            'dev'   => 0,
+            'ino'   => 0,
+            'mode'  => 0100644,
+            'nlink' => 1,
+            'uid'   => 0,
+            'gid'   => 0,
+            'rdev'  => 0,
+            'size'  => 0,
+            'atime' => time(),
+            'mtime' => time(),
+            'ctime' => time(),
         ];
     }
 
