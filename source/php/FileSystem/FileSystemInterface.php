@@ -50,4 +50,12 @@ interface FileSystemInterface
      * @return string Cache directory path
      */
     public function getCacheDir(): string;
+
+    /**
+     * Get cache file name based on path details.
+     *
+     * @param  array $details Array with 'blogId', 'year', and 'month' keys
+     * @return string Cache file name
+     */
+    public function getCacheFileName(array $details): string;
 }

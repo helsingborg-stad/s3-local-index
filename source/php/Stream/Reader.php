@@ -33,17 +33,6 @@ class Reader implements ReaderInterface
     }
 
     /**
-     * Extract index details from a file path
-     *
-     * @param  string $path S3 file path
-     * @return array|null Array with blogId, year, month or null if path doesn't match pattern
-     */
-    public function extractIndexDetails(string $path): ?array
-    {
-        return $this->parser->getPathDetails($path);
-    }
-
-    /**
      * Flush cache for a specific file path
      *
      * @param  string $path S3 file path
@@ -51,7 +40,7 @@ class Reader implements ReaderInterface
      */
     public function flushCacheForPath(string $path): bool
     {
-        $details = $this->extractIndexDetails($path);
+        $details = $this->parser->getPathDetails($path);
         if ($details === null) {
             return false;
         }
@@ -69,7 +58,7 @@ class Reader implements ReaderInterface
      */
     public function getCacheKeyForPath(string $path): ?string
     {
-        $details = $this->extractIndexDetails($path);
+        $details = $this->parser->getPathDetails($path);
         if ($details === null) {
             return null;
         }
@@ -88,14 +77,10 @@ class Reader implements ReaderInterface
      */
     public function loadIndex(string $path): array
     {
-        $indexDetails = $this->extractIndexDetails($path);
+        $indexDetails = $this->parser->getPathDetails($path);
         if ($indexDetails === null) {
             return [];
         }
-
-        $blogId  = $indexDetails['blogId'] ?: '1';
-        $year    = $indexDetails['year'];
-        $month   = $details['month'];
 
         $cacheKey   = $this->parser->createCacheIdentifier($indexDetails);
         $cachedData = $this->cache->get($cacheKey);
@@ -103,7 +88,7 @@ class Reader implements ReaderInterface
             return $cachedData;
         }
 
-        $file = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
+        $file = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($indexDetails);
 
         $this->logger->log("Loading index from file: {$file}");
 
@@ -166,17 +151,13 @@ class Reader implements ReaderInterface
      */
     public function updateIndex(string $path): bool
     {
-        $details = $this->extractIndexDetails($path);
+        $details = $this->parser->getPathDetails($path);
         if ($details === null) {
             return false;
         }
 
-        $blogId = $details['blogId'];
-        $year   = $details['year'];
-        $month  = $details['month'];
-
         $cacheKey = $this->parser->createCacheIdentifier($details);
-        $file     = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
+        $file     = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($details);
 
         // Load existing index (from cache or file)
         $index = $this->loadIndex($path);
@@ -202,17 +183,13 @@ class Reader implements ReaderInterface
      */
     public function removeFromIndex(string $path): bool
     {
-        $details = $this->extractIndexDetails($path);
+        $details = $this->parser->getPathDetails($path);
         if ($details === null) {
             return false;
         }
 
-        $blogId = $details['blogId'];
-        $year   = $details['year'];
-        $month  = $details['month'];
-
         $cacheKey = $this->parser->createCacheIdentifier($details);
-        $file     = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
+        $file     = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($details);
 
         // Load existing index (from cache or file)
         $index = $this->loadIndex($path);

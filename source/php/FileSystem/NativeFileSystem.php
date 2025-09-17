@@ -87,4 +87,19 @@ class NativeFileSystem implements FileSystemInterface
         // Fallback to temp directory if no config provided
         return sys_get_temp_dir();
     }
+
+    /**
+     * Generate cache file name based on index details.
+     *
+     * @param  array $details Array containing 'blogId', 'year', and 'month'
+     * @return string Cache file path
+     */
+    public function getCacheFileName(array $details): string
+    {
+        $blogId = $details['blogId'];
+        $year   = $details['year'];
+        $month  = $details['month'];
+
+        return $this->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
+    }
 }

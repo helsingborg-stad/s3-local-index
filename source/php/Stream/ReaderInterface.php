@@ -8,14 +8,6 @@ namespace S3_Local_Index\Stream;
 interface ReaderInterface
 {
     /**
-     * Extract index details from a file path.
-     *
-     * @param  string $path S3 file path
-     * @return array|null Array with blogId, year, month or null if path doesn't match pattern
-     */
-    public function extractIndexDetails(string $path): ?array;
-
-    /**
      * Flush cache for a specific file path.
      *
      * @param  string $path S3 file path

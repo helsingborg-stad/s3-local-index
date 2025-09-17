@@ -48,67 +48,6 @@ class ReaderTest extends TestCase
     }
 
     /**
-     * @testdox extractIndexDetails works with multisite pattern
-     */
-    public function testExtractIndexDetailsWorksWithMultisitePattern(): void
-    {
-        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
-        
-        $path = 'uploads/networks/1/sites/5/2023/01/image.jpg';
-        $result = $reader->extractIndexDetails($path);
-
-        $this->assertIsArray($result);
-        $this->assertEquals('5', $result['blogId']);
-        $this->assertEquals('2023', $result['year']);
-        $this->assertEquals('01', $result['month']);
-    }
-
-    /**
-     * @testdox extractIndexDetails works with single site pattern
-     */
-    public function testExtractIndexDetailsWorksWithSingleSitePattern(): void
-    {
-        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
-        
-        $path = 'uploads/2023/01/image.jpg';
-        $result = $reader->extractIndexDetails($path);
-
-        $this->assertIsArray($result);
-        $this->assertEquals('1', $result['blogId']);
-        $this->assertEquals('2023', $result['year']);
-        $this->assertEquals('01', $result['month']);
-    }
-
-    /**
-     * @testdox extractIndexDetails handles leading slash
-     */
-    public function testExtractIndexDetailsHandlesLeadingSlash(): void
-    {
-        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
-        
-        $path = '/uploads/2023/01/image.jpg';
-        $result = $reader->extractIndexDetails($path);
-
-        $this->assertIsArray($result);
-        $this->assertEquals('1', $result['blogId']);
-        $this->assertEquals('2023', $result['year']);
-        $this->assertEquals('01', $result['month']);
-    }
-
-    /**
-     * @testdox extractIndexDetails returns null for invalid pattern
-     */
-    public function testExtractIndexDetailsReturnsNullForInvalidPattern(): void
-    {
-        $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
-        
-        $path = 'invalid/path/structure.jpg';
-        $result = $reader->extractIndexDetails($path);
-
-        $this->assertNull($result);
-    }
-
-    /**
      * @testdox getCacheKeyForPath returns correct cache key
      */
     public function testGetCacheKeyForPathReturnsCorrectCacheKey(): void

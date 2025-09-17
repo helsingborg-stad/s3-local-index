@@ -171,11 +171,6 @@ class WrapperTest extends TestCase
                 return [];
             }
 
-            public function extractIndexDetails(string $path): ?array
-            {
-                return ['blogId' => '1', 'year' => '2023', 'month' => '01'];
-            }
-
             public function getCacheKeyForPath(string $path): ?string
             {
                 return 'index_1_2023_01';
