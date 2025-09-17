@@ -3,6 +3,7 @@
 namespace S3_Local_Index\Rebuild;
 
 use S3_Local_Index\FileSystem\FileSystemInterface;
+use S3LocalIndex\Parser\ParserInterface;
 
 /**
  * Tracks indexes that need to be rebuilt
@@ -16,9 +17,11 @@ class RebuildTracker implements RebuildTrackerInterface
      * Constructor with dependency injection
      *
      * @param FileSystemInterface $fileSystem
+     * @param ParserInterface     $parser
      */
     public function __construct(
-        private FileSystemInterface $fileSystem
+        private FileSystemInterface $fileSystem,
+        private ParserInterface $parser
     ) {
     }
     
@@ -50,13 +53,16 @@ class RebuildTracker implements RebuildTrackerInterface
      */
     public function addPathToRebuildList(string $path): bool
     {
-        $path = ltrim($path, '/');
-
-        if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $path, $m)) {
-            return $this->addToRebuildList($m[1], $m[2], $m[3]);
+        $details = $this->parser->getPathDetails($path);
+        if ($details === null) {
+            return false;
         }
-        
-        return false;
+
+        $blogId = (string) $details['blogId'];
+        $year = (string) $details['year'];
+        $month = sprintf('%02d', $details['month']); // Ensure leading zero format
+
+        return $this->addToRebuildList($blogId, $year, $month);
     }
     
     /**

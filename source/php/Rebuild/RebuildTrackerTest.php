@@ -4,6 +4,7 @@ namespace S3_Local_Index\Rebuild;
 
 use PHPUnit\Framework\TestCase;
 use S3_Local_Index\FileSystem\FileSystemInterface;
+use S3LocalIndex\Parser\Parser;
 
 class RebuildTrackerTest extends TestCase
 {
@@ -37,7 +38,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testClassCanBeInstantiated(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
 
         $this->assertInstanceOf(RebuildTracker::class, $rebuildTracker);
     }
@@ -47,7 +48,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testGetRebuildListReturnsEmptyArrayWhenNoListExists(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
 
         $result = $rebuildTracker->getRebuildList();
 
@@ -60,7 +61,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testAddToRebuildListAddsItemToList(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         $result = $rebuildTracker->addToRebuildList('1', '2023', '01');
         
@@ -75,7 +76,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testAddToRebuildListDoesNotAddDuplicateItems(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         $rebuildTracker->addToRebuildList('1', '2023', '01');
         $rebuildTracker->addToRebuildList('1', '2023', '01'); // Duplicate
@@ -90,7 +91,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testAddPathToRebuildListWorksWithMultisitePattern(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         $path = 'uploads/networks/1/sites/5/2023/01/image.jpg';
         $result = $rebuildTracker->addPathToRebuildList($path);
@@ -106,7 +107,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testAddPathToRebuildListWorksWithSingleSitePattern(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         $path = 'uploads/2023/01/image.jpg';
         $result = $rebuildTracker->addPathToRebuildList($path);
@@ -122,7 +123,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testAddPathToRebuildListHandlesLeadingSlash(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         $path = '/uploads/2023/01/image.jpg';
         $result = $rebuildTracker->addPathToRebuildList($path);
@@ -138,7 +139,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testAddPathToRebuildListReturnsFalseForInvalidPattern(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         $path = 'invalid/path/structure.jpg';
         $result = $rebuildTracker->addPathToRebuildList($path);
@@ -154,7 +155,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testRemoveFromRebuildListRemovesSpecificItem(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         // Add multiple items
         $rebuildTracker->addToRebuildList('1', '2023', '01');
@@ -175,7 +176,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testClearRebuildListRemovesAllItems(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         // Add items
         $rebuildTracker->addToRebuildList('1', '2023', '01');
@@ -195,7 +196,7 @@ class RebuildTrackerTest extends TestCase
      */
     public function testClearRebuildListReturnsTrueWhenNoFileExists(): void
     {
-        $rebuildTracker = new RebuildTracker($this->fileSystem);
+        $rebuildTracker = new RebuildTracker($this->fileSystem, new Parser());
         
         $result = $rebuildTracker->clearRebuildList();
         
