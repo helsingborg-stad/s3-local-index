@@ -76,8 +76,15 @@ class Command
 
         $cacheDir = $this->fileSystem->getCacheDir();
         if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0777, true);
+            $status = mkdir($cacheDir, 0777, true);
+
+            if(!$status) {
+                $this->cli::error("[S3 Local Index] Failed to create cache directory: {$cacheDir}");
+                return;
+            }
         }
+
+        $this->cli::log("[S3 Local Index] Using cache directory: {$cacheDir}");
 
         $filesBySite = [];
         $count = 0;
@@ -87,12 +94,20 @@ class Command
             if (!empty($page['Contents'])) {
                 foreach ($page['Contents'] as $obj) {
                     $key = $obj['Key'];
-                    if (preg_match('#uploads/networks/\d+/sites/(\d+)/(\d{4})/(\d{2})/#', $key, $m)) {
-                        $blogId = $m[1];
-                        $year = $m[2];
-                        $month = $m[3];
+
+                    if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $key, $m)) {
+                        $locationDetails = [
+                            'blogId' => $m[1] ?? '1', // if multisite captured, use it; otherwise default to 1
+                            'year'   => $m[2],
+                            'month'  => $m[3],
+                        ];
+                    }
+                    
+                    if (!empty($locationDetails)) {
+                        extract($locationDetails);
                         $filesBySite[$blogId][$year][$month][] = $key;
                     }
+
                     $count++;
                     if ($count % 1000 === 0) {
                         $this->cli::log("[S3 Local Index] Indexed {$count} objects...");
@@ -106,7 +121,7 @@ class Command
                 foreach ($months as $month => $keys) {
                     $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$month}.json";
                     $this->fileSystem->filePutContents($file, json_encode($keys, JSON_PRETTY_PRINT));
-                    $this->cli::log("Written index for blog {$blogId} {$year}-{$month}, count: " . count($keys));
+                    $this->cli::log("Written index for blog {$blogId} {$year}-{$month}. [File: {$file}] [Items: " . count($keys) . "]");
                 }
             }
         }

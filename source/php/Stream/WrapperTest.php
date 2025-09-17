@@ -10,8 +10,6 @@ class WrapperTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Reset the singleton instance for each test
-        Wrapper::setInstance(null);
     }
 
     /**
@@ -20,55 +18,11 @@ class WrapperTest extends TestCase
     public function testClassCanBeInstantiated(): void
     {
         $reader = $this->createReader();
-        $directory = $this->createDirectory();
         $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory, $logger);
+        $wrapper->setDependencies($reader, $logger);
 
         $this->assertInstanceOf(Wrapper::class, $wrapper);
-    }
-
-    /**
-     * @testdox setInstance stores instance correctly
-     */
-    public function testSetInstanceStoresInstanceCorrectly(): void
-    {
-        $reader = $this->createReader();
-        $directory = $this->createDirectory();
-        $logger = $this->createLogger();
-        $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory, $logger);
-
-        Wrapper::setInstance($wrapper);
-
-        $this->assertSame($wrapper, Wrapper::getInstance());
-    }
-
-    /**
-     * @testdox getInstance returns null when no instance set
-     */
-    public function testGetInstanceReturnsNullWhenNoInstanceSet(): void
-    {
-        $result = Wrapper::getInstance();
-
-        $this->assertNull($result);
-    }
-
-    /**
-     * @testdox getInstance returns stored instance
-     */
-    public function testGetInstanceReturnsStoredInstance(): void
-    {
-        $reader = $this->createReader();
-        $directory = $this->createDirectory();
-        $logger = $this->createLogger();
-        $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory, $logger);
-
-        Wrapper::setInstance($wrapper);
-        $result = Wrapper::getInstance();
-
-        $this->assertSame($wrapper, $result);
     }
 
     /**
@@ -77,10 +31,9 @@ class WrapperTest extends TestCase
     public function testInitMethodDoesNotThrowException(): void
     {
         $reader = $this->createReader();
-        $directory = $this->createDirectory();
         $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory, $logger);
+        $wrapper->setDependencies($reader, $logger);
 
         try {
             $wrapper->init();
@@ -96,10 +49,9 @@ class WrapperTest extends TestCase
     public function testStreamOpenMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();
-        $directory = $this->createDirectory();
         $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory, $logger);
+        $wrapper->setDependencies($reader, $logger);
 
         if (method_exists($wrapper, 'stream_open')) {
             try {
@@ -120,10 +72,9 @@ class WrapperTest extends TestCase
     public function testUrlStatMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();
-        $directory = $this->createDirectory();
         $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory, $logger);
+        $wrapper->setDependencies($reader, $logger);
 
         if (method_exists($wrapper, 'url_stat')) {
             try {
@@ -143,10 +94,9 @@ class WrapperTest extends TestCase
     public function testDirOpendirMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();
-        $directory = $this->createDirectory();
         $logger = $this->createLogger();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory, $logger);
+        $wrapper->setDependencies($reader, $logger);
 
         if (method_exists($wrapper, 'dir_opendir')) {
             try {
@@ -206,31 +156,6 @@ class WrapperTest extends TestCase
             public function stream_eof(): bool
             {
                 return true;
-            }
-        };
-    }
-
-    private function createDirectory(): DirectoryInterface
-    {
-        return new class implements DirectoryInterface {
-            public function dir_opendir(string $path, int $options): bool
-            {
-                return true;
-            }
-
-            public function dir_readdir(): false|string
-            {
-                return false;
-            }
-
-            public function dir_rewinddir(): bool
-            {
-                return true;
-            }
-
-            public function dir_closedir(): void
-            {
-                // No action needed for this stub
             }
         };
     }

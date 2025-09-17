@@ -12,7 +12,6 @@ use S3_Local_Index\Cache\CacheFactory;
 use S3_Uploads\Plugin as S3Plugin;
 use S3_Local_Index\Rebuild\RebuildTracker;
 use S3_Local_Index\Stream\Reader;
-use S3_Local_Index\Stream\Directory;
 use S3_Local_Index\Logger\Logger;
 
 /**
@@ -98,13 +97,12 @@ class App implements HookableInterface
         $cache        = (new CacheFactory($this->wpService))->createDefault();
         $logger       = new Logger();
 
-        $reader       = new Reader($cache, $fileSystem);
-        $directory    = new Directory($reader);
+        $reader       = new Reader($cache, $fileSystem, $logger);
 
         //Setup and register the stream wrapper
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $directory, $logger);
+        $wrapper->setDependencies($reader, $logger);
 
-        $wrapper->init();
+        $wrapper->register();
     }
 }

@@ -79,7 +79,7 @@ class Config implements ConfigInterface
      * Get the cache directory path.
      * 
      * Returns a unique cache directory for this site to prevent collisions
-     * when multiple sites run on the same server. Uses document root to
+     * when multiple sites run on the same server. Uses ABSPATH root to
      * generate a UUID for uniqueness.
      * Can be customized via the 'S3LocalIndex/Config/GetCacheDirectory' filter.
      * 
@@ -87,11 +87,13 @@ class Config implements ConfigInterface
      */
     public function getCacheDirectory(): string
     {
-        // Generate unique identifier from document root
-        $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? getcwd();
-        $siteUuid = substr(md5($documentRoot), 0, 8); // Use first 8 characters of MD5 hash
-        
-        $defaultCacheDir = sys_get_temp_dir() . "/s3-index-{$siteUuid}";
+        if(defined('ABSPATH')) {
+            $siteUuid           = substr(md5(constant('ABSPATH')), 0, 8); // Use first 8 characters of MD5 hash
+            $defaultCacheDir    = sys_get_temp_dir() . "/s3-index-{$siteUuid}";
+        } else {
+            // Fallback if ABSPATH is not defined
+            $defaultCacheDir    = sys_get_temp_dir() . "/s3-index";
+        }
         
         return $this->wpService->applyFilters(
             $this->createFilterKey(__FUNCTION__),

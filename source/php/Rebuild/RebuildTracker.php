@@ -51,15 +51,9 @@ class RebuildTracker implements RebuildTrackerInterface
     public function addPathToRebuildList(string $path): bool
     {
         $path = ltrim($path, '/');
-        
-        // Try multisite pattern first
-        if (preg_match('#uploads/networks/\d+/sites/(\d+)/(\d{4})/(\d{2})/#', $path, $m)) {
+
+        if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $path, $m)) {
             return $this->addToRebuildList($m[1], $m[2], $m[3]);
-        }
-        
-        // Try single site pattern
-        if (preg_match('#uploads/(\d{4})/(\d{2})/#', $path, $m)) {
-            return $this->addToRebuildList('1', $m[1], $m[2]);
         }
         
         return false;

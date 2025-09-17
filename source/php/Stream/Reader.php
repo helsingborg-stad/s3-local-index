@@ -4,6 +4,7 @@ namespace S3_Local_Index\Stream;
 
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
+use S3_Local_Index\Logger\LoggerInterface;
 
 /**
  * Stream reader for S3 files with local index support.
@@ -14,11 +15,6 @@ use S3_Local_Index\FileSystem\FileSystemInterface;
  */
 class Reader implements ReaderInterface
 {
-
-    private array $index = [];
-    private string $key = '';
-    private int $position = 0;
-
     /**
      * Constructor with dependency injection
      *
@@ -27,7 +23,8 @@ class Reader implements ReaderInterface
      */
     public function __construct(
         private CacheInterface $cache,
-        private FileSystemInterface $fileSystem
+        private FileSystemInterface $fileSystem,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -40,22 +37,11 @@ class Reader implements ReaderInterface
     public function extractIndexDetails(string $path): ?array
     {
         $path = ltrim($path, '/');
-        
-        // Try multisite pattern first
-        if (preg_match('#uploads/networks/\d+/sites/(\d+)/(\d{4})/(\d{2})/#', $path, $m)) {
+        if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $path, $m)) {
             return [
-                'blogId' => $m[1],
-                'year' => $m[2],
-                'month' => $m[3]
-            ];
-        }
-        
-        // Try single site pattern
-        if (preg_match('#uploads/(\d{4})/(\d{2})/#', $path, $m)) {
-            return [
-                'blogId' => '1',
-                'year' => $m[1],
-                'month' => $m[2]
+                'blogId' => $m[1] ?? '1', // if multisite captured, use it; otherwise default to 1
+                'year'   => $m[2],
+                'month'  => $m[3],
             ];
         }
         
@@ -107,109 +93,35 @@ class Reader implements ReaderInterface
      */
     public function loadIndex(string $path): array
     {
-        $path = ltrim($path, '/');
-        if (!preg_match('#uploads(?:/networks/\d+/sites/(\d+))?/(\d{4})/(\d{2})/#', $path, $m)) {
+        $indexDetails = $this->extractIndexDetails($path);
+        if ($indexDetails === null) {
             return [];
         }
 
-        $blogId = $m[1] ?: '1';
-        $year    = $m[2];
-        $month   = $m[3];
+        $blogId  = $indexDetails['blogId'] ?: '1';
+        $year    = $indexDetails['year'];
+        $month   = $indexDetails['month'];
 
-        // Create cache key
-        $cacheKey = "index_{$blogId}_{$year}_{$month}";
-        
-        // Try to get from cache first
+        $cacheKey   = "index_{$blogId}_{$year}_{$month}";
         $cachedData = $this->cache->get($cacheKey);
         if ($cachedData !== null) {
             return $cachedData;
         }
 
-        // Load from file if not in cache
         $file = $this->fileSystem->getCacheDir() . "/s3-index-{$blogId}-{$year}-{$month}.json";
+
+        $this->logger->log("Loading index from file: {$file}");
+
         if (!$this->fileSystem->fileExists($file)) {
             return [];
         }
 
-        $data = $this->fileSystem->fileGetContents($file);
-        $index = json_decode($data, true) ?: [];
-        
-        // Store in cache for next time (cache for 1 hour)
+        $data   = $this->fileSystem->fileGetContents($file);
+        $index  = json_decode($data, true) ?: [];
+
         $this->cache->set($cacheKey, $index, 3600);
         
         return $index;
-    }
-
-    /**
-     * Open a stream for reading.
-     * 
-     * Implementation of PHP's stream_open for the stream wrapper.
-     * Loads the index and verifies the file exists before opening.
-     * 
-     * @param  string      $path        Path to open
-     * @param  string      $mode        File mode (ignored for S3 streams)
-     * @param  int         $options     Stream options
-     * @param  string|null $opened_path Reference to the opened path
-     * @return bool True if stream opened successfully, false otherwise
-     */
-    public function stream_open(string $path, string $mode, int $options, &$opened_path): bool
-    {
-        $this->index = $this->loadIndex($path);
-        $normalized = $this->normalize($path);
-        if (!isset($this->index[$normalized])) {
-            return false;
-        }
-
-        $this->key = $normalized;
-        $this->position = 0;
-        return true;
-    }
-
-    /**
-     * Read data from the stream.
-     * 
-     * Implementation of PHP's stream_read for the stream wrapper.
-     * Reads data from the actual S3 file via fallback wrapper.
-     * 
-     * @param  int $count Number of bytes to read
-     * @return string Data read from the stream
-     */
-    public function stream_read(int $count): string
-    {
-        // Use backup protocol to avoid recursion
-        $fallbackPath = 's3_backup://' . $this->key;
-        $data = @file_get_contents($fallbackPath);
-        
-        // If fallback fails, return empty string
-        if ($data === false) {
-            return '';
-        }
-        
-        $chunk = substr($data, $this->position, $count);
-        $this->position += strlen($chunk);
-        return $chunk;
-    }
-
-    /**
-     * Check if end of file has been reached.
-     * 
-     * Implementation of PHP's stream_eof for the stream wrapper.
-     * Uses fallback wrapper to avoid recursion.
-     * 
-     * @return bool True if at end of file, false otherwise
-     */
-    public function stream_eof(): bool
-    {
-        // Use backup protocol to avoid recursion
-        $fallbackPath = 's3_backup://' . $this->key;
-        $data = @file_get_contents($fallbackPath);
-        
-        // If fallback fails, consider it EOF
-        if ($data === false) {
-            return true;
-        }
-        
-        return $this->position >= strlen($data);
     }
 
     /**
@@ -224,9 +136,28 @@ class Reader implements ReaderInterface
      */
     public function url_stat(string $path, int $flags) : array|false
     {
-        $this->index = $this->loadIndex($path);
         $normalized = $this->normalize($path);
-        return isset($this->index[$normalized]) ? ['size' => 1, 'mtime' => time()] : false;
+        $index      = $this->loadIndex($normalized);
+        
+        //No index found, return false to delegate to original wrapper
+        if (empty($index)) {
+            return false;
+        }
+
+        if (has_filter('image_downsize')) {
+            return isset($index[$normalized]) ? [
+                'size' => 1,
+                'mtime' => time()
+            ] : false;
+        }
+
+        return isset($index[$normalized]) ? [
+            'size' => 1,
+            'mtime' => time()
+        ] : [
+            'size' => 0,
+            'mtime' => time()
+        ];
     }
 
     /**
