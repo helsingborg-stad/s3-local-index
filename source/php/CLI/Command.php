@@ -133,6 +133,9 @@ class Command
 
     /**
      * Flush cache for a specific file path or rebuild list item.
+     * 
+     * @deprecated This functionality is deprecated in favor of instant updates.
+     * Index updates now happen automatically when files are added/removed.
      *
      * ## OPTIONS
      *
@@ -152,6 +155,8 @@ class Command
      */
     public function flush($args = [], $assoc_args = [])
     {
+        $this->cli::warning("[S3 Local Index] Note: Manual flushing is deprecated. Index updates now happen automatically when files are added/removed.");
+        
         $path = $args[0] ?? null;
         $addToRebuild = isset($assoc_args['add']);
 
@@ -195,6 +200,9 @@ class Command
 
     /**
      * Rebuild specific indexes from the rebuild list.
+     * 
+     * @deprecated This functionality is deprecated in favor of instant updates.
+     * Index updates now happen automatically when files are added/removed.
      *
      * ## OPTIONS
      *
@@ -214,6 +222,7 @@ class Command
      */
     public function rebuild($args = [], $assoc_args = [])
     {
+        $this->cli::warning("[S3 Local Index] Note: Rebuild functionality is deprecated. Index updates now happen automatically when files are added/removed.");
 
         $clearList = isset($assoc_args['clear']);
         $rebuildAll = isset($assoc_args['all']);

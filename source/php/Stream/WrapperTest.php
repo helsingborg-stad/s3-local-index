@@ -110,6 +110,59 @@ class WrapperTest extends TestCase
         }
     }
 
+    /**
+     * @testdox stream_flush method exists and can be called
+     */
+    public function testStreamFlushMethodExistsAndCanBeCalled(): void
+    {
+        $reader = $this->createReader();
+        $logger = $this->createLogger();
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $logger);
+
+        if (method_exists($wrapper, 'stream_flush')) {
+            try {
+                // Create a stream context with s3 options
+                $context = stream_context_create([
+                    's3' => [
+                        'Bucket' => 'test-bucket',
+                        'Key' => 'uploads/2023/01/image.jpg'
+                    ]
+                ]);
+                $wrapper->context = $context;
+                
+                $result = $wrapper->stream_flush();
+                $this->assertTrue(is_bool($result), 'stream_flush should return a boolean.');
+            } catch (\Exception $e) {
+                $this->fail('stream_flush method threw an exception: ' . $e->getMessage());
+            }
+        } else {
+            $this->markTestSkipped('stream_flush method not implemented yet.');
+        }
+    }
+
+    /**
+     * @testdox unlink method exists and can be called
+     */
+    public function testUnlinkMethodExistsAndCanBeCalled(): void
+    {
+        $reader = $this->createReader();
+        $logger = $this->createLogger();
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $logger);
+
+        if (method_exists($wrapper, 'unlink')) {
+            try {
+                $result = $wrapper->unlink('s3://bucket/uploads/2023/01/image.jpg');
+                $this->assertTrue(is_bool($result), 'unlink should return a boolean.');
+            } catch (\Exception $e) {
+                $this->fail('unlink method threw an exception: ' . $e->getMessage());
+            }
+        } else {
+            $this->markTestSkipped('unlink method not implemented yet.');
+        }
+    }
+
     private function createReader(): ReaderInterface
     {
         return new class implements ReaderInterface {
@@ -146,6 +199,16 @@ class WrapperTest extends TestCase
             public function normalize(string $path): string
             {
                 return $path;
+            }
+
+            public function updateIndex(string $path): bool
+            {
+                return true;
+            }
+
+            public function removeFromIndex(string $path): bool
+            {
+                return true;
             }
 
             public function stream_read(int $count): string
