@@ -190,6 +190,11 @@ class NativeFileSystemTest extends TestCase
             {
                 return $this->cacheDir;
             }
+
+            public function getCacheFileName(string $path): string
+            {
+                return 'index_' . md5($path) . '.json';
+            }
         };
     }
 }

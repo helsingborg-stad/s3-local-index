@@ -186,9 +186,9 @@ class WrapperTest extends TestCase
                 return true;
             }
 
-            public function url_stat(string $path, int $flags): array|false
+            public function url_stat(string $path, int $flags): string|array
             {
-                return false;
+                return 'not_found';
             }
 
             public function normalize(string $path): string
