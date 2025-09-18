@@ -20,7 +20,7 @@ interface WrapperInterface
    *
    * @return array|false File statistics array or false if the file doesn't exist.
    */
-  public function url_stat($path, $flags): array|false;
+  public function url_stat(string $path, int $flags);
 
   /**
    * Flushes the output for the stream and updates the local index accordingly.
