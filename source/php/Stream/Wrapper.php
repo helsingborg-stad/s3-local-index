@@ -14,7 +14,7 @@ class Wrapper implements WrapperInterface
     private const PROTOCOL = 's3';
 
     public $context;
-    private $delegate;
+    private static $delegate;
     private static bool $registered = false;
 
     public function __construct(){}
