@@ -27,7 +27,7 @@ class Parser implements ParserInterface
             return [
                 'blogId' => $m[1] ?: '1',
                 'year'   => $m[2] ?: '1970',
-                'month'  => $m[3] ?: '01',
+                'month'  => sprintf('%02d', (string) $m[3]) ?: '01',
             ];
         }
         return null;

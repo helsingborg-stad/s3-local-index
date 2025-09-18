@@ -2,9 +2,9 @@
 
 namespace S3_Local_Index\Stream;
 
-use S3_Uploads\Stream_Wrapper as OriginalStreamWrapper;
 use S3_Local_Index\Stream\ReaderInterface;
 use S3_Local_Index\Logger\LoggerInterface;
+use S3_Local_Index\Stream\WrapperInterface;
 
 class Wrapper implements WrapperInterface
 {
@@ -17,10 +17,7 @@ class Wrapper implements WrapperInterface
     private $delegate;
     private static bool $registered = false;
 
-    public function __construct()
-    {
-        $this->delegate = new OriginalStreamWrapper();
-    }
+    public function __construct(){}
 
     /**
      * Set dependencies statically.
@@ -28,10 +25,11 @@ class Wrapper implements WrapperInterface
      * @param ReaderInterface    $reader    Stream reader for file operations
      * @param LoggerInterface    $logger    Logger for debug messages
      */
-    public static function setDependencies(ReaderInterface $reader, LoggerInterface $logger): void
+    public static function setDependencies(ReaderInterface $reader, LoggerInterface $logger, WrapperInterface $delegate): void
     {
         self::$reader = $reader;
         self::$logger = $logger;
+        self::$delegate = $delegate;
     }
 
     public static function register(): void
