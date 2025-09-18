@@ -118,12 +118,21 @@ class Reader implements ReaderInterface
     {
         $normalized = $this->normalize($path);
         $index      = $this->loadIndex($normalized);
+
+        $this->logger->log("");
+        $this->logger->log("");
+        $this->logger->log("Path: {$path}");
+        $this->logger->log("Norm: {$normalized} ");
+        $this->logger->log("Example: " . $index[count($index)-1] ?? 'none');
+        $this->logger->log("");
+        $this->logger->log("");
         
         if (empty($index)) {
             return 'no_index';
         }
 
-        if (!isset($index[$normalized])) {
+        //Check if value exists in index
+        if (in_array($normalized, $index, true) === false) {
             return 'not_found';
         }
 
