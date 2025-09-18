@@ -2,6 +2,7 @@
 
 namespace S3_Local_Index\Cache;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 
 class StaticCacheTest extends TestCase
@@ -23,9 +24,7 @@ class StaticCacheTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * @testdox class can be instantiated
-     */
+    #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
         $cache = new StaticCache();
@@ -33,9 +32,7 @@ class StaticCacheTest extends TestCase
         $this->assertInstanceOf(StaticCache::class, $cache);
     }
 
-    /**
-     * @testdox set and get work correctly
-     */
+    #[TestDox('set and get work correctly')]
     public function testSetAndGetWorkCorrectly(): void
     {
         $key = 'test_key';
@@ -48,9 +45,7 @@ class StaticCacheTest extends TestCase
         $this->assertEquals($value, $getValue);
     }
 
-    /**
-     * @testdox get returns null for non-existent key
-     */
+    #[TestDox('get returns null for non-existent key')]
     public function testGetReturnsNullForNonExistentKey(): void
     {
         $result = $this->cache->get('non_existent_key');
@@ -58,9 +53,7 @@ class StaticCacheTest extends TestCase
         $this->assertNull($result);
     }
 
-    /**
-     * @testdox has returns true for existing key
-     */
+    #[TestDox('has returns true for existing key')]
     public function testHasReturnsTrueForExistingKey(): void
     {
         $key = 'test_key';
@@ -71,9 +64,7 @@ class StaticCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox has returns false for non-existent key
-     */
+    #[TestDox('has returns false for non-existent key')]
     public function testHasReturnsFalseForNonExistentKey(): void
     {
         $result = $this->cache->has('non_existent_key');
@@ -81,9 +72,7 @@ class StaticCacheTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * @testdox delete removes existing key
-     */
+    #[TestDox('delete removes existing key')]
     public function testDeleteRemovesExistingKey(): void
     {
         $key = 'test_key';
@@ -96,9 +85,7 @@ class StaticCacheTest extends TestCase
         $this->assertFalse($hasResult);
     }
 
-    /**
-     * @testdox delete returns true for non-existent key
-     */
+    #[TestDox('delete returns true for non-existent key')]
     public function testDeleteReturnsTrueForNonExistentKey(): void
     {
         $result = $this->cache->delete('non_existent_key');
@@ -106,9 +93,7 @@ class StaticCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox clear removes all keys
-     */
+    #[TestDox('clear removes all keys')]
     public function testClearRemovesAllKeys(): void
     {
         $this->cache->set('key1', 'value1');
@@ -123,9 +108,7 @@ class StaticCacheTest extends TestCase
         $this->assertFalse($has2);
     }
 
-    /**
-     * @testdox TTL expiration works correctly
-     */
+    #[TestDox('TTL expiration works correctly')]
     public function testTtlExpirationWorksCorrectly(): void
     {
         $key = 'test_key';
@@ -146,9 +129,7 @@ class StaticCacheTest extends TestCase
         $this->assertNull($this->cache->get($key));
     }
 
-    /**
-     * @testdox set with zero TTL means no expiration
-     */
+    #[TestDox('set with zero TTL means no expiration')]
     public function testSetWithZeroTtlMeansNoExpiration(): void
     {
         $key = 'test_key';
@@ -168,9 +149,7 @@ class StaticCacheTest extends TestCase
         $this->assertEquals($value, $this->cache->get($key));
     }
 
-    /**
-     * @testdox can store different data types
-     */
+    #[TestDox('can store different data types')]
     public function testCanStoreDifferentDataTypes(): void
     {
         $testCases = [

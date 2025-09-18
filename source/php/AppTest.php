@@ -2,15 +2,14 @@
 
 namespace S3LocalIndex;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 use S3LocalIndex\Config\ConfigInterface;
 
 class AppTest extends TestCase
 {
-    /**
-     * @testdox class can be instantiated
-     */
+    #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
         $app = new App($this->getWpService(), $this->getConfig());
@@ -18,9 +17,7 @@ class AppTest extends TestCase
         $this->assertInstanceOf(App::class, $app);
     }
 
-    /**
-     * @testdox addHooks method does not throw an exception when plugin is enabled
-     */
+    #[TestDox('addHooks method does not throw an exception when plugin is enabled')]
     public function testAddHooksMethodDoesNotThrowExceptionWhenEnabled(): void
     {
         $config = $this->getConfig(true);
@@ -34,9 +31,7 @@ class AppTest extends TestCase
         }
     }
 
-    /**
-     * @testdox addHooks method does not throw an exception when plugin is disabled
-     */
+    #[TestDox('addHooks method does not throw an exception when plugin is disabled')]
     public function testAddHooksMethodDoesNotThrowExceptionWhenDisabled(): void
     {
         $config = $this->getConfig(false);

@@ -2,6 +2,7 @@
 
 namespace S3_Local_Index\Stream;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use S3_Local_Index\Logger\LoggerInterface;
 
@@ -12,9 +13,7 @@ class WrapperTest extends TestCase
         parent::setUp();
     }
 
-    /**
-     * @testdox class can be instantiated
-     */
+    #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
         $reader = $this->createReader();
@@ -25,9 +24,7 @@ class WrapperTest extends TestCase
         $this->assertInstanceOf(Wrapper::class, $wrapper);
     }
 
-    /**
-     * @testdox init method does not throw an exception
-     */
+    #[TestDox('init method does not throw an exception')]
     public function testInitMethodDoesNotThrowException(): void
     {
         $reader = $this->createReader();
@@ -43,9 +40,7 @@ class WrapperTest extends TestCase
         }
     }
 
-    /**
-     * @testdox stream_open method exists and can be called
-     */
+    #[TestDox('stream_open method exists and can be called')]
     public function testStreamOpenMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();
@@ -66,9 +61,7 @@ class WrapperTest extends TestCase
         }
     }
 
-    /**
-     * @testdox url_stat method exists and can be called
-     */
+    #[TestDox('url_stat method exists and can be called')]
     public function testUrlStatMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();
@@ -88,9 +81,7 @@ class WrapperTest extends TestCase
         }
     }
 
-    /**
-     * @testdox dir_opendir method exists and can be called
-     */
+    #[TestDox('dir_opendir method exists and can be called')]
     public function testDirOpendirMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();
@@ -110,9 +101,7 @@ class WrapperTest extends TestCase
         }
     }
 
-    /**
-     * @testdox stream_flush method exists and can be called
-     */
+    #[TestDox('stream_flush method exists and can be called')]
     public function testStreamFlushMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();
@@ -123,12 +112,14 @@ class WrapperTest extends TestCase
         if (method_exists($wrapper, 'stream_flush')) {
             try {
                 // Create a stream context with s3 options
-                $context = stream_context_create([
+                $context = stream_context_create(
+                    [
                     's3' => [
                         'Bucket' => 'test-bucket',
                         'Key' => 'uploads/2023/01/image.jpg'
                     ]
-                ]);
+                    ]
+                );
                 $wrapper->context = $context;
                 
                 $result = $wrapper->stream_flush();
@@ -141,9 +132,7 @@ class WrapperTest extends TestCase
         }
     }
 
-    /**
-     * @testdox unlink method exists and can be called
-     */
+    #[TestDox('unlink method exists and can be called')]
     public function testUnlinkMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();

@@ -2,14 +2,13 @@
 
 namespace S3LocalIndex\Config;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 
 class ConfigTest extends TestCase
 {
-    /**
-     * @testdox class can be instantiated
-     */
+    #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
         $config = new Config($this->getWpService());
@@ -17,9 +16,7 @@ class ConfigTest extends TestCase
         $this->assertInstanceOf(Config::class, $config);
     }
 
-    /**
-     * @testdox isEnabled returns true when S3_Uploads plugin class exists
-     */
+    #[TestDox('isEnabled returns true when S3_Uploads plugin class exists')]
     public function testIsEnabledReturnsTrueWhenS3UploadsExists(): void
     {
         $config = new Config($this->getWpService());
@@ -28,9 +25,7 @@ class ConfigTest extends TestCase
         $this->assertTrue($config->isEnabled());
     }
 
-    /**
-     * @testdox getCliPriority returns default value
-     */
+    #[TestDox('getCliPriority returns default value')]
     public function testGetCliPriorityReturnsDefaultValue(): void
     {
         $config = new Config($this->getWpService());
@@ -38,9 +33,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(10, $config->getCliPriority());
     }
 
-    /**
-     * @testdox getPluginPriority returns default value
-     */
+    #[TestDox('getPluginPriority returns default value')]
     public function testGetPluginPriorityReturnsDefaultValue(): void
     {
         $config = new Config($this->getWpService());
@@ -48,9 +41,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(20, $config->getPluginPriority());
     }
 
-    /**
-     * @testdox getCacheDirectory returns valid path
-     */
+    #[TestDox('getCacheDirectory returns valid path')]
     public function testGetCacheDirectoryReturnsValidPath(): void
     {
         $config = new Config($this->getWpService());
@@ -60,9 +51,7 @@ class ConfigTest extends TestCase
         $this->assertStringContainsString('s3-index-', $cacheDir);
     }
 
-    /**
-     * @testdox createFilterKey creates correct filter key
-     */
+    #[TestDox('createFilterKey creates correct filter key')]
     public function testCreateFilterKeyCreatesCorrectKey(): void
     {
         $config = new Config($this->getWpService());
@@ -71,9 +60,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('S3LocalIndex/Config/TestFilter', $filterKey);
     }
 
-    /**
-     * @testdox createFilterKey with custom prefix creates correct filter key
-     */
+    #[TestDox('createFilterKey with custom prefix creates correct filter key')]
     public function testCreateFilterKeyWithCustomPrefix(): void
     {
         $config = new Config($this->getWpService(), 'CustomPrefix');

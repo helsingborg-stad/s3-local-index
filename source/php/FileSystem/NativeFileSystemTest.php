@@ -2,6 +2,7 @@
 
 namespace S3_Local_Index\FileSystem;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use S3LocalIndex\Config\ConfigInterface;
 
@@ -32,9 +33,7 @@ class NativeFileSystemTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * @testdox class can be instantiated without config
-     */
+    #[TestDox('class can be instantiated without config')]
     public function testClassCanBeInstantiatedWithoutConfig(): void
     {
         $fileSystem = new NativeFileSystem();
@@ -42,9 +41,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertInstanceOf(NativeFileSystem::class, $fileSystem);
     }
 
-    /**
-     * @testdox class can be instantiated with config
-     */
+    #[TestDox('class can be instantiated with config')]
     public function testClassCanBeInstantiatedWithConfig(): void
     {
         $fileSystem = new NativeFileSystem($this->getConfig());
@@ -52,9 +49,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertInstanceOf(NativeFileSystem::class, $fileSystem);
     }
 
-    /**
-     * @testdox fileExists returns true for existing file
-     */
+    #[TestDox('fileExists returns true for existing file')]
     public function testFileExistsReturnsTrueForExistingFile(): void
     {
         $fileSystem = new NativeFileSystem();
@@ -63,9 +58,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertTrue($fileSystem->fileExists($this->testFile));
     }
 
-    /**
-     * @testdox fileExists returns false for non-existing file
-     */
+    #[TestDox('fileExists returns false for non-existing file')]
     public function testFileExistsReturnsFalseForNonExistingFile(): void
     {
         $fileSystem = new NativeFileSystem();
@@ -73,9 +66,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertFalse($fileSystem->fileExists($this->testFile));
     }
 
-    /**
-     * @testdox fileGetContents returns content for existing file
-     */
+    #[TestDox('fileGetContents returns content for existing file')]
     public function testFileGetContentsReturnsContentForExistingFile(): void
     {
         $fileSystem = new NativeFileSystem();
@@ -86,9 +77,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertEquals($content, $result);
     }
 
-    /**
-     * @testdox fileGetContents returns false for non-existing file
-     */
+    #[TestDox('fileGetContents returns false for non-existing file')]
     public function testFileGetContentsReturnsFalseForNonExistingFile(): void
     {
         $fileSystem = new NativeFileSystem();
@@ -97,9 +86,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * @testdox filePutContents writes content to file
-     */
+    #[TestDox('filePutContents writes content to file')]
     public function testFilePutContentsWritesContentToFile(): void
     {
         $fileSystem = new NativeFileSystem();
@@ -112,9 +99,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertEquals($content, file_get_contents($this->testFile));
     }
 
-    /**
-     * @testdox unlink removes existing file
-     */
+    #[TestDox('unlink removes existing file')]
     public function testUnlinkRemovesExistingFile(): void
     {
         $fileSystem = new NativeFileSystem();
@@ -126,9 +111,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertFalse(file_exists($this->testFile));
     }
 
-    /**
-     * @testdox getTempDir returns valid directory path
-     */
+    #[TestDox('getTempDir returns valid directory path')]
     public function testGetTempDirReturnsValidDirectoryPath(): void
     {
         $fileSystem = new NativeFileSystem();
@@ -139,9 +122,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertTrue(is_dir($tempDir));
     }
 
-    /**
-     * @testdox getCacheDir returns config directory when config provided
-     */
+    #[TestDox('getCacheDir returns config directory when config provided')]
     public function testGetCacheDirReturnsConfigDirectoryWhenConfigProvided(): void
     {
         $config = $this->getConfig();
@@ -152,9 +133,7 @@ class NativeFileSystemTest extends TestCase
         $this->assertEquals($this->testDir, $cacheDir);
     }
 
-    /**
-     * @testdox getCacheDir returns temp directory when no config provided
-     */
+    #[TestDox('getCacheDir returns temp directory when no config provided')]
     public function testGetCacheDirReturnsTempDirectoryWhenNoConfigProvided(): void
     {
         $fileSystem = new NativeFileSystem();
