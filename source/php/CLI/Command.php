@@ -100,7 +100,7 @@ class Command
                     
                     if (!empty($locationDetails)) {
                         extract($locationDetails);
-                        $filesBySite[$blogId][$year][$month][] = $key;
+                        $filesBySite[$blogId][$year][$month][] = $bucket . "/" . $key;
                     }
 
                     $count++;
