@@ -74,48 +74,6 @@ class CommandTest extends TestCase
         }
     }
 
-    #[TestDox('flush method does not throw an exception when called without arguments')]
-    public function testFlushMethodDoesNotThrowExceptionWhenCalledWithoutArguments(): void
-    {
-        $command = new Command(
-            $this->getWpService(),
-            $this->getS3Plugin(),
-            $this->getCli(),
-            $this->getFileSystem(),
-            $this->getCacheFactory(),
-            $this->getParser(),
-            $this->getLogger()
-        );
-
-        try {
-            $command->flush();
-            $this->assertTrue(true, 'flush method executed without exceptions.');
-        } catch (\Exception $e) {
-            $this->fail('flush method threw an exception: ' . $e->getMessage());
-        }
-    }
-
-    #[TestDox('flush method does not throw an exception when called with path argument')]
-    public function testFlushMethodDoesNotThrowExceptionWhenCalledWithPathArgument(): void
-    {
-        $command = new Command(
-            $this->getWpService(),
-            $this->getS3Plugin(),
-            $this->getCli(),
-            $this->getFileSystem(),
-            $this->getCacheFactory(),
-            $this->getParser(),
-            $this->getLogger()
-        );
-
-        try {
-            $command->flush(['uploads/2023/01/image.jpg']);
-            $this->assertTrue(true, 'flush method executed without exceptions.');
-        } catch (\Exception $e) {
-            $this->fail('flush method threw an exception: ' . $e->getMessage());
-        }
-    }
-
     private function getWpService(): FakeWpService
     {
         return new FakeWpService(

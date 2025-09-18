@@ -42,27 +42,6 @@ class WrapperTest extends TestCase
         }
     }
 
-    #[TestDox('url_stat method exists and can be called')]
-    public function testUrlStatMethodExistsAndCanBeCalled(): void
-    {
-        $reader = $this->createReader();
-        $logger = $this->createLogger();
-        $s3 = $this->createS3();
-        $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger, $s3);
-
-        if (method_exists($wrapper, 'url_stat')) {
-            try {
-                $result = $wrapper->url_stat('s3://bucket/uploads/2023/01/image.jpg', 0);
-                $this->assertTrue(is_array($result) || $result === false, 'url_stat should return an array or false.');
-            } catch (\Exception $e) {
-                $this->fail('url_stat method threw an exception: ' . $e->getMessage());
-            }
-        } else {
-            $this->markTestSkipped('url_stat method not implemented yet.');
-        }
-    }
-
     #[TestDox('methods can be delegated to the underlying S3 stream wrapper')]
     public function testDirOpendirMethodExistsAndCanBeCalled(): void
     {
@@ -81,6 +60,27 @@ class WrapperTest extends TestCase
             }
         } else {
             $this->markTestSkipped('dir_opendir method not implemented yet.');
+        }
+    }
+
+    #[TestDox('url_stat method exists and can be called')]
+    public function testUrlStatMethodExistsAndCanBeCalled(): void
+    {
+        $reader = $this->createReader();
+        $logger = $this->createLogger();
+        $s3 = $this->createS3();
+        $wrapper = new Wrapper();
+        $wrapper->setDependencies($reader, $logger, $s3);
+
+        if (method_exists($wrapper, 'url_stat')) {
+            try {
+                $result = $wrapper->url_stat('s3://bucket/uploads/2023/01/image.jpg', 0);
+                $this->assertTrue(is_array($result) || $result === false, 'url_stat should return an array or false.');
+            } catch (\Exception $e) {
+                $this->fail('url_stat method threw an exception: ' . $e->getMessage());
+            }
+        } else {
+            $this->markTestSkipped('url_stat method not implemented yet.');
         }
     }
 
