@@ -2,6 +2,7 @@
 
 namespace S3LocalIndex\Parser;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 
 class ParserTest extends TestCase
@@ -89,18 +90,12 @@ class ParserTest extends TestCase
         $this->assertEquals('uploads/2023/01/image.jpg', $result);
     }
 
-    /**
-     * @testdox createCacheIdentifier creates correct identifier
-     */
+    #[TestDox('createCacheIdentifier creates correct identifier')]
     public function testCreateCacheIdentifierCreatesCorrectIdentifier(): void
     {
-        $details = [
-            'blogId' => 5,
-            'year' => 2023,
-            'month' => 1,
-        ];
-        $result = $this->parser->createCacheIdentifier($details);
-
-        $this->assertEquals('index_5_2023_01', $result);
+        $path = 'uploads/networks/1/sites/5/uploads/2023/01/image.jpg';
+        $pathDetails = $this->parser->getPathDetails($path);
+        $cacheIdentifier = $this->parser->createCacheIdentifier($pathDetails);
+        $this->assertEquals('index_5_2023_01', $cacheIdentifier);
     }
 }
