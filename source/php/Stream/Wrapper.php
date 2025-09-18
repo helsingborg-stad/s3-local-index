@@ -68,8 +68,8 @@ class Wrapper implements WrapperInterface
         }
 
         //$response === 'no_index'
-        $this->delegate->context = $this->context;
-        return $this->delegate->url_stat($uri, $flags);
+        self::$delegate->context = $this->context;
+        return self::$delegate->url_stat($uri, $flags);
     }
 
     /**
@@ -77,8 +77,8 @@ class Wrapper implements WrapperInterface
      */
     public function stream_flush(): bool
     {
-        $this->delegate->context = $this->context;
-        $result = $this->delegate->stream_flush();
+        self::$delegate->context = $this->context;
+        $result = self::$delegate->stream_flush();
 
         if ($result) {
             try {
@@ -106,8 +106,8 @@ class Wrapper implements WrapperInterface
      */
     public function unlink(string $path): bool
     {
-        $this->delegate->context = $this->context;
-        $result = $this->delegate->unlink($path);
+        self::$delegate->context = $this->context;
+        $result = self::$delegate->unlink($path);
 
         if ($result) {
             try {
@@ -133,12 +133,12 @@ class Wrapper implements WrapperInterface
      */
     public function __call($name, $args)
     {
-        if (method_exists($this->delegate, $name)) {
+        if (method_exists(self::$delegate, $name)) {
 
             self::$logger->log("Delegating call to {$name} with args: " . json_encode($args));
 
-            $this->delegate->context = $this->context;
-            return $this->delegate->$name(...$args);
+            self::$delegate->context = $this->context;
+            return self::$delegate->$name(...$args);
         }
 
         throw new \BadMethodCallException("Method $name not found on delegate");
