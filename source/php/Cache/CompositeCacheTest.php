@@ -6,9 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 class CompositeCacheTest extends TestCase
 {
-    /**
-     * @testdox class can be instantiated with single cache
-     */
+    #[TestDox('class can be instantiated with single cache')]
     public function testClassCanBeInstantiatedWithSingleCache(): void
     {
         $staticCache = new StaticCache();
@@ -17,9 +15,7 @@ class CompositeCacheTest extends TestCase
         $this->assertInstanceOf(CompositeCache::class, $compositeCache);
     }
 
-    /**
-     * @testdox class can be instantiated with multiple caches
-     */
+    #[TestDox('class can be instantiated with multiple caches')]
     public function testClassCanBeInstantiatedWithMultipleCaches(): void
     {
         $staticCache1 = new StaticCache();
@@ -29,9 +25,7 @@ class CompositeCacheTest extends TestCase
         $this->assertInstanceOf(CompositeCache::class, $compositeCache);
     }
 
-    /**
-     * @testdox set stores data in all caches
-     */
+    #[TestDox('set stores data in all caches')]
     public function testSetStoresDataInAllCaches(): void
     {
         $staticCache1 = new StaticCache();
@@ -50,9 +44,7 @@ class CompositeCacheTest extends TestCase
         $this->assertEquals($value, $staticCache2->get($key));
     }
 
-    /**
-     * @testdox get retrieves data from first available cache
-     */
+    #[TestDox('get retrieves data from first available cache')]
     public function testGetRetrievesDataFromFirstAvailableCache(): void
     {
         $staticCache1 = new StaticCache();
@@ -72,9 +64,7 @@ class CompositeCacheTest extends TestCase
         $this->assertTrue($staticCache1->has($key));
     }
 
-    /**
-     * @testdox get returns null when key not found in any cache
-     */
+    #[TestDox('get returns null when key not found in any cache')]
     public function testGetReturnsNullWhenKeyNotFoundInAnyCache(): void
     {
         $staticCache1 = new StaticCache();
@@ -86,9 +76,7 @@ class CompositeCacheTest extends TestCase
         $this->assertNull($result);
     }
 
-    /**
-     * @testdox has returns true if key exists in any cache
-     */
+    #[TestDox('has returns true if key exists in any cache')]
     public function testHasReturnsTrueIfKeyExistsInAnyCache(): void
     {
         $staticCache1 = new StaticCache();
@@ -106,9 +94,7 @@ class CompositeCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox has returns false if key does not exist in any cache
-     */
+    #[TestDox('has returns false if key does not exist in any cache')]
     public function testHasReturnsFalseIfKeyDoesNotExistInAnyCache(): void
     {
         $staticCache1 = new StaticCache();
@@ -120,9 +106,7 @@ class CompositeCacheTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * @testdox delete removes data from all caches
-     */
+    #[TestDox('delete removes data from all caches')]
     public function testDeleteRemovesDataFromAllCaches(): void
     {
         $staticCache1 = new StaticCache();
@@ -143,9 +127,7 @@ class CompositeCacheTest extends TestCase
         $this->assertFalse($staticCache2->has($key));
     }
 
-    /**
-     * @testdox clear removes all data from all caches
-     */
+    #[TestDox('clear removes all data from all caches')]
     public function testClearRemovesAllDataFromAllCaches(): void
     {
         $staticCache1 = new StaticCache();
@@ -163,9 +145,7 @@ class CompositeCacheTest extends TestCase
         $this->assertFalse($staticCache2->has('key2'));
     }
 
-    /**
-     * @testdox set returns true when at least one cache succeeds
-     */
+    #[TestDox('set returns true when at least one cache succeeds')]
     public function testSetReturnsTrueWhenAtLeastOneCacheSucceeds(): void
     {
         $failingCache = $this->createFailingCache();
@@ -177,9 +157,7 @@ class CompositeCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox delete returns true when at least one cache succeeds
-     */
+    #[TestDox('delete returns true when at least one cache succeeds')]
     public function testDeleteReturnsTrueWhenAtLeastOneCacheSucceeds(): void
     {
         $failingCache = $this->createFailingCache();
@@ -192,9 +170,7 @@ class CompositeCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox clear returns true when at least one cache succeeds
-     */
+    #[TestDox('clear returns true when at least one cache succeeds')]
     public function testClearReturnsTrueWhenAtLeastOneCacheSucceeds(): void
     {
         $failingCache = $this->createFailingCache();

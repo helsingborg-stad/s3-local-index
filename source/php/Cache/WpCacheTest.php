@@ -2,14 +2,13 @@
 
 namespace S3_Local_Index\Cache;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 
 class WpCacheTest extends TestCase
 {
-    /**
-     * @testdox class can be instantiated
-     */
+    #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
         $wpCache = new WpCache($this->getWpService());
@@ -17,9 +16,7 @@ class WpCacheTest extends TestCase
         $this->assertInstanceOf(WpCache::class, $wpCache);
     }
 
-    /**
-     * @testdox set stores data using wp_cache_set
-     */
+    #[TestDox('set stores data using wp_cache_set')]
     public function testSetStoresDataUsingWpCacheSet(): void
     {
         $wpService = $this->getWpService();
@@ -33,9 +30,7 @@ class WpCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox get retrieves data using wp_cache_get
-     */
+    #[TestDox('get retrieves data using wp_cache_get')]
     public function testGetRetrievesDataUsingWpCacheGet(): void
     {
         $value = 'test_value';
@@ -47,9 +42,7 @@ class WpCacheTest extends TestCase
         $this->assertEquals($value, $result);
     }
 
-    /**
-     * @testdox get returns null when wp_cache_get returns false
-     */
+    #[TestDox('get returns null when wp_cache_get returns false')]
     public function testGetReturnsNullWhenWpCacheGetReturnsFalse(): void
     {
         $wpService = $this->getWpService(['wpCacheGet' => false]);
@@ -60,9 +53,7 @@ class WpCacheTest extends TestCase
         $this->assertNull($result);
     }
 
-    /**
-     * @testdox has returns true when data exists
-     */
+    #[TestDox('has returns true when data exists')]
     public function testHasReturnsTrueWhenDataExists(): void
     {
         $wpService = $this->getWpService(['wpCacheGet' => 'test_value']);
@@ -73,9 +64,7 @@ class WpCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox has returns false when data does not exist
-     */
+    #[TestDox('has returns false when data does not exist')]
     public function testHasReturnsFalseWhenDataDoesNotExist(): void
     {
         $wpService = $this->getWpService(['wpCacheGet' => false]);
@@ -86,9 +75,7 @@ class WpCacheTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * @testdox delete removes data using wp_cache_delete
-     */
+    #[TestDox('delete removes data using wp_cache_delete')]
     public function testDeleteRemovesDataUsingWpCacheDelete(): void
     {
         $wpService = $this->getWpService();
@@ -99,9 +86,7 @@ class WpCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox clear uses wp_cache_flush_group first
-     */
+    #[TestDox('clear uses wp_cache_flush_group first')]
     public function testClearUsesWpCacheFlushGroupFirst(): void
     {
         $wpService = $this->getWpService(['wpCacheFlushGroup' => true]);
@@ -112,9 +97,7 @@ class WpCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox clear falls back to wp_cache_flush when flush_group fails
-     */
+    #[TestDox('clear falls back to wp_cache_flush when flush_group fails')]
     public function testClearFallsBackToWpCacheFlushWhenFlushGroupFails(): void
     {
         $wpService = $this->getWpService(
@@ -130,9 +113,7 @@ class WpCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox set with TTL passes correct parameters
-     */
+    #[TestDox('set with TTL passes correct parameters')]
     public function testSetWithTtlPassesCorrectParameters(): void
     {
         $wpService = $this->getWpService();
@@ -143,9 +124,7 @@ class WpCacheTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox set with zero TTL passes zero as expiration
-     */
+    #[TestDox('set with zero TTL passes zero as expiration')]
     public function testSetWithZeroTtlPassesZeroAsExpiration(): void
     {
         $wpService = $this->getWpService();

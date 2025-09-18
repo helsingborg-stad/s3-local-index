@@ -2,14 +2,13 @@
 
 namespace S3_Local_Index\Cache;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 
 class CacheFactoryTest extends TestCase
 {
-    /**
-     * @testdox class can be instantiated
-     */
+    #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
         $cacheFactory = new CacheFactory($this->getWpService());
@@ -17,9 +16,7 @@ class CacheFactoryTest extends TestCase
         $this->assertInstanceOf(CacheFactory::class, $cacheFactory);
     }
 
-    /**
-     * @testdox createDefault returns CompositeCache instance
-     */
+    #[TestDox('createDefault returns CompositeCache instance')]
     public function testCreateDefaultReturnsCompositeCacheInstance(): void
     {
         $cacheFactory = new CacheFactory($this->getWpService());
@@ -29,9 +26,7 @@ class CacheFactoryTest extends TestCase
         $this->assertInstanceOf(CompositeCache::class, $cache);
     }
 
-    /**
-     * @testdox createStatic returns StaticCache instance
-     */
+    #[TestDox('createStatic returns StaticCache instance')]
     public function testCreateStaticReturnsStaticCacheInstance(): void
     {
         $cacheFactory = new CacheFactory($this->getWpService());
@@ -41,9 +36,7 @@ class CacheFactoryTest extends TestCase
         $this->assertInstanceOf(StaticCache::class, $cache);
     }
 
-    /**
-     * @testdox createWp returns WpCache instance
-     */
+    #[TestDox('createWp returns WpCache instance')]
     public function testCreateWpReturnsWpCacheInstance(): void
     {
         $cacheFactory = new CacheFactory($this->getWpService());
@@ -53,9 +46,7 @@ class CacheFactoryTest extends TestCase
         $this->assertInstanceOf(WpCache::class, $cache);
     }
 
-    /**
-     * @testdox createComposite returns CompositeCache instance
-     */
+    #[TestDox('createComposite returns CompositeCache instance')]
     public function testCreateCompositeReturnsCompositeCacheInstance(): void
     {
         $cacheFactory = new CacheFactory($this->getWpService());
@@ -67,9 +58,7 @@ class CacheFactoryTest extends TestCase
         $this->assertInstanceOf(CompositeCache::class, $cache);
     }
 
-    /**
-     * @testdox createComposite with single cache works
-     */
+    #[TestDox('createComposite with single cache works')]
     public function testCreateCompositeWithSingleCacheWorks(): void
     {
         $cacheFactory = new CacheFactory($this->getWpService());
@@ -80,9 +69,7 @@ class CacheFactoryTest extends TestCase
         $this->assertInstanceOf(CompositeCache::class, $cache);
     }
 
-    /**
-     * @testdox createComposite with multiple caches works
-     */
+    #[TestDox('createComposite with multiple caches works')]
     public function testCreateCompositeWithMultipleCachesWorks(): void
     {
         $cacheFactory = new CacheFactory($this->getWpService());

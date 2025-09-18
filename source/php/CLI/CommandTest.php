@@ -2,6 +2,7 @@
 
 namespace S3_Local_Index\CLI;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 use S3_Local_Index\FileSystem\FileSystemInterface;
@@ -36,9 +37,7 @@ class CommandTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * @testdox class can be instantiated
-     */
+    #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
         $command = new Command(
@@ -54,9 +53,7 @@ class CommandTest extends TestCase
         $this->assertInstanceOf(Command::class, $command);
     }
 
-    /**
-     * @testdox create method does not throw an exception
-     */
+    #[TestDox('create method does not throw an exception')]
     public function testCreateMethodDoesNotThrowException(): void
     {
         $command = new Command(
@@ -77,9 +74,7 @@ class CommandTest extends TestCase
         }
     }
 
-    /**
-     * @testdox flush method does not throw an exception when called without arguments
-     */
+    #[TestDox('flush method does not throw an exception when called without arguments')]
     public function testFlushMethodDoesNotThrowExceptionWhenCalledWithoutArguments(): void
     {
         $command = new Command(
@@ -100,9 +95,7 @@ class CommandTest extends TestCase
         }
     }
 
-    /**
-     * @testdox flush method does not throw an exception when called with path argument
-     */
+    #[TestDox('flush method does not throw an exception when called with path argument')]
     public function testFlushMethodDoesNotThrowExceptionWhenCalledWithPathArgument(): void
     {
         $command = new Command(

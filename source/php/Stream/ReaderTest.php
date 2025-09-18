@@ -2,6 +2,7 @@
 
 namespace S3_Local_Index\Stream;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
@@ -37,9 +38,7 @@ class ReaderTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * @testdox class can be instantiated
-     */
+    #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -47,9 +46,7 @@ class ReaderTest extends TestCase
         $this->assertInstanceOf(Reader::class, $reader);
     }
 
-    /**
-     * @testdox getCacheKeyForPath returns correct cache key
-     */
+    #[TestDox('getCacheKeyForPath returns correct cache key')]
     public function testGetCacheKeyForPathReturnsCorrectCacheKey(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -60,9 +57,7 @@ class ReaderTest extends TestCase
         $this->assertEquals('index_1_2023_01', $result);
     }
 
-    /**
-     * @testdox getCacheKeyForPath returns null for invalid pattern
-     */
+    #[TestDox('getCacheKeyForPath returns null for invalid pattern')]
     public function testGetCacheKeyForPathReturnsNullForInvalidPattern(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -73,9 +68,7 @@ class ReaderTest extends TestCase
         $this->assertNull($result);
     }
 
-    /**
-     * @testdox flushCacheForPath deletes cache key
-     */
+    #[TestDox('flushCacheForPath deletes cache key')]
     public function testFlushCacheForPathDeletesCacheKey(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -86,9 +79,7 @@ class ReaderTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @testdox flushCacheForPath returns false for invalid pattern
-     */
+    #[TestDox('flushCacheForPath returns false for invalid pattern')]
     public function testFlushCacheForPathReturnsFalseForInvalidPattern(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -99,9 +90,7 @@ class ReaderTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * @testdox loadIndex returns cached data when available
-     */
+    #[TestDox('loadIndex returns cached data when available')]
     public function testLoadIndexReturnsCachedDataWhenAvailable(): void
     {
         $cachedData = ['uploads/2023/01/image1.jpg', 'uploads/2023/01/image2.jpg'];
@@ -114,9 +103,7 @@ class ReaderTest extends TestCase
         $this->assertEquals($cachedData, $result);
     }
 
-    /**
-     * @testdox loadIndex loads from file when not cached
-     */
+    #[TestDox('loadIndex loads from file when not cached')]
     public function testLoadIndexLoadsFromFileWhenNotCached(): void
     {
         $indexData = ['uploads/2023/01/image1.jpg', 'uploads/2023/01/image2.jpg'];
@@ -131,9 +118,7 @@ class ReaderTest extends TestCase
         $this->assertEquals($indexData, $result);
     }
 
-    /**
-     * @testdox loadIndex returns empty array when file does not exist
-     */
+    #[TestDox('loadIndex returns empty array when file does not exist')]
     public function testLoadIndexReturnsEmptyArrayWhenFileDoesNotExist(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -145,9 +130,7 @@ class ReaderTest extends TestCase
         $this->assertEmpty($result);
     }
 
-    /**
-     * @testdox loadIndex returns empty array for invalid pattern
-     */
+    #[TestDox('loadIndex returns empty array for invalid pattern')]
     public function testLoadIndexReturnsEmptyArrayForInvalidPattern(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -159,9 +142,7 @@ class ReaderTest extends TestCase
         $this->assertEmpty($result);
     }
 
-    /**
-     * @testdox updateIndex adds file to index
-     */
+    #[TestDox('updateIndex adds file to index')]
     public function testUpdateIndexAddsFileToIndex(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -177,9 +158,7 @@ class ReaderTest extends TestCase
         $this->assertTrue(isset($index[$normalized]));
     }
 
-    /**
-     * @testdox updateIndex returns false for invalid path pattern
-     */
+    #[TestDox('updateIndex returns false for invalid path pattern')]
     public function testUpdateIndexReturnsFalseForInvalidPathPattern(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -190,9 +169,7 @@ class ReaderTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * @testdox updateIndex preserves existing entries in index
-     */
+    #[TestDox('updateIndex preserves existing entries in index')]
     public function testUpdateIndexPreservesExistingEntriesInIndex(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -214,9 +191,7 @@ class ReaderTest extends TestCase
         $this->assertTrue(isset($index[$normalized2]));
     }
 
-    /**
-     * @testdox removeFromIndex removes file from index
-     */
+    #[TestDox('removeFromIndex removes file from index')]
     public function testRemoveFromIndexRemovesFileFromIndex(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -237,9 +212,7 @@ class ReaderTest extends TestCase
         $this->assertFalse(isset($index[$normalized]));
     }
 
-    /**
-     * @testdox removeFromIndex returns false for invalid path pattern
-     */
+    #[TestDox('removeFromIndex returns false for invalid path pattern')]
     public function testRemoveFromIndexReturnsFalseForInvalidPathPattern(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -250,9 +223,7 @@ class ReaderTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /**
-     * @testdox removeFromIndex preserves other entries in index
-     */
+    #[TestDox('removeFromIndex preserves other entries in index')]
     public function testRemoveFromIndexPreservesOtherEntriesInIndex(): void
     {
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
@@ -278,7 +249,9 @@ class ReaderTest extends TestCase
     private function createCache(array $data = []): CacheInterface
     {
         return new class($data) implements CacheInterface {
-            public function __construct(private array $data) {}
+            public function __construct(private array $data)
+            {
+            }
 
             public function get(string $key)
             {
