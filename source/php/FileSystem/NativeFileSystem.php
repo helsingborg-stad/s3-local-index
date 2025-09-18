@@ -35,9 +35,9 @@ class NativeFileSystem implements FileSystemInterface
      * @param  string $path File path
      * @return string|false File contents or false on failure
      */
-    public function fileGetContents(string $path)
+    public function fileGetContents(string $path): string|false
     {
-        return file_get_contents($path);
+        return @file_get_contents($path);
     }
 
     /**
