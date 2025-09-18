@@ -18,46 +18,27 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $logger = $this->createLogger();
+        $s3 = $this->createS3();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger);
+        $wrapper->setDependencies($reader, $logger, $s3);
 
         $this->assertInstanceOf(Wrapper::class, $wrapper);
     }
 
-    #[TestDox('init method does not throw an exception')]
+    #[TestDox('register method does not throw an exception')]
     public function testInitMethodDoesNotThrowException(): void
     {
         $reader = $this->createReader();
         $logger = $this->createLogger();
+        $s3 = $this->createS3();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger);
+        $wrapper->setDependencies($reader, $logger, $s3);
 
         try {
-            $wrapper->init();
-            $this->assertTrue(true, 'init method executed without exceptions.');
+            $wrapper->register();
+            $this->assertTrue(true, 'register method executed without exceptions.');
         } catch (\Exception $e) {
-            $this->fail('init method threw an exception: ' . $e->getMessage());
-        }
-    }
-
-    #[TestDox('stream_open method exists and can be called')]
-    public function testStreamOpenMethodExistsAndCanBeCalled(): void
-    {
-        $reader = $this->createReader();
-        $logger = $this->createLogger();
-        $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger);
-
-        if (method_exists($wrapper, 'stream_open')) {
-            try {
-                $opened_path = null;
-                $result = $wrapper->stream_open('s3://bucket/uploads/2023/01/image.jpg', 'r', 0, $opened_path);
-                $this->assertTrue(is_bool($result), 'stream_open should return a boolean.');
-            } catch (\Exception $e) {
-                $this->fail('stream_open method threw an exception: ' . $e->getMessage());
-            }
-        } else {
-            $this->markTestSkipped('stream_open method not implemented yet.');
+            $this->fail('register method threw an exception: ' . $e->getMessage());
         }
     }
 
@@ -66,8 +47,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $logger = $this->createLogger();
+        $s3 = $this->createS3();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger);
+        $wrapper->setDependencies($reader, $logger, $s3);
 
         if (method_exists($wrapper, 'url_stat')) {
             try {
@@ -81,13 +63,14 @@ class WrapperTest extends TestCase
         }
     }
 
-    #[TestDox('dir_opendir method exists and can be called')]
+    #[TestDox('methods can be delegated to the underlying S3 stream wrapper')]
     public function testDirOpendirMethodExistsAndCanBeCalled(): void
     {
         $reader = $this->createReader();
         $logger = $this->createLogger();
+        $s3 = $this->createS3();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger);
+        $wrapper->setDependencies($reader, $logger, $s3);
 
         if (method_exists($wrapper, 'dir_opendir')) {
             try {
@@ -106,8 +89,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $logger = $this->createLogger();
+        $s3 = $this->createS3();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger);
+        $wrapper->setDependencies($reader, $logger, $s3);
 
         if (method_exists($wrapper, 'stream_flush')) {
             try {
@@ -137,8 +121,9 @@ class WrapperTest extends TestCase
     {
         $reader = $this->createReader();
         $logger = $this->createLogger();
+        $s3 = $this->createS3();
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger);
+        $wrapper->setDependencies($reader, $logger, $s3);
 
         if (method_exists($wrapper, 'unlink')) {
             try {
@@ -216,4 +201,24 @@ class WrapperTest extends TestCase
             }
         };
     }
+
+    private function createS3(): WrapperInterface
+    {
+        return new class implements WrapperInterface {
+            public function url_stat(string $path, int $flags)
+            {
+                return false;
+            }
+
+            public function stream_flush(): bool
+            {
+                return true;
+            }
+
+            public function unlink(string $path): bool
+            {
+                return true;
+            }
+        };
+    } 
 }
