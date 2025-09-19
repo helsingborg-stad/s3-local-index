@@ -29,7 +29,7 @@ interface ReaderInterface
      * @param  string $path S3 file path to load index for
      * @return array Index data containing file paths
      */
-    public function loadIndex(string $path): array;
+    public function loadIndex(string $path): array|ReaderEnumUrlStat;
 
     /**
      * Get file statistics.
@@ -39,14 +39,6 @@ interface ReaderInterface
      * @return array|string File statistics or 'not_found' if file doesn't exist 'no_index' if no index found
      */
     public function url_stat(string $path, int $flags) : string|array;
-
-    /**
-     * Normalize a path by removing protocol and leading slashes.
-     *
-     * @param  string $path Path to normalize
-     * @return string Normalized path
-     */
-    public function normalize(string $path): string;
 
     /**
      * Update the local index with a new file path.

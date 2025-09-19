@@ -58,4 +58,12 @@ interface FileSystemInterface
      * @return string Cache file name
      */
     public function getCacheFileName(array $details): string;
+
+    /**
+     * Get the full path to the cache file
+     * 
+     * @param  array $details Array containing 'blogId', 'year', and 'month'
+     * @return string Full cache file path
+     */
+    public function getCacheFilePath(array $details): string;
 }

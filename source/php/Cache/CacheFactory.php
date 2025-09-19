@@ -20,28 +20,28 @@ class CacheFactory
     }
     
     /**
-     * Create a composite cache with StaticCache and WpCache
+     * Create a composite cache with LruCache and WpCache
      *
      * @return CacheInterface
      */
     public function createDefault(): CacheInterface
     {
-        $staticCache = new StaticCache();
+        $LruCache = new LruCache();
         
         return new CompositeCache(
-            $staticCache,
+            $LruCache,
             new WpCache($this->wpService)
         );
     }
 
     /**
-     * Create a StaticCache instance
+     * Create a LruCache instance
      *
      * @return CacheInterface
      */
     public function createStatic(): CacheInterface
     {
-        return new StaticCache();
+        return new LruCache();
     }
 
     /**

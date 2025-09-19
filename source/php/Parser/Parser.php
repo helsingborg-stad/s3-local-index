@@ -51,18 +51,6 @@ class Parser implements ParserInterface
      */
     public function looksLikeAFile(string $path): bool
     {
-        // Ends with a slash → likely a directory
-        if (substr($path, -1) === '/') {
-            return false;
-        }
-
-        // Contains a dot after the last slash → likely a file with extension
-        $basename = basename($path);
-        if (strpos($basename, '.') !== false) {
-            return true;
-        }
-
-        // Otherwise, we *guess* it's a directory
-        return false;
+        return pathinfo($path, PATHINFO_EXTENSION) !== '';
     }
 }

@@ -60,11 +60,10 @@ class Wrapper implements WrapperInterface
     public function url_stat($uri, $flags) : array|false
     {
         //Consider this a dir, let the delegate handle it
-        if($this->parser->looksLikeAFile($uri)) {
+        if(!self::$parser->looksLikeAFile($uri)) {
             self::$delegate->context = $this->context;
             return self::$delegate->url_stat($uri, $flags);
         }
-
 
         $response = self::$reader->url_stat($uri, $flags);
 

@@ -83,8 +83,6 @@ class NativeFileSystem implements FileSystemInterface
         if ($this->config !== null) {
             return $this->config->getCacheDirectory();
         }
-        
-        // Fallback to temp directory if no config provided
         return sys_get_temp_dir();
     }
 
@@ -101,5 +99,15 @@ class NativeFileSystem implements FileSystemInterface
         $month  = $details['month'];
 
         return "s3-index-{$blogId}-{$year}-{$month}.json";
+    }
+
+    /**
+     * Get the full path to the cache file
+     * 
+     * @param  array $details Array containing 'blogId', 'year', and 'month'
+     * @return string Full cache file path
+     */
+    public function getCacheFilePath(array $details) : string {
+        $this->getCacheDir() . DIRECTORY_SEPARATOR . $this->getCacheFileName($details); 
     }
 }

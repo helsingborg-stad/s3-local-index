@@ -75,7 +75,7 @@ class Reader implements ReaderInterface
      * @param  string $path S3 file path to load index for
      * @return array Index data containing file paths
      */
-    public function loadIndex(string $path): array
+    public function loadIndex(string $path): array|ReaderEnumUrlStat
     {
         $indexDetails = $this->parser->getPathDetails($path);
 
@@ -118,7 +118,7 @@ class Reader implements ReaderInterface
      */
     public function url_stat(string $path, int $flags) : string|array
     {
-        $normalized = $this->normalize($path);
+        $normalized = $this->parser->normalizePath($path);
         $index      = $this->loadIndex($normalized);
 
         if(empty($index)) {
@@ -164,17 +164,6 @@ class Reader implements ReaderInterface
     }
 
     /**
-     * Normalize a path by removing protocol and leading slashes.
-     * 
-     * @param  string $path Path to normalize
-     * @return string Normalized path
-     */
-    public function normalize(string $path): string
-    {
-        return $this->parser->normalizePath($path);
-    }
-
-    /**
      * Update the local index with a new file path.
      *
      * @param string $path S3 file path
@@ -194,7 +183,7 @@ class Reader implements ReaderInterface
         $index = $this->loadIndex($path);
 
         // Normalize and add new path
-        $normalized = $this->normalize($path);
+        $normalized = $this->parser->normalizePath($path);
         $index[$normalized] = true;
 
         // Save to filesystem
@@ -226,7 +215,7 @@ class Reader implements ReaderInterface
         $index = $this->loadIndex($path);
 
         // Normalize and remove path
-        $normalized = $this->normalize($path);
+        $normalized = $this->parser->normalizePath($path);
         unset($index[$normalized]);
 
         // Save to filesystem
