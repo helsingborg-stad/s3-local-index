@@ -78,6 +78,7 @@ class Reader implements ReaderInterface
     public function loadIndex(string $path): array
     {
         $indexDetails = $this->parser->getPathDetails($path);
+
         if ($indexDetails === null) {
             return [];
         }
@@ -89,6 +90,7 @@ class Reader implements ReaderInterface
         }
 
         $file = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($indexDetails);
+
 
         $this->logger->log("Loading index from file: {$file}");
 
@@ -119,14 +121,18 @@ class Reader implements ReaderInterface
         $normalized = $this->normalize($path);
         $index      = $this->loadIndex($normalized);
 
-        $this->logger->log("");
-        $this->logger->log("");
-        $this->logger->log("Path: {$path}");
-        $this->logger->log("Norm: {$normalized} ");
-        $this->logger->log("Example: " . $index[count($index)-1] ?? 'none');
-        $this->logger->log("");
-        $this->logger->log("");
-        
+        if(empty($index)) {
+            $this->logger->log("Index cannot be found.");
+        } else {
+            $this->logger->log("");
+            $this->logger->log("");
+            $this->logger->log("Path: {$path}");
+            $this->logger->log("Norm: {$normalized} ");
+            $this->logger->log("Example: " . $index[count($index)-1] ?? 'none');
+            $this->logger->log("");
+            $this->logger->log("");
+        }
+
         if (empty($index)) {
             return 'no_index';
         }
