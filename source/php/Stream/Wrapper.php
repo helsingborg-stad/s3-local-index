@@ -5,10 +5,12 @@ namespace S3_Local_Index\Stream;
 use S3_Local_Index\Stream\ReaderInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3_Local_Index\Stream\WrapperInterface;
+use S3LocalIndex\Parser\ParserInterface;
 
 class Wrapper implements WrapperInterface
 {
     private static ReaderInterface $reader;
+    private static ParserInterface $parser;
     private static LoggerInterface $logger;
 
     private const PROTOCOL = 's3';
@@ -25,9 +27,10 @@ class Wrapper implements WrapperInterface
      * @param ReaderInterface    $reader    Stream reader for file operations
      * @param LoggerInterface    $logger    Logger for debug messages
      */
-    public static function setDependencies(ReaderInterface $reader, LoggerInterface $logger, WrapperInterface $delegate): void
+    public static function setDependencies(ReaderInterface $reader, ParserInterface $parser, LoggerInterface $logger, WrapperInterface $delegate): void
     {
         self::$reader = $reader;
+        self::$parser = $parser;
         self::$logger = $logger;
         self::$delegate = $delegate;
     }
@@ -56,6 +59,13 @@ class Wrapper implements WrapperInterface
      */
     public function url_stat($uri, $flags) : array|false
     {
+        //Consider this a dir, let the delegate handle it
+        if($this->parser->looksLikeAFile($uri)) {
+            self::$delegate->context = $this->context;
+            return self::$delegate->url_stat($uri, $flags);
+        }
+
+
         $response = self::$reader->url_stat($uri, $flags);
 
         self::$logger->log("url_stat called for {$uri} with flags {$flags}. Given response " . json_encode($response));

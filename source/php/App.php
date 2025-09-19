@@ -104,7 +104,7 @@ class App implements HookableInterface
 
         //Setup and register the stream wrapper
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $logger, $streamWrapperOriginal);
+        $wrapper->setDependencies($reader, $parser, $logger, $streamWrapperOriginal);
         $wrapper->register();
     }
 }

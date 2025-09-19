@@ -30,4 +30,12 @@ interface ParserInterface
      * @return string         The cache identifier
      */
     public function createCacheIdentifier(array $details): string;
+
+    /**
+     * Heuristic to determine if a path looks like a file.
+     *
+     * @param  string $path The path to check
+     * @return bool         True if it looks like a file, false otherwise
+     */    
+    public function looksLikeAFile(string $path): bool;
 }

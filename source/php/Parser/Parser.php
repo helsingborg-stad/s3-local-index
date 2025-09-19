@@ -15,10 +15,7 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Extract index details from a file path.
-     *
-     * @param  string $path S3 file path
-     * @return array|null   Array with blogId, year, month or null if path doesn't match pattern
+     * @inheritdoc
      */
     public function getPathDetails(string $path): ?array
     {
@@ -34,10 +31,7 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Normalize a path by removing protocol and leading slashes.
-     *
-     * @param  string $path Path to normalize
-     * @return string       Normalized path
+     * @inheritdoc
      */
     public function normalizePath(string $path): string
     {
@@ -45,13 +39,30 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Create a cache identifier from path details.
-     *
-     * @param  array $details Array containing blogId, year, month
-     * @return string         Cache identifier string
+     * @inheritdoc
      */
     public function createCacheIdentifier(array $details): string
     {
         return "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function looksLikeAFile(string $path): bool
+    {
+        // Ends with a slash → likely a directory
+        if (substr($path, -1) === '/') {
+            return false;
+        }
+
+        // Contains a dot after the last slash → likely a file with extension
+        $basename = basename($path);
+        if (strpos($basename, '.') !== false) {
+            return true;
+        }
+
+        // Otherwise, we *guess* it's a directory
+        return false;
     }
 }
