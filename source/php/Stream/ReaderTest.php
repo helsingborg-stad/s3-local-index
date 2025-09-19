@@ -108,6 +108,11 @@ class ReaderTest extends TestCase
     {
         $indexData = ['uploads/2023/01/image1.jpg', 'uploads/2023/01/image2.jpg'];
         $indexFile = $this->fileSystem->getCacheDir() . '/s3-index-1-2023-01.json';
+
+        $indexFile = $file = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName(
+            ['blogId' => 1, 'year' => 2023, 'month' => '01']
+        );
+        
         file_put_contents($indexFile, json_encode($indexData));
         
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());
