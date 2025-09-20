@@ -1,11 +1,15 @@
 <?php
 
-namespace S3_Local_Index\Stream;
+namespace S3_Local_Index\Stream\Index;
 
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3LocalIndex\Parser\ParserInterface;
+
+use S3_Local_Index\Index\Exception\IndexNotFoundException; 
+use S3_Local_Index\Index\Exception\InvalidPathException;
+use S3_Local_Index\Index\Exception\CorruptIndexException;
 
 /**
  * Handles filesystem index operations. 
@@ -25,34 +29,38 @@ class IndexManager implements IndexManagerInterface
      */
     public function read(string $path): array
     {
-        //Get path details
+        //Early bailout
         $details = $this->parser->getPathDetails($path);
         if ($details === null) {
-            throw new InvalidArgumentException("Invalid path provided: {$path}");
+            throw new InvalidPathException();
         }
 
-        //Get cache key & check in cache
+        //Return cached response if exists. 
         $cacheKey   = $this->parser->createCacheIdentifier($details);
         $cachedData = $this->cache->get($cacheKey);
-
-        //Abort, return cache 
         if ($cachedData !== null) {
             return $cachedData;
         }
 
+        //Load from index file
         $file = $this->fileSystem->getCacheFilePath($details);
-
-        $this->logger->log("Loading index from file: {$file}");
-
         if (!$this->fileSystem->fileExists($file)) {
-            throw new Exception("Index does not exist: {$file}");
+            throw new IndexNotFoundException();
+        } else {
+            $this->logger->log("Loading index from file: {$file}");
         }
 
+        //Read data
         $data  = $this->fileSystem->fileGetContents($file);
-        $index = json_decode($data, true) ?: [];
+        $index = json_decode($data, true);
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($index)) {
+            throw new IndexCorruptException($file);
+        }
 
+        //Set in cache
         $this->cache->set($cacheKey, $index, 3600);
 
+        //Return
         return $index;
     }
 
@@ -61,19 +69,25 @@ class IndexManager implements IndexManagerInterface
      */
     public function write(string $path): bool
     {
+        //Early bailout
         $details = $this->parser->getPathDetails($path);
         if ($details === null) {
-            return false;
+            throw new InvalidPathException();
         }
 
+        //Get existing data from index file
+        $index = $this->read($path); 
+
+        //Prepare paths, keys & data
         $cacheKey   = $this->parser->createCacheIdentifier($details);
-        $file       = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($details);
-        $index      = $this->loadIndex($path);
+        $file       = $this->fileSystem->getCacheFilePath($details);
         $normalized = $this->parser->normalizePath($path);
 
-        $index[$normalized] = true;
-
+        //Append to index
+        $index[] = $normalized;
         $this->fileSystem->filePutContents($file, json_encode($index));
+
+        //Update cache
         $this->cache->set($cacheKey, $index, 3600);
 
         return true;
@@ -84,18 +98,27 @@ class IndexManager implements IndexManagerInterface
      */
     public function delete(string $path): bool
     {
+        //Early bailout
         $details = $this->parser->getPathDetails($path);
         if ($details === null) {
-            return false;
+            throw new InvalidPathException();
         }
 
+        //Get existing data from index file
+        $index = $this->read($path); 
+
+        //Prepare paths, keys & data
         $cacheKey   = $this->parser->createCacheIdentifier($details);
-        $file       = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($details);
-        $index      = $this->loadIndex($path);
+        $file       = $this->fileSystem->getCacheFilePath($details);
         $normalized = $this->parser->normalizePath($path);
 
-        unset($index[$normalized]);
+        //Evict from index
+        $keys = array_keys($index, $normalized, true);
+        foreach($keys as $key) {
+            unset($index[$key]);
+        }
 
+        //Write to index & cache
         $this->fileSystem->filePutContents($file, json_encode($index));
         $this->cache->set($cacheKey, $index, 3600);
 

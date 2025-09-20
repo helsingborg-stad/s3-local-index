@@ -1,6 +1,6 @@
 <?php
 
-namespace S3_Local_Index\Stream;
+namespace S3_Local_Index\Stream\Index;
 
 /**
  * Defines operations for managing a filesystem index.

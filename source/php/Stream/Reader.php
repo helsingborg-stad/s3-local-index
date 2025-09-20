@@ -50,61 +50,7 @@ class Reader implements ReaderInterface
         return $this->cache->delete($cacheKey);
     }
 
-    /**
-     * Get cache key for a specific file path
-     *
-     * @param  string $path S3 file path
-     * @return string|null Cache key or null if path doesn't match pattern
-     */
-    public function getCacheKeyForPath(string $path): ?string
-    {
-        $details = $this->parser->getPathDetails($path);
-        if ($details === null) {
-            return null;
-        }
-
-        return $this->parser->createCacheIdentifier($details);
-    }
-
-    /**
-     * Load index data for a given path from cache or file system.
-     * 
-     * This method extracts blog ID, year, and month from the path and loads
-     * the corresponding index file. It uses caching to improve performance.
-     * 
-     * @param  string $path S3 file path to load index for
-     * @return array Index data containing file paths
-     */
-    public function loadIndex(string $path): array|ReaderEnumUrlStat
-    {
-        $indexDetails = $this->parser->getPathDetails($path);
-
-        if ($indexDetails === null) {
-            return [];
-        }
-
-        $cacheKey   = $this->parser->createCacheIdentifier($indexDetails);
-        $cachedData = $this->cache->get($cacheKey);
-        if ($cachedData !== null) {
-            return $cachedData;
-        }
-
-        $file = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($indexDetails);
-
-
-        $this->logger->log("Loading index from file: {$file}");
-
-        if (!$this->fileSystem->fileExists($file)) {
-            return [];
-        }
-
-        $data   = $this->fileSystem->fileGetContents($file);
-        $index  = json_decode($data, true) ?: [];
-
-        $this->cache->set($cacheKey, $index, 3600);
-        
-        return $index;
-    }
+    
 
     /**
      * Get file statistics.
@@ -161,69 +107,5 @@ class Reader implements ReaderInterface
             'mtime' => time(),
             'ctime' => time(),
         ];
-    }
-
-    /**
-     * Update the local index with a new file path.
-     *
-     * @param string $path S3 file path
-     * @return bool True if updated, false if path is invalid
-     */
-    public function updateIndex(string $path): bool
-    {
-        $details = $this->parser->getPathDetails($path);
-        if ($details === null) {
-            return false;
-        }
-
-        $cacheKey = $this->parser->createCacheIdentifier($details);
-        $file     = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($details);
-
-        // Load existing index (from cache or file)
-        $index = $this->loadIndex($path);
-
-        // Normalize and add new path
-        $normalized = $this->parser->normalizePath($path);
-        $index[$normalized] = true;
-
-        // Save to filesystem
-        $this->fileSystem->filePutContents($file, json_encode($index));
-
-        // Update cache
-        $this->cache->set($cacheKey, $index, 3600);
-
-        return true;
-    }
-
-    /**
-     * Remove a file path from the local index.
-     *
-     * @param string $path S3 file path
-     * @return bool True if removed, false if path is invalid
-     */
-    public function removeFromIndex(string $path): bool
-    {
-        $details = $this->parser->getPathDetails($path);
-        if ($details === null) {
-            return false;
-        }
-
-        $cacheKey = $this->parser->createCacheIdentifier($details);
-        $file     = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName($details);
-
-        // Load existing index (from cache or file)
-        $index = $this->loadIndex($path);
-
-        // Normalize and remove path
-        $normalized = $this->parser->normalizePath($path);
-        unset($index[$normalized]);
-
-        // Save to filesystem
-        $this->fileSystem->filePutContents($file, json_encode($index));
-
-        // Update cache
-        $this->cache->set($cacheKey, $index, 3600);
-
-        return true;
     }
 }
