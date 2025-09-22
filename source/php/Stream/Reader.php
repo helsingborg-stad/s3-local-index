@@ -71,8 +71,12 @@ class Reader implements ReaderInterface
 
         //If not found, flag as unavabile.
         if (in_array($this->parser->normalizePath($path), $index, true) === false) {
+            $this->logger->log("Entry not found: " . $path);
             return 'entry_not_found';
         }
+
+        //Message file found
+        $this->logger->log("Entry found: " . $path);
 
         //Resolve as found. 
         return [
