@@ -71,28 +71,24 @@ class Reader implements ReaderInterface
 
         //If not found, flag as unavabile.
         if (in_array($this->parser->normalizePath($path), $index, true) === false) {
-            return 'not_found';
+            return 'entry_not_found';
         }
 
         //Resolve as found. 
         return [
-            0 => 0,    // dev
-            1 => 0,    // ino
-            2 => 0100644, // mode (regular file, 644 perms)
-            7 => 0,    // size
-            9 => time(), // mtime
-
-            'dev'   => 0,
-            'ino'   => 0,
-            'mode'  => 0100644,
-            'nlink' => 1,
-            'uid'   => 0,
-            'gid'   => 0,
-            'rdev'  => 0,
-            'size'  => 0,
-            'atime' => time(),
-            'mtime' => time(),
-            'ctime' => time(),
+            'dev'     => 0,
+            'ino'     => 0,
+            'mode'    => 0100000,
+            'nlink'   => 1,
+            'uid'     => 0,
+            'gid'     => 0,
+            'rdev'    => 0,
+            'size'    => 0,
+            'atime'   => time(),
+            'mtime'   => time(),
+            'ctime'   => time(),
+            'blksize' => -1,
+            'blocks'  => -1,
         ];
     }
 }

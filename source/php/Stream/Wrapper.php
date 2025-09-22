@@ -73,7 +73,7 @@ class Wrapper implements WrapperInterface
         return match (true) {
             //Check                         //Return
             is_array($response)             => $response,
-            $response === 'not_found'       => false,
+            $response === 'entry_not_found' => false,
             default => (function () use ($uri, $flags) {
                 self::$delegate->context = $this->context;
                 return self::$delegate->url_stat($uri, $flags);
