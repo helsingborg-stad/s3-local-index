@@ -100,13 +100,14 @@ class App implements HookableInterface
         $parser       = new Parser();
         $cache        = (new CacheFactory($this->wpService))->createDefault();
         $logger       = new Logger();
-        $reader       = new Reader($cache, $fileSystem, $logger, $parser);
+        
         $indexManager = new IndexManager(
             $cache,
             $fileSystem,
             $logger,
             $parser
         );
+        $reader       = new Reader($cache, $fileSystem, $logger, $parser, $indexManager);
         $streamWrapperOriginal = new WrapperOriginal();
 
         //Setup and register the stream wrapper

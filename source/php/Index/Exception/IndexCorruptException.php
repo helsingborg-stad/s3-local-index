@@ -2,12 +2,12 @@
 
 namespace S3_Local_Index\Index\Exception;
 
-class CorruptIndexException extends IndexManagerException
+class IndexCorruptException extends IndexManagerException
 {
     public function __construct(string $path)
     {
         parent::__construct(
-            id: 'corrupt_index',
+            id: 'index_corrupt',
             message: "Corrupt Index. Could not parse index at: {$path}"
         );
     }

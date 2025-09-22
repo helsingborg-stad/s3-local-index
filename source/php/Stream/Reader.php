@@ -6,6 +6,7 @@ use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3LocalIndex\Parser\ParserInterface;
+use S3_Local_Index\Index\IndexManager;
 
 /**
  * Stream reader for S3 files with local index support.
@@ -28,29 +29,10 @@ class Reader implements ReaderInterface
         private CacheInterface $cache,
         private FileSystemInterface $fileSystem,
         private LoggerInterface $logger,
-        private ParserInterface $parser
+        private ParserInterface $parser,
+        private IndexManager $indexManager
     ) {
     }
-
-    /**
-     * Flush cache for a specific file path
-     *
-     * @param  string $path S3 file path
-     * @return bool True if cache was flushed, false if path doesn't match pattern
-     */
-    public function flushCacheForPath(string $path): bool
-    {
-        $details = $this->parser->getPathDetails($path);
-        if ($details === null) {
-            return false;
-        }
-
-        $cacheKey = $this->parser->createCacheIdentifier($details);
-        
-        return $this->cache->delete($cacheKey);
-    }
-
-    
 
     /**
      * Get file statistics.
@@ -64,30 +46,35 @@ class Reader implements ReaderInterface
      */
     public function url_stat(string $path, int $flags) : string|array
     {
-        $normalized = $this->parser->normalizePath($path);
-        $index      = $this->loadIndex($normalized);
+        try {
+            $index = $this->indexManager->read($path);
+        } catch (\S3_Local_Index\Exception\IndexException $e) {
+            switch ($e->getId()) {
+                case 'index_not_found':
+                    $this->logger->log("Index missing: {$e->getMessage()}");
+                    return $e-getId();
+                    break;
 
-        if(empty($index)) {
-            $this->logger->log("Index cannot be found.");
-        } else {
-            $this->logger->log("");
-            $this->logger->log("");
-            $this->logger->log("Path: {$path}");
-            $this->logger->log("Norm: {$normalized} ");
-            $this->logger->log("Example: " . $index[count($index)-1] ?? 'none');
-            $this->logger->log("");
-            $this->logger->log("");
+                case 'index_corrupt':
+                    $this->logger->log("Index corrupt, needs rebuild: {$e->getMessage()}");
+                    break;
+
+                case 'entry_invalid_path':
+                    $this->logger->log("Could not resolve path to something useful: {$e->getMessage()}");
+                    break;
+
+                default:
+                    $this->logger->log("Unknown index error [{$e->getId()}]: {$e->getMessage()}");
+                    break;
+            }
         }
 
-        if (empty($index)) {
-            return 'no_index';
-        }
-
-        //Check if value exists in index
-        if (in_array($normalized, $index, true) === false) {
+        //If not found, flag as unavabile.
+        if (in_array($this->parser->normalizePath($path), $index, true) === false) {
             return 'not_found';
         }
 
+        //Resolve as found. 
         return [
             0 => 0,    // dev
             1 => 0,    // ino

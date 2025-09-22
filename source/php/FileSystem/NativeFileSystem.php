@@ -108,6 +108,6 @@ class NativeFileSystem implements FileSystemInterface
      * @return string Full cache file path
      */
     public function getCacheFilePath(array $details) : string {
-        $this->getCacheDir() . DIRECTORY_SEPARATOR . $this->getCacheFileName($details); 
+        return $this->getCacheDir() . DIRECTORY_SEPARATOR . $this->getCacheFileName($details); 
     }
 }

@@ -11,6 +11,8 @@ use WpService\WpService;
  */
 class WpCache implements CacheInterface
 {
+
+    use CacheIdentifierTrait;
     
     private string $group = 's3_local_index';
 

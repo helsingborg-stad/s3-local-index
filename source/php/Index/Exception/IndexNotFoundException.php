@@ -7,7 +7,7 @@ class IndexNotFoundException extends IndexManagerException
     public function __construct(string $path)
     {
         parent::__construct(
-            id: 'not_found',
+            id: 'index_not_found',
             message: "Index not found for path: {$path}"
         );
     }

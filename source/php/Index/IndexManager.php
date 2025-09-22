@@ -1,11 +1,12 @@
 <?php
 
-namespace S3_Local_Index\Stream\Index;
+namespace S3_Local_Index\Index;
 
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3LocalIndex\Parser\ParserInterface;
+use S3_Local_Index\Index\IndexManagerInterface;
 
 use S3_Local_Index\Index\Exception\IndexNotFoundException; 
 use S3_Local_Index\Index\Exception\InvalidPathException;
@@ -32,11 +33,11 @@ class IndexManager implements IndexManagerInterface
         //Early bailout
         $details = $this->parser->getPathDetails($path);
         if ($details === null) {
-            throw new InvalidPathException();
+            throw new EntryInvalidPathException();
         }
 
         //Return cached response if exists. 
-        $cacheKey   = $this->parser->createCacheIdentifier($details);
+        $cacheKey   = $this->cache->createCacheIdentifier($details);
         $cachedData = $this->cache->get($cacheKey);
         if ($cachedData !== null) {
             return $cachedData;
@@ -46,8 +47,6 @@ class IndexManager implements IndexManagerInterface
         $file = $this->fileSystem->getCacheFilePath($details);
         if (!$this->fileSystem->fileExists($file)) {
             throw new IndexNotFoundException();
-        } else {
-            $this->logger->log("Loading index from file: {$file}");
         }
 
         //Read data
@@ -79,7 +78,7 @@ class IndexManager implements IndexManagerInterface
         $index = $this->read($path); 
 
         //Prepare paths, keys & data
-        $cacheKey   = $this->parser->createCacheIdentifier($details);
+        $cacheKey   = $this->cache->createCacheIdentifier($details);
         $file       = $this->fileSystem->getCacheFilePath($details);
         $normalized = $this->parser->normalizePath($path);
 
@@ -108,7 +107,7 @@ class IndexManager implements IndexManagerInterface
         $index = $this->read($path); 
 
         //Prepare paths, keys & data
-        $cacheKey   = $this->parser->createCacheIdentifier($details);
+        $cacheKey   = $this->cache->createCacheIdentifier($details);
         $file       = $this->fileSystem->getCacheFilePath($details);
         $normalized = $this->parser->normalizePath($path);
 

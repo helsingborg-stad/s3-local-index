@@ -10,6 +10,8 @@ namespace S3_Local_Index\Cache;
  */
 class LruCache implements CacheInterface
 {
+    use CacheIdentifierTrait;
+
     private static array $cache = [];     // key => value
     private static array $ttlCache = [];  // key => expiry timestamp
     private static array $usage = [];     // key => last access time

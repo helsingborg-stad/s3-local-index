@@ -45,4 +45,11 @@ interface CacheInterface
      * @return bool True on success, false on failure
      */
     public function clear(): bool;
+
+    /**
+     * Create cache identifier
+     * 
+     * @return string|null cache identifier.
+     */
+    public function createCacheIdentifier(array $details): ?string;
 }

@@ -8,6 +8,7 @@ namespace S3_Local_Index\Cache;
  */
 class CompositeCache implements CacheInterface
 {
+    use CacheIdentifierTrait;
     
     private array $caches = [];
 

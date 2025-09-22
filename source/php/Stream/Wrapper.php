@@ -57,31 +57,28 @@ class Wrapper implements WrapperInterface
     /**
      * @inheritDoc
      */
-    public function url_stat($uri, $flags) : array|false
+    public function url_stat($uri, $flags): array|false
     {
-        $uri    = self::$parser->normalizePath($uri); 
-        $isFile = pathinfo($path, PATHINFO_EXTENSION) !== '';
+        $uri      = self::$parser->normalizePath($uri); 
+        $isFile   = pathinfo($uri, PATHINFO_EXTENSION) !== '';
+        $isExists = ($flags & STREAM_URL_STAT_QUIET) !== 0; // true if it's a file_exists/is_file/is_dir check
 
-        //Delegate (isFile)
-        if($isFile) {
+        if (!$isFile || !$isExists) {
             self::$delegate->context = $this->context;
             return self::$delegate->url_stat($uri, $flags);
         }
 
         $response = self::$reader->url_stat($uri, $flags);
 
-        self::$logger->log("url_stat called for {$uri} with flags {$flags}. Given response " . json_encode($response));
-
-        if ($response !== 'not_found') {
-            return false;
-        }
-        if (is_array($response)) {
-            return $response;
-        }
-
-        //$response === 'no_index'
-        self::$delegate->context = $this->context;
-        return self::$delegate->url_stat($uri, $flags);
+        return match (true) {
+            //Check                         //Return
+            is_array($response)             => $response,
+            $response === 'not_found'       => false,
+            default => (function () use ($uri, $flags) {
+                self::$delegate->context = $this->context;
+                return self::$delegate->url_stat($uri, $flags);
+            })()
+        };
     }
 
     /**
