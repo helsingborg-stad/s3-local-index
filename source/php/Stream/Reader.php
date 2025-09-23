@@ -17,6 +17,8 @@ use S3_Local_Index\Index\IndexManager;
  */
 class Reader implements ReaderInterface
 {
+    public $context;
+
     /**
      * Constructor with dependency injection
      *
@@ -94,5 +96,18 @@ class Reader implements ReaderInterface
             'blksize' => -1,
             'blocks'  => -1,
         ];
+    }
+
+    public function stream_flush() {
+
+        $streamContext = stream_context_get_options($this->context);
+
+
+        $this->logger->log("Hello". json_encode($streamContext));
+    }
+
+    public function unlink($path) {
+        $this->indexManager->delete($path);
+        $this->logger->log("Removed from index: " . $path);
     }
 }

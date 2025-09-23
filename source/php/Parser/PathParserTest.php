@@ -5,9 +5,9 @@ namespace S3_Local_Index\Parser;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 
-class ParserTest extends TestCase
+class PathParserTest extends TestCase
 {
-    private Parser $pathParser;
+    private PathParser $pathParser;
 
     protected function setUp(): void
     {
@@ -17,7 +17,7 @@ class ParserTest extends TestCase
     #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
-        $this->assertInstanceOf(Parser::class, $this->pathParser);
+        $this->assertInstanceOf(PathParser::class, $this->pathParser);
         $this->assertInstanceOf(PathParserInterface::class, $this->pathParser);
     }
 
