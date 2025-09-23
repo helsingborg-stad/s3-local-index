@@ -66,59 +66,91 @@ class IndexManager implements IndexManagerInterface
     /*
      * @inheritDoc
      */
+    /*
+    * @inheritDoc
+    */
     public function write(string $path): bool
     {
-        //Early bailout
+        // Early bailout
         $details = $this->pathParser->getPathDetails($path);
         if ($details === null) {
             throw new InvalidPathException();
         }
 
-        //Get existing data from index file
-        $index = $this->read($path); 
-
-        //Prepare paths, keys & data
         $cacheKey   = $this->cache->createCacheIdentifier($details);
         $file       = $this->fileSystem->getCacheFilePath($details);
         $normalized = $this->pathParser->normalizePath($path);
 
-        //Append to index
-        $index[] = $normalized;
-        $this->fileSystem->filePutContents($file, json_encode($index));
+        $index = [];
 
-        //Update cache
+        try {
+            $index = $this->read($path);
+        } catch (IndexNotFoundException | IndexCorruptException $e) {
+            $index = [];
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        // Append to index
+        $index[] = $normalized;
+
+        // Write to file with error handling
+        try {
+            $this->fileSystem->filePutContents($file, json_encode($index));
+        } catch (\Throwable $e) {
+            throw new \RuntimeException("Failed to write index file: {$file}", 0, $e);
+        }
+
+        // Update cache
         $this->cache->set($cacheKey, $index, 3600);
 
         return true;
     }
 
     /*
-     * @inheritDoc
-     */
+    * @inheritDoc
+    */
     public function delete(string $path): bool
     {
-        //Early bailout
+        // Early bailout
         $details = $this->pathParser->getPathDetails($path);
         if ($details === null) {
             throw new InvalidPathException();
         }
 
-        //Get existing data from index file
-        $index = $this->read($path); 
-
-        //Prepare paths, keys & data
         $cacheKey   = $this->cache->createCacheIdentifier($details);
         $file       = $this->fileSystem->getCacheFilePath($details);
         $normalized = $this->pathParser->normalizePath($path);
 
-        //Evict from index
+        $index = [];
+
+        // Try loading existing index
+        try {
+            $index = $this->read($path);
+        } catch (IndexNotFoundException | IndexCorruptException $e) {
+            // Nothing to delete if file missing or corrupt → treat as empty index
+            $index = [];
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        // Remove from index if present
         $keys = array_keys($index, $normalized, true);
-        foreach($keys as $key) {
+        foreach ($keys as $key) {
             unset($index[$key]);
         }
 
-        //Write to index & cache
-        $this->fileSystem->filePutContents($file, json_encode($index));
+        // Reindex array to keep it clean
+        $index = array_values($index);
+
+        // Write to file with error handling
+        try {
+            $this->fileSystem->filePutContents($file, json_encode($index));
+        } catch (\Throwable $e) {
+            throw new \RuntimeException("Failed to update index file: {$file}", 0, $e);
+        }
+
+        // Update cache
         $this->cache->set($cacheKey, $index, 3600);
 
         return true;
