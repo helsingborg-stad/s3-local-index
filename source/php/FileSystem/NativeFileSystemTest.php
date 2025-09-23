@@ -4,7 +4,7 @@ namespace S3_Local_Index\FileSystem;
 
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
-use S3LocalIndex\Config\ConfigInterface;
+use S3_Local_Index\Config\ConfigInterface;
 
 class NativeFileSystemTest extends TestCase
 {

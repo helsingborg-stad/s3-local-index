@@ -5,7 +5,7 @@ namespace S3_Local_Index\Index;
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Logger\LoggerInterface;
-use S3LocalIndex\Parser\ParserInterface;
+use S3_Local_Index\Parser\PathParserInterface;
 use S3_Local_Index\Index\IndexManagerInterface;
 
 use S3_Local_Index\Index\Exception\IndexNotFoundException; 
@@ -21,7 +21,7 @@ class IndexManager implements IndexManagerInterface
         private CacheInterface $cache,
         private FileSystemInterface $fileSystem,
         private LoggerInterface $logger,
-        private ParserInterface $parser
+        private PathParserInterface $pathParser
     ) {
     }
 
@@ -31,7 +31,7 @@ class IndexManager implements IndexManagerInterface
     public function read(string $path): array
     {
         //Early bailout
-        $details = $this->parser->getPathDetails($path);
+        $details = $this->pathParser->getPathDetails($path);
         if ($details === null) {
             throw new EntryInvalidPathException();
         }
@@ -69,7 +69,7 @@ class IndexManager implements IndexManagerInterface
     public function write(string $path): bool
     {
         //Early bailout
-        $details = $this->parser->getPathDetails($path);
+        $details = $this->pathParser->getPathDetails($path);
         if ($details === null) {
             throw new InvalidPathException();
         }
@@ -80,7 +80,7 @@ class IndexManager implements IndexManagerInterface
         //Prepare paths, keys & data
         $cacheKey   = $this->cache->createCacheIdentifier($details);
         $file       = $this->fileSystem->getCacheFilePath($details);
-        $normalized = $this->parser->normalizePath($path);
+        $normalized = $this->pathParser->normalizePath($path);
 
         //Append to index
         $index[] = $normalized;
@@ -98,7 +98,7 @@ class IndexManager implements IndexManagerInterface
     public function delete(string $path): bool
     {
         //Early bailout
-        $details = $this->parser->getPathDetails($path);
+        $details = $this->pathParser->getPathDetails($path);
         if ($details === null) {
             throw new InvalidPathException();
         }
@@ -109,7 +109,7 @@ class IndexManager implements IndexManagerInterface
         //Prepare paths, keys & data
         $cacheKey   = $this->cache->createCacheIdentifier($details);
         $file       = $this->fileSystem->getCacheFilePath($details);
-        $normalized = $this->parser->normalizePath($path);
+        $normalized = $this->pathParser->normalizePath($path);
 
         //Evict from index
         $keys = array_keys($index, $normalized, true);

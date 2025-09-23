@@ -1,6 +1,6 @@
 <?php
 
-namespace S3LocalIndex\Config;
+namespace S3_Local_Index\Config;
 
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
@@ -57,7 +57,7 @@ class ConfigTest extends TestCase
         $config = new Config($this->getWpService());
         
         $filterKey = $config->createFilterKey('testFilter');
-        $this->assertEquals('S3LocalIndex/Config/TestFilter', $filterKey);
+        $this->assertEquals('S3_Local_Index/Config/TestFilter', $filterKey);
     }
 
     #[TestDox('createFilterKey with custom prefix creates correct filter key')]

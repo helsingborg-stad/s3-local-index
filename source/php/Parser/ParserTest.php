@@ -1,31 +1,31 @@
 <?php
 
-namespace S3LocalIndex\Parser;
+namespace S3_Local_Index\Parser;
 
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 
 class ParserTest extends TestCase
 {
-    private Parser $parser;
+    private Parser $pathParser;
 
     protected function setUp(): void
     {
-        $this->parser = new Parser();
+        $this->pathParser = new PathParser();
     }
 
     #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
-        $this->assertInstanceOf(Parser::class, $this->parser);
-        $this->assertInstanceOf(ParserInterface::class, $this->parser);
+        $this->assertInstanceOf(Parser::class, $this->pathParser);
+        $this->assertInstanceOf(PathParserInterface::class, $this->pathParser);
     }
 
     #[TestDox('getPathDetails extracts correct details for single site uploads')]
     public function testGetPathDetailsExtractsCorrectDetailsForSingleSite(): void
     {
         $path = 'uploads/2023/01/image.jpg';
-        $result = $this->parser->getPathDetails($path);
+        $result = $this->pathParser->getPathDetails($path);
 
         $this->assertEquals(
             [
@@ -40,7 +40,7 @@ class ParserTest extends TestCase
     public function testGetPathDetailsExtractsCorrectDetailsForMultisite(): void
     {
         $path = 'uploads/networks/1/sites/5/uploads/2023/01/image.jpg';
-        $result = $this->parser->getPathDetails($path);
+        $result = $this->pathParser->getPathDetails($path);
 
         $this->assertEquals(
             [
@@ -55,7 +55,7 @@ class ParserTest extends TestCase
     public function testGetPathDetailsReturnsNullForInvalidPattern(): void
     {
         $path = 'some/other/path.jpg';
-        $result = $this->parser->getPathDetails($path);
+        $result = $this->pathParser->getPathDetails($path);
 
         $this->assertNull($result);
     }
@@ -64,7 +64,7 @@ class ParserTest extends TestCase
     public function testNormalizePathRemovesS3ProtocolAndLeadingSlashes(): void
     {
         $path = 's3://bucket/uploads/2023/01/image.jpg';
-        $result = $this->parser->normalizePath($path);
+        $result = $this->pathParser->normalizePath($path);
 
         $this->assertEquals('bucket/uploads/2023/01/image.jpg', $result);
     }
@@ -73,7 +73,7 @@ class ParserTest extends TestCase
     public function testNormalizePathRemovesLeadingSlashesOnly(): void
     {
         $path = '/uploads/2023/01/image.jpg';
-        $result = $this->parser->normalizePath($path);
+        $result = $this->pathParser->normalizePath($path);
 
         $this->assertEquals('uploads/2023/01/image.jpg', $result);
     }
@@ -82,8 +82,8 @@ class ParserTest extends TestCase
     public function testCreateCacheIdentifierCreatesCorrectIdentifier(): void
     {
         $path = 'uploads/networks/1/sites/5/uploads/2023/01/image.jpg';
-        $pathDetails = $this->parser->getPathDetails($path);
-        $cacheIdentifier = $this->parser->createCacheIdentifier($pathDetails);
+        $pathDetails = $this->pathParser->getPathDetails($path);
+        $cacheIdentifier = $this->pathParser->createCacheIdentifier($pathDetails);
         $this->assertEquals('index_5_2023_01', $cacheIdentifier);
     }
 }

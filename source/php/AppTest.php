@@ -1,11 +1,11 @@
 <?php
 
-namespace S3LocalIndex;
+namespace S3_Local_Index;
 
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
-use S3LocalIndex\Config\ConfigInterface;
+use S3_Local_Index\Config\ConfigInterface;
 
 class AppTest extends TestCase
 {

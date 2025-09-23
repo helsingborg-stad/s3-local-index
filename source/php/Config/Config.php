@@ -1,8 +1,8 @@
 <?php
 
-namespace S3LocalIndex\Config;
+namespace S3_Local_Index\Config;
 
-use S3LocalIndex\Config\ConfigInterface;
+use S3_Local_Index\Config\ConfigInterface;
 use WpService\Contracts\ApplyFilters;
 
 /**
@@ -22,7 +22,7 @@ class Config implements ConfigInterface
      */
     public function __construct(
         private ApplyFilters $wpService,
-        private string $filterPrefix = 'S3LocalIndex/Config',
+        private string $filterPrefix = 'S3_Local_Index/Config',
     ) {
     }
 
@@ -30,7 +30,7 @@ class Config implements ConfigInterface
      * Check if the S3 Local Index plugin is enabled.
      * 
      * The plugin is enabled by default if the S3_Uploads plugin class exists,
-     * but this can be overridden via the 'S3LocalIndex/Config/IsEnabled' filter.
+     * but this can be overridden via the 'S3_Local_Index/Config/IsEnabled' filter.
      * 
      * @return bool True if the plugin should be active, false otherwise
      */
@@ -47,7 +47,7 @@ class Config implements ConfigInterface
      * Get the priority for CLI command registration.
      * 
      * Returns the priority level used when registering CLI commands with WordPress.
-     * Can be customized via the 'S3LocalIndex/Config/GetCliPriority' filter.
+     * Can be customized via the 'S3_Local_Index/Config/GetCliPriority' filter.
      * 
      * @return int The priority level for WordPress CLI hooks (default: 10)
      */
@@ -63,7 +63,7 @@ class Config implements ConfigInterface
      * Get the priority for plugin initialization.
      * 
      * Returns the priority level used when initializing the plugin functionality.
-     * Can be customized via the 'S3LocalIndex/Config/GetPluginPriority' filter.
+     * Can be customized via the 'S3_Local_Index/Config/GetPluginPriority' filter.
      * 
      * @return int The priority level for WordPress plugin initialization hooks (default: 20)
      */
@@ -81,7 +81,7 @@ class Config implements ConfigInterface
      * Returns a unique cache directory for this site to prevent collisions
      * when multiple sites run on the same server. Uses ABSPATH root to
      * generate a UUID for uniqueness.
-     * Can be customized via the 'S3LocalIndex/Config/GetCacheDirectory' filter.
+     * Can be customized via the 'S3_Local_Index/Config/GetCacheDirectory' filter.
      * 
      * @return string The directory path for cache storage
      */

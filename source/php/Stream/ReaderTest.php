@@ -6,7 +6,7 @@ use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
-use S3LocalIndex\Parser\Parser;
+use S3_Local_Index\Parser\Parser;
 use S3_Local_Index\Logger\Logger;
 
 class ReaderTest extends TestCase
@@ -112,7 +112,7 @@ class ReaderTest extends TestCase
         $indexFile = $file = $this->fileSystem->getCacheDir() . "/" . $this->fileSystem->getCacheFileName(
             ['blogId' => 1, 'year' => 2023, 'month' => '01']
         );
-        
+
         file_put_contents($indexFile, json_encode($indexData));
         
         $reader = new Reader($this->cache, $this->fileSystem, new Logger(), new Parser());

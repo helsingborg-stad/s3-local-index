@@ -1,6 +1,6 @@
 <?php
 
-namespace S3LocalIndex\Config;
+namespace S3_Local_Index\Config;
 
 /**
  * Configuration interface for S3 Local Index plugin.

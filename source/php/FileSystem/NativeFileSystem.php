@@ -2,7 +2,7 @@
 
 namespace S3_Local_Index\FileSystem;
 
-use S3LocalIndex\Config\ConfigInterface;
+use S3_Local_Index\Config\ConfigInterface;
 
 /**
  * Native PHP file system implementation

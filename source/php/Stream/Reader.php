@@ -5,7 +5,7 @@ namespace S3_Local_Index\Stream;
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Logger\LoggerInterface;
-use S3LocalIndex\Parser\ParserInterface;
+use S3_Local_Index\Parser\PathParserInterface;
 use S3_Local_Index\Index\IndexManager;
 
 /**
@@ -23,13 +23,13 @@ class Reader implements ReaderInterface
      * @param CacheInterface      $cache      Cache interface for storing index data
      * @param FileSystemInterface $fileSystem File system interface for accessing index files
      * @param LoggerInterface     $logger     Logger interface for debugging messages
-     * @param ParserInterface     $parser     Parser interface for path operations
+     * @param PathParserInterface $pathParser     Parser interface for path operations
      */
     public function __construct(
         private CacheInterface $cache,
         private FileSystemInterface $fileSystem,
         private LoggerInterface $logger,
-        private ParserInterface $parser,
+        private PathParserInterface $pathParser,
         private IndexManager $indexManager
     ) {
     }
@@ -70,7 +70,7 @@ class Reader implements ReaderInterface
         }
 
         //If not found, flag as unavabile.
-        if (in_array($this->parser->normalizePath($path), $index, true) === false) {
+        if (in_array($this->pathParser->normalizePath($path), $index, true) === false) {
             $this->logger->log("Entry not found: " . $path);
             return 'entry_not_found';
         }

@@ -47,20 +47,20 @@ The plugin is enabled by default when the S3 Uploads plugin is active. You can c
 
 ```php
 // Enable/disable the plugin
-add_filter('S3LocalIndex/Config/IsEnabled', '__return_false');
+add_filter('S3_Local_Index/Config/IsEnabled', '__return_false');
 
 // Set CLI command priority (default: 10)
-add_filter('S3LocalIndex/Config/GetCliPriority', function() {
+add_filter('S3_Local_Index/Config/GetCliPriority', function() {
     return 15;
 });
 
 // Set plugin initialization priority (default: 20)
-add_filter('S3LocalIndex/Config/GetPluginPriority', function() {
+add_filter('S3_Local_Index/Config/GetPluginPriority', function() {
     return 25;
 });
 
 // Set custom cache directory (default: temp directory with unique site identifier)
-add_filter('S3LocalIndex/Config/GetCacheDirectory', function() {
+add_filter('S3_Local_Index/Config/GetCacheDirectory', function() {
     return '/path/to/custom/cache/directory';
 });
 ```
@@ -77,7 +77,7 @@ The plugin automatically prevents collisions between multiple sites on the same 
 - Site 1: `/tmp/s3-index-0f256ede/`
 - Site 2: `/tmp/s3-index-b9ba97a4/`
 
-You can override this behavior using the `S3LocalIndex/Config/GetCacheDirectory` filter to specify a custom cache directory location.
+You can override this behavior using the `S3_Local_Index/Config/GetCacheDirectory` filter to specify a custom cache directory location.
 
 ## CLI Commands
 
@@ -254,7 +254,7 @@ The plugin follows PSR-4 autoloading and PSR-12 coding standards. All classes us
 **Multiple sites on same server:**
 - Each site automatically gets its own cache directory to prevent collisions
 - Cache directories are generated as `/tmp/s3-index-{8-char-uuid}/`
-- You can verify your site's cache directory with: `wp eval "echo (new S3LocalIndex\Config\Config(new WpService\WpService()))->getCacheDirectory();"`
+- You can verify your site's cache directory with: `wp eval "echo (new S3_Local_Index\Config\Config(new WpService\WpService()))->getCacheDirectory();"`
 
 ### Debug Logging
 

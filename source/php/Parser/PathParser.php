@@ -1,11 +1,11 @@
 <?php
 
-namespace S3LocalIndex\Parser;
+namespace S3_Local_Index\Parser;
 
 /**
- * Concrete implementation of ParserInterface for parsing S3 file paths.
+ * Concrete implementation of PathParserInterface for parsing S3 file paths.
  */
-class Parser implements ParserInterface
+class PathParser implements PathParserInterface
 {
     /**
      * Constructor.
@@ -36,21 +36,5 @@ class Parser implements ParserInterface
     public function normalizePath(string $path): string
     {
         return ltrim(preg_replace('#^s3://#', '', $path), '/');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createCacheIdentifier(array $details): string
-    {
-        return "index_{$details['blogId']}_{$details['year']}_{$details['month']}";
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function looksLikeAFile(string $path): bool
-    {
-        return pathinfo($path, PATHINFO_EXTENSION) !== '';
     }
 }

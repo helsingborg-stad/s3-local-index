@@ -30,8 +30,7 @@
     },
     "autoload": {
         "psr-4": {
-            "S3_Local_Index\\": "source/php/",
-            "S3LocalIndex\\": "source/php/"
+            "S3_Local_Index\\": "source/php/"
         }
     },
     "version": "0.2.68"

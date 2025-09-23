@@ -8,7 +8,7 @@ use S3_Local_Index\Cache\CacheFactory;
 use WP_CLI;
 use Exception;
 use WpService\WpService;
-use S3LocalIndex\Parser\ParserInterface;
+use S3_Local_Index\Parser\PathParserInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 
 /**
@@ -27,7 +27,7 @@ class Command
      * @param WP_CLI                                      $cli            The WP-CLI interface
      * @param FileSystemInterface|null                    $fileSystem     File system handler (optional, defaults to NativeFileSystem)
      * @param CacheFactory|null                           $cacheFactory   Cache factory service (optional)
-     * @param ParserInterface|null                        $parser         Parser for path operations (optional)
+     * @param PathParserInterface|null                    $pathParser     Parser for path operations (optional)
      * @param LoggerInterface|null                        $logger         Logger for debug messages (optional)
      */
     public function __construct(
@@ -36,7 +36,7 @@ class Command
         private $cli,
         private FileSystemInterface $fileSystem,
         private CacheFactory $cacheFactory,
-        private ParserInterface $parser,
+        private PathParserInterface $pathParser,
         private LoggerInterface $logger
     ) {
     }
@@ -96,7 +96,7 @@ class Command
                 foreach ($page['Contents'] as $obj) {
                     $key = $obj['Key'];
 
-                    $locationDetails = $this->parser->getPathDetails($key);
+                    $locationDetails = $this->pathParser->getPathDetails($key);
                     
                     if (!empty($locationDetails)) {
                         extract($locationDetails);

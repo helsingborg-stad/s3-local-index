@@ -1,20 +1,20 @@
 <?php
 
-namespace S3LocalIndex;
+namespace S3_Local_Index;
 
-use WpService\WpService;
-use S3LocalIndex\Config\ConfigInterface;
-use S3_Local_Index\FileSystem\NativeFileSystem;
 use WP_CLI;
+use WpService\WpService;
+use S3_Local_Index\Config\ConfigInterface;
+use S3_Local_Index\FileSystem\NativeFileSystem;
 use S3_Local_Index\CLI\Command;
 use S3_Local_Index\Stream\Wrapper;
 use S3_Local_Index\Cache\CacheFactory;
-use S3_Uploads\Plugin as S3Plugin;
 use S3_Local_Index\Stream\Reader;
 use S3_Local_Index\Logger\Logger;
-use S3LocalIndex\Parser\Parser;
+use S3_Local_Index\Parser\PathParser;
 use S3_Local_Index\Stream\WrapperOriginal;
 use S3_Local_Index\Index\IndexManager;
+use S3_Uploads\Plugin as S3Plugin;
 
 /**
  * Main application class for S3 Local Index plugin.
@@ -70,7 +70,7 @@ class App implements HookableInterface
     public function initCli(): void
     {
         $fileSystem = new NativeFileSystem($this->config);
-        $parser = new Parser();
+        $pathParser = new PathParser();
         $logger = new Logger();
         $cacheFactory = new CacheFactory($this->wpService);
     
@@ -80,7 +80,7 @@ class App implements HookableInterface
             WP_CLI::class,
             $fileSystem,
             $cacheFactory,
-            $parser,
+            $pathParser,
             $logger
         );
         WP_CLI::add_command('s3-index', $cliCommand);
@@ -97,7 +97,7 @@ class App implements HookableInterface
     public function initPlugin(): void
     {
         $fileSystem   = new NativeFileSystem($this->config);
-        $parser       = new Parser();
+        $pathParser   = new PathParser();
         $cache        = (new CacheFactory($this->wpService))->createDefault();
         $logger       = new Logger();
         
@@ -105,14 +105,14 @@ class App implements HookableInterface
             $cache,
             $fileSystem,
             $logger,
-            $parser
+            $pathParser
         );
-        $reader       = new Reader($cache, $fileSystem, $logger, $parser, $indexManager);
+        $reader       = new Reader($cache, $fileSystem, $logger, $pathParser, $indexManager);
         $streamWrapperOriginal = new WrapperOriginal();
 
         //Setup and register the stream wrapper
         $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $parser, $logger, $streamWrapperOriginal);
+        $wrapper->setDependencies($reader, $pathParser, $logger, $streamWrapperOriginal);
         $wrapper->register();
     }
 }

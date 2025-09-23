@@ -1,6 +1,6 @@
 <?php
 
-namespace S3LocalIndex;
+namespace S3_Local_Index;
 
 /**
  * Interface for classes that can register WordPress hooks.

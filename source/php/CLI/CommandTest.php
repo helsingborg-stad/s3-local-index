@@ -9,7 +9,7 @@ use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Cache\CacheFactory;
 use S3_Uploads\Plugin;
 use WP_CLI;
-use S3LocalIndex\Parser\Parser;
+use S3_Local_Index\Parser\Parser;
 use S3_Local_Index\Logger\Logger;
 
 class CommandTest extends TestCase

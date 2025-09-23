@@ -5,13 +5,13 @@ namespace S3_Local_Index\Stream;
 use S3_Local_Index\Stream\ReaderInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3_Local_Index\Stream\WrapperInterface;
-use S3LocalIndex\Parser\ParserInterface;
+use S3_Local_Index\Parser\PathParserInterface;
 
 class Wrapper implements WrapperInterface
 {
-    private static ReaderInterface $reader;
-    private static ParserInterface $parser;
-    private static LoggerInterface $logger;
+    private static ReaderInterface      $reader;
+    private static PathParserInterface  $pathParser;
+    private static LoggerInterface      $logger;
 
     private const PROTOCOL = 's3';
 
@@ -27,12 +27,12 @@ class Wrapper implements WrapperInterface
      * @param ReaderInterface    $reader    Stream reader for file operations
      * @param LoggerInterface    $logger    Logger for debug messages
      */
-    public static function setDependencies(ReaderInterface $reader, ParserInterface $parser, LoggerInterface $logger, WrapperInterface $delegate): void
+    public static function setDependencies(ReaderInterface $reader, PathParserInterface $pathParser, LoggerInterface $logger, WrapperInterface $delegate): void
     {
-        self::$reader = $reader;
-        self::$parser = $parser;
-        self::$logger = $logger;
-        self::$delegate = $delegate;
+        self::$reader       = $reader;
+        self::$pathParser   = $pathParser;
+        self::$logger       = $logger;
+        self::$delegate     = $delegate;
     }
 
     public static function register(): void
@@ -59,7 +59,7 @@ class Wrapper implements WrapperInterface
      */
     public function url_stat($uri, $flags): array|false
     {
-        $uri      = self::$parser->normalizePath($uri); 
+        $uri      = self::$pathParser->normalizePath($uri); 
         $isFile   = pathinfo($uri, PATHINFO_EXTENSION) !== '';
         $isExists = ($flags & STREAM_URL_STAT_QUIET) !== 0; // true if it's a file_exists/is_file/is_dir check
 

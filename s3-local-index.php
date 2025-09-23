@@ -10,13 +10,13 @@
  * - wp s3-index rebuild [--clear] [--all]  : Rebuild specific indexes from rebuild list
  */
 
-use S3LocalIndex\App;
+use S3_Local_Index\App;
 use WpService\Implementations\NativeWpService;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
 $wpService  = new NativeWpService();
-$config     = new S3LocalIndex\Config\Config($wpService);
+$config     = new S3_Local_Index\Config\Config($wpService);
 
 $app = new App($wpService, $config);
 $app->addHooks();
