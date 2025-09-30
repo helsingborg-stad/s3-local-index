@@ -22,4 +22,12 @@ interface PathParserInterface
      * @return string       The normalized path
      */
     public function normalizePath(string $path): string;
+
+    /**
+     * Normalize a given path and ensure it has the s3:// protocol prefix.
+     *
+     * @param  string $path The path to normalize
+     * @return string       The normalized path with s3:// prefix
+     */
+    public function normalizePathWithProtocol(string $path): string;
 }

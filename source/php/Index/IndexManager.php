@@ -10,7 +10,9 @@ use S3_Local_Index\Index\IndexManagerInterface;
 
 use S3_Local_Index\Index\Exception\IndexNotFoundException; 
 use S3_Local_Index\Index\Exception\InvalidPathException;
-use S3_Local_Index\Index\Exception\CorruptIndexException;
+use S3_Local_Index\Index\Exception\IndexCorruptException;
+use S3_Local_Index\Index\Exception\EntryInvalidPathException;
+use S3_Local_Index\Index\Exception\CannotWriteToIndex;
 
 /**
  * Handles filesystem index operations. 
@@ -33,7 +35,7 @@ class IndexManager implements IndexManagerInterface
         //Early bailout
         $details = $this->pathParser->getPathDetails($path);
         if ($details === null) {
-            throw new EntryInvalidPathException();
+            throw new EntryInvalidPathException($path);
         }
 
         //Return cached response if exists. 
@@ -46,7 +48,7 @@ class IndexManager implements IndexManagerInterface
         //Load from index file
         $file = $this->fileSystem->getCacheFilePath($details);
         if (!$this->fileSystem->fileExists($file)) {
-            throw new IndexNotFoundException();
+            throw new IndexNotFoundException($file);
         }
 
         //Read data
@@ -74,7 +76,7 @@ class IndexManager implements IndexManagerInterface
         // Early bailout
         $details = $this->pathParser->getPathDetails($path);
         if ($details === null) {
-            throw new InvalidPathException();
+            throw new EntryInvalidPathException($path);
         }
 
         $cacheKey   = $this->cache->createCacheIdentifier($details);
@@ -98,7 +100,7 @@ class IndexManager implements IndexManagerInterface
         try {
             $this->fileSystem->filePutContents($file, json_encode($index));
         } catch (\Throwable $e) {
-            throw new \RuntimeException("Failed to write index file: {$file}", 0, $e);
+            throw new CannotWriteToIndex($file);
         }
 
         // Update cache
@@ -115,7 +117,7 @@ class IndexManager implements IndexManagerInterface
         // Early bailout
         $details = $this->pathParser->getPathDetails($path);
         if ($details === null) {
-            throw new InvalidPathException();
+            throw new EntryInvalidPathException($path);
         }
 
         $cacheKey   = $this->cache->createCacheIdentifier($details);
@@ -147,7 +149,7 @@ class IndexManager implements IndexManagerInterface
         try {
             $this->fileSystem->filePutContents($file, json_encode($index));
         } catch (\Throwable $e) {
-            throw new \RuntimeException("Failed to update index file: {$file}", 0, $e);
+            throw new CannotWriteToIndex($file);
         }
 
         // Update cache

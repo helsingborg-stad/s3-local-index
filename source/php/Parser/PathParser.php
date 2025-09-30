@@ -37,4 +37,15 @@ class PathParser implements PathParserInterface
     {
         return ltrim(preg_replace('#^s3://#', '', $path), '/');
     }
+
+    /**
+     * Normalize a given path and ensure it has the s3:// protocol prefix.
+     *
+     * @param  string $path The path to normalize
+     * @return string       The normalized path with s3:// prefix
+     */
+    public function normalizePathWithProtocol(string $path): string
+    {
+        return 's3://' . $this->normalizePath($path);
+    }
 }

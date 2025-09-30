@@ -16,7 +16,6 @@ class Wrapper implements WrapperInterface
 
     private const PROTOCOL = 's3';
 
-    /** @var resource|null */
     public $context;
 
     private static WrapperInterface $delegate;
@@ -89,24 +88,44 @@ class Wrapper implements WrapperInterface
     }
 
     /**
+     * File exists check handler.
+     * 
      * @inheritDoc
      */
     public function url_stat(string $uri, int $flags): array|false
     {
-        $uri      = self::$pathParser->normalizePath($uri);
-        $isFile   = pathinfo($uri, PATHINFO_EXTENSION) !== ''; // true if it's a file_exists/is_file/is_dir check
-        $isExists = ($flags & STREAM_URL_STAT_QUIET) !== 0;
+        $uri            = self::$pathParser->normalizePath($uri);
+        $isFileExists   = $this->isFileExistsQuery($uri, $flags);
 
-        if (!$isFile || !$isExists) {
-            return $this->makeDelegation('url_stat', [$uri, $flags]);
+        //Should not be handled by us, delegate
+        if (!$isFileExists) {
+            self::$logger->log("Delegating url_stat for non-file_exists query: $uri");
+            return $this->makeDelegation('url_stat', [
+                self::$pathParser->normalizePathWithProtocol($uri),
+                $flags
+            ]);
         }
 
-        $response = self::$reader->url_stat($uri, $flags);
-
+        // If any error occurs, we log & delegate to the original wrapper
+        try {
+            $response = self::$reader->url_stat($uri, $flags);
+        } catch (\Throwable $e) {
+            self::$logger->log("url_stat failed: " . $e->getMessage());
+            return $this->makeDelegation('url_stat', [
+                self::$pathParser->normalizePathWithProtocol($uri),
+                $flags
+            ]);
+        }
+        
         return match (true) {
             is_array($response)             => $response,
             $response === 'entry_not_found' => false,
-            default                         => $this->makeDelegation('url_stat', [$uri, $flags]),
+            default                         => $this->makeDelegation(
+                'url_stat', [
+                    self::$pathParser->normalizePathWithProtocol($uri),
+                    $flags
+                ]
+            )
         };
     }
 
@@ -172,5 +191,19 @@ class Wrapper implements WrapperInterface
     public function __call(string $name, array $args): mixed
     {
         return $this->makeDelegation($name, $args);
+    }
+
+    /**
+     * Determine if the url_stat call is a file_exists check.
+     *
+     * @param string $uri The URI being checked.
+     * @param int $flags The flags passed to url_stat.
+     * @return bool True if it's a file_exists check, false otherwise.
+     */
+    private function isFileExistsQuery($uri, int $flags): bool
+    {
+        $isFile   = pathinfo($uri, PATHINFO_EXTENSION) !== ''; // true if it's a file_exists/is_file/is_dir check
+        $isExists = ($flags & STREAM_URL_STAT_QUIET) !== 0; // true if it's a file_exists check
+        return $isFile && $isExists;
     }
 }

@@ -2,11 +2,13 @@
 
 namespace S3_Local_Index\Stream;
 
+use Exception;
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3_Local_Index\Parser\PathParserInterface;
 use S3_Local_Index\Index\IndexManager;
+use S3_Local_Index\Index\Exception\IndexManagerException;
 
 /**
  * Stream reader for S3 files with local index support.
@@ -50,11 +52,11 @@ class Reader implements ReaderInterface
     {
         try {
             $index = $this->indexManager->read($path);
-        } catch (\S3_Local_Index\Exception\IndexException $e) {
+        } catch (IndexManagerException $e) {
             switch ($e->getId()) {
                 case 'index_not_found':
                     $this->logger->log("Index missing: {$e->getMessage()}");
-                    return $e-getId();
+                    return $e->getId();
                     break;
 
                 case 'index_corrupt':
