@@ -2,6 +2,8 @@
 
 A WordPress plugin that provides local indexing of S3 files with CLI commands and cache flushing capabilities. This plugin improves performance when working with large S3 buckets by creating local indexes that enable fast file existence checks and directory listings without expensive S3 API calls.
 
+This plugin is tested with a bucket of over 100 000 files. 
+
 ## Description
 
 The S3 Local Index plugin creates and maintains local JSON index files that mirror the structure of your S3 bucket. This enables WordPress to quickly determine if files exist on S3 without making API calls for every check. The plugin supports both single-site and multisite WordPress installations.
@@ -10,10 +12,9 @@ The S3 Local Index plugin creates and maintains local JSON index files that mirr
 
 - **Fast File Operations**: Local indexes eliminate the need for S3 API calls during file existence checks
 - **WordPress Integration**: Seamless integration with WordPress's filesystem API through stream wrappers
-- **CLI Management**: Comprehensive WP-CLI commands for index management
+- **CLI Management**: WP-CLI commands for index management
 - **Cache Support**: Multiple caching strategies including WordPress object cache and static memory cache
 - **Multisite Support**: Full support for WordPress multisite networks
-- **Selective Rebuilding**: Ability to rebuild specific indexes rather than the entire bucket
 
 ## Requirements
 
@@ -81,11 +82,11 @@ You can override this behavior using the `S3_Local_Index/Config/GetCacheDirector
 
 ## CLI Commands
 
-The plugin provides several WP-CLI commands for managing S3 indexes:
+The plugin provides a WP-CLI command for managing S3 indexes:
 
 ### Create Full Index
 
-Creates a complete index by scanning all objects in the S3 bucket:
+Creates a complete index by scanning all objects in the S3 bucket. It is recommended to setup this action as a daily cron, to eshure that the index is as accurate as possible over time (it is however maintained when a file is deleted or added in realtime).
 
 ```bash
 wp s3-index create
@@ -98,35 +99,6 @@ This command:
 - Clears existing cache before starting
 - Provides progress updates during execution
 
-### Flush Cache
-
-Flush cache for specific paths or view the rebuild queue:
-
-```bash
-# Flush cache for a specific file
-wp s3-index flush uploads/2023/01/image.jpg
-
-# Flush cache and add to rebuild queue
-wp s3-index flush uploads/2023/01/image.jpg --add
-
-# View current rebuild queue
-wp s3-index flush
-```
-
-### Rebuild Indexes
-
-Rebuild specific indexes from the rebuild queue:
-
-```bash
-# Rebuild indexes in the queue
-wp s3-index rebuild
-
-# Rebuild and clear the queue
-wp s3-index rebuild --clear
-
-# Rebuild all indexes (equivalent to create)
-wp s3-index rebuild --all
-```
 
 ## How It Works
 
@@ -152,6 +124,11 @@ uploads/2023/01/image.jpg
 
 **Multisite:**
 ```
+uploads/sites/2/2023/01/image.jpg
+```
+
+**Multisite Multi Network:**
+```
 uploads/networks/1/sites/2/2023/01/image.jpg
 ```
 
@@ -170,48 +147,8 @@ Cache keys follow the pattern: `index_{blogId}_{year}_{month}`
 The plugin registers a custom S3 stream wrapper that:
 - Intercepts S3 file operations
 - Checks local indexes before making S3 API calls
-- Provides transparent integration with WordPress filesystem functions
-- Supports both file and directory operations
-
-## Development
-
-### Architecture
-
-The plugin follows a modular architecture:
-
-```
-source/php/
-├── App.php                 # Main application class
-├── Config/                 # Configuration management
-│   ├── Config.php         # Default configuration provider
-│   └── ConfigInterface.php # Configuration contract
-├── CLI/                   # Command-line interface
-│   └── Command.php        # WP-CLI commands
-├── Cache/                 # Caching implementations
-│   ├── CacheInterface.php # Cache contract
-│   ├── CacheFactory.php   # Cache factory
-│   ├── StaticCache.php    # In-memory cache
-│   ├── WpCache.php        # WordPress object cache
-│   └── CompositeCache.php # Multi-layer cache
-├── Stream/                # Stream wrapper components
-│   ├── Reader.php         # File reading operations
-│   ├── Directory.php      # Directory operations
-│   └── Wrapper.php        # Stream wrapper registration
-├── FileSystem/            # File system abstraction
-│   ├── FileSystemInterface.php
-│   └── NativeFileSystem.php
-├── Rebuild/               # Selective rebuild functionality
-│   └── RebuildTracker.php
-└── Integration/           # WordPress integration
-    └── WordPressIntegration.php
-```
-
-### Key Interfaces
-
-- **HookableInterface**: Contract for WordPress hook registration
-- **ConfigInterface**: Configuration provider contract
-- **CacheInterface**: Cache implementation contract
-- **FileSystemInterface**: File system operation contract
+- Provides transparent integration with WordPress filesystem functions. If any error occurs, it will delegate to the standard s3 wrapper. 
+- It only should cache file_exist check. This is sufficient to make a noticable performance improvement. 
 
 ### Running Tests
 
@@ -296,12 +233,3 @@ This plugin is licensed under the MIT License. See the `composer.json` file for 
 For issues and questions:
 - Create an issue on the GitHub repository
 - Contact the development team at Helsingborg Stad
-
-## Changelog
-
-### Version 0.1.14
-- Current stable release
-- Full multisite support
-- Selective rebuild functionality
-- Comprehensive CLI commands
-- Enhanced caching system
