@@ -94,39 +94,34 @@ class Wrapper implements WrapperInterface
      */
     public function url_stat(string $uri, int $flags): array|false
     {
+        $response       = null;
         $uri            = self::$pathParser->normalizePath($uri);
         $isFileExists   = $this->isFileExistsQuery($uri, $flags);
 
         //Should not be handled by us, delegate
         if (!$isFileExists) {
             self::$logger->log("Delegating url_stat for non-file_exists query: $uri");
-            return $this->makeDelegation('url_stat', [
-                self::$pathParser->normalizePathWithProtocol($uri),
-                $flags
-            ]);
+            return $this->makeDelegation(
+                'url_stat', 
+                [self::$pathParser->normalizePathWithProtocol($uri), $flags]
+            );
         }
 
-        // If any error occurs, we log & delegate to the original wrapper
+        //Handle file_exists check
         try {
             $response = self::$reader->url_stat($uri, $flags);
         } catch (\Throwable $e) {
             self::$logger->log("url_stat failed: " . $e->getMessage());
-            return $this->makeDelegation('url_stat', [
-                self::$pathParser->normalizePathWithProtocol($uri),
-                $flags
-            ]);
+        } finally {
+            return match (true) {
+                is_array($response)             => $response,
+                $response === 'entry_not_found' => false,
+                default                         => $this->makeDelegation(
+                    'url_stat',
+                    [self::$pathParser->normalizePathWithProtocol($uri), $flags]
+                ),
+            };
         }
-        
-        return match (true) {
-            is_array($response)             => $response,
-            $response === 'entry_not_found' => false,
-            default                         => $this->makeDelegation(
-                'url_stat', [
-                    self::$pathParser->normalizePathWithProtocol($uri),
-                    $flags
-                ]
-            )
-        };
     }
 
     /**

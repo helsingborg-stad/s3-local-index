@@ -64,11 +64,7 @@ class Reader implements ReaderInterface
                     break;
 
                 case 'entry_invalid_path':
-                    $this->logger->log("Could not resolve path to something useful: {$e->getMessage()}");
-                    break;
-
-                default:
-                    $this->logger->log("Unknown index error [{$e->getId()}]: {$e->getMessage()}");
+                    $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
                     break;
             }
         }
