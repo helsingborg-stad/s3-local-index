@@ -17,7 +17,7 @@ use S3_Local_Index\Index\Exception\IndexManagerException;
  * for fast file existence checks and metadata operations. It supports both
  * single-site and multisite WordPress configurations.
  */
-class Reader implements ReaderInterface
+class Reader implements WrapperInterface
 {
     public $context;
 
@@ -94,18 +94,5 @@ class Reader implements ReaderInterface
             'blksize' => -1,
             'blocks'  => -1,
         ];
-    }
-
-    public function stream_flush() {
-
-        $streamContext = stream_context_get_options($this->context);
-
-
-        $this->logger->log("Hello". json_encode($streamContext));
-    }
-
-    public function unlink($path) {
-        $this->indexManager->delete($path);
-        $this->logger->log("Removed from index: " . $path);
     }
 }

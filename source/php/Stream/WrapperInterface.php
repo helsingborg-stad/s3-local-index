@@ -21,25 +21,4 @@ interface WrapperInterface
    * @return array|false File statistics array or false if the file doesn't exist.
    */
   public function url_stat(string $path, int $flags);
-
-  /**
-   * Flushes the output for the stream and updates the local index accordingly.
-   *
-   * This method performs the underlying stream flush and then adds or updates
-   * the file entry in the local index.
-   *
-   * @return bool True on success, false on failure.
-   */
-  public function stream_flush(): bool;
-
-  /**
-   * Deletes a file at the given path and removes it from the local index.
-   *
-   * This method performs the underlying unlink operation and then removes
-   * the file entry from the local index.
-   *
-   * @param string $path The file path to delete.
-   * @return bool True on success, false on failure.
-   */
-  public function unlink(string $path): bool;
 }

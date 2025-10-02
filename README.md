@@ -16,6 +16,12 @@ The S3 Local Index plugin creates and maintains local JSON index files that mirr
 - **Cache Support**: Multiple caching strategies including WordPress object cache and static memory cache
 - **Multisite Support**: Full support for WordPress multisite networks
 
+## Index maintanaince
+The plugin will maintain the index when files are deleted and uploaded to reflect the changes. This functionality is designed using WordPress standard hooks. This plugin requires that you manage files "the right way", not registering files in WordPress will cause not_found errors. 
+
+- Create itermidiate image [wp_handle_upload, add_attachment, wp_generate_attachment_metadata, image_make_intermediate_size]
+- Delete file [wp_delete_file]
+
 ## Requirements
 
 - WordPress 5.0 or higher
