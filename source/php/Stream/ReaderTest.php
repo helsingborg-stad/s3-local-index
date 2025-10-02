@@ -9,7 +9,7 @@ use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Parser\Parser;
 use S3_Local_Index\Logger\Logger;
 
-class ReaderTest extends TestCase
+class S3LocalIndexResolverTest extends TestCase
 {
     private string $testDir;
     private CacheInterface $cache;

@@ -7,12 +7,14 @@ use WpService\WpService;
 use S3_Local_Index\Config\ConfigInterface;
 use S3_Local_Index\FileSystem\NativeFileSystem;
 use S3_Local_Index\CLI\Command;
-use S3_Local_Index\Stream\Wrapper;
+use S3_Local_Index\Stream\S3StreamWrapperProxy;
+use S3_Local_Index\Stream\S3LocalIndexResolver;
+use S3_Local_Index\Stream\S3OriginalStreamWrapper;
+use S3_Local_Index\Stream\StreamWrapperRegistrar;
+use S3_Local_Index\Stream\StreamResolverChain;
 use S3_Local_Index\Cache\CacheFactory;
-use S3_Local_Index\Stream\Reader;
 use S3_Local_Index\Logger\Logger;
 use S3_Local_Index\Parser\PathParser;
-use S3_Local_Index\Stream\WrapperOriginal;
 use S3_Local_Index\Index\IndexManager;
 use S3_Uploads\Plugin as S3Plugin;
 
@@ -89,30 +91,34 @@ class App implements HookableInterface
     /**
      * Initialize the plugin functionality.
      *
-     * Sets up the stream wrapper that provides transparent access to S3 files
-     * through the WordPress filesystem API, with caching support.
+     * Sets up the stream wrapper proxy with resolver chain that provides
+     * transparent access to S3 files through the WordPress filesystem API,
+     * with local index optimization and caching support.
      *
      * @return void
      */
     public function initPlugin(): void
     {
-        $fileSystem   = new NativeFileSystem($this->config);
-        $pathParser   = new PathParser();
-        $cache        = (new CacheFactory($this->wpService))->createDefault();
-        $logger       = new Logger();
+        $fileSystem = new NativeFileSystem($this->config);
+        $pathParser = new PathParser();
+        $cache = (new CacheFactory($this->wpService))->createDefault();
+        $logger = new Logger();
         
-        $indexManager = new IndexManager(
-            $cache,
-            $fileSystem,
-            $logger,
-            $pathParser
-        );
-        $reader       = new Reader($cache, $fileSystem, $logger, $pathParser, $indexManager);
-        $streamWrapperOriginal = new WrapperOriginal();
-
-        //Setup and register the stream wrapper
-        $wrapper = new Wrapper();
-        $wrapper->setDependencies($reader, $pathParser, $logger, $streamWrapperOriginal);
-        $wrapper->register();
+        // Create core components
+        $indexManager = new IndexManager($cache, $fileSystem, $logger, $pathParser);
+        $localIndexResolver = new S3LocalIndexResolver($cache, $fileSystem, $logger, $pathParser, $indexManager);
+        $originalWrapper = new S3OriginalStreamWrapper();
+        
+        // Create resolver chain with local index resolver
+        $resolverChain = new StreamResolverChain($logger);
+        $resolverChain->addResolver($localIndexResolver);
+        
+        // Create and setup the stream wrapper proxy
+        $streamWrapperProxy = new S3StreamWrapperProxy();
+        $streamWrapperProxy->setDependencies($resolverChain, $pathParser, $logger, $originalWrapper);
+        
+        // Register the stream wrapper
+        $registrar = new StreamWrapperRegistrar($logger);
+        $registrar->register('s3', S3StreamWrapperProxy::class);
     }
 }
