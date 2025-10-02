@@ -2,9 +2,7 @@
 
 namespace S3_Local_Index\Stream;
 
-use Exception;
 use S3_Local_Index\Cache\CacheInterface;
-use S3_Local_Index\FileSystem\FileSystemInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3_Local_Index\Parser\PathParserInterface;
 use S3_Local_Index\Index\IndexManager;
@@ -24,14 +22,13 @@ class StreamWrapperIndexed implements StreamWrapperInterface
     /**
      * Constructor with dependency injection
      *
-     * @param CacheInterface      $cache      Cache interface for storing index data
-     * @param FileSystemInterface $fileSystem File system interface for accessing index files
-     * @param LoggerInterface     $logger     Logger interface for debugging messages
-     * @param PathParserInterface $pathParser     Parser interface for path operations
+     * @param CacheInterface      $cache        Cache interface for storing index data
+     * @param LoggerInterface     $logger       Logger interface for debugging messages
+     * @param PathParserInterface $pathParser   Parser interface for path operations
+     * @param IndexManager        $indexManager Index manager for handling local index
      */
     public function __construct(
         private CacheInterface $cache,
-        private FileSystemInterface $fileSystem,
         private LoggerInterface $logger,
         private PathParserInterface $pathParser,
         private IndexManager $indexManager

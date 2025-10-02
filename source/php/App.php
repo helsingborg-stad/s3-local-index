@@ -72,17 +72,17 @@ class App implements HookableInterface
      */
     public function initCli(): void
     {
-        $fileSystem = new NativeFileSystem($this->config);
-        $pathParser = new PathParser();
-        $logger = new Logger();
-        $cacheFactory = new CacheFactory($this->wpService);
+        $fileSystem     = new NativeFileSystem($this->config);
+        $pathParser     = new PathParser();
+        $logger         = new Logger();
+        $cache          = (new CacheFactory($this->wpService))->createDefault();
     
         $cliCommand = new Command(
             $this->wpService,
             S3Plugin::get_instance(),
             WP_CLI::class,
             $fileSystem,
-            $cacheFactory,
+            $cache,
             $pathParser,
             $logger
         );
@@ -107,7 +107,7 @@ class App implements HookableInterface
         $indexManager = new IndexManager($cache, $fileSystem, $logger, $pathParser);
 
         //Create stream wrappers
-        $streamWrapperIndexed  = new StreamWrapperIndexed($cache, $fileSystem, $logger, $pathParser, $indexManager);
+        $streamWrapperIndexed  = new StreamWrapperIndexed($cache, $logger, $pathParser, $indexManager);
         $streamWrapperOriginal = new StreamWrapperOriginal();
 
         //Setup stream wrapper proxy (used later with classname string)
@@ -125,5 +125,10 @@ class App implements HookableInterface
         $streamWrapperRegistrar->unregister('s3');
         $streamWrapperRegistrar->register('s3', StreamWrapperProxy::class);
 
+        //Add hooks to maintain index on file upload/delete
+        //$maintainIndexOnFileUpload = new MaintainIndexOnFileUpload($this->wpService, $indexManager);
+        //$maintainIndexOnFileUpload->addHooks();
+        //$maintainIndexOnFileDelete = new MaintainIndexOnFileDelete($this->wpService, $indexManager);
+        //$maintainIndexOnFileDelete->addHooks();
     }
 }

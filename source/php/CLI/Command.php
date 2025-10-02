@@ -4,9 +4,8 @@ namespace S3_Local_Index\CLI;
 
 use S3_Uploads\Plugin;
 use S3_Local_Index\FileSystem\FileSystemInterface;
-use S3_Local_Index\Cache\CacheFactory;
+use S3_Local_Index\Cache\CacheInterface;
 use WP_CLI;
-use Exception;
 use WpService\WpService;
 use S3_Local_Index\Parser\PathParserInterface;
 use S3_Local_Index\Logger\LoggerInterface;
@@ -26,7 +25,7 @@ class Command
      * @param Plugin                                      $s3             The S3 Uploads plugin instance
      * @param WP_CLI                                      $cli            The WP-CLI interface
      * @param FileSystemInterface|null                    $fileSystem     File system handler (optional, defaults to NativeFileSystem)
-     * @param CacheFactory|null                           $cacheFactory   Cache factory service (optional)
+     * @param CacheInterface|null                         $cache          Cache service (optional)
      * @param PathParserInterface|null                    $pathParser     Parser for path operations (optional)
      * @param LoggerInterface|null                        $logger         Logger for debug messages (optional)
      */
@@ -35,7 +34,7 @@ class Command
         private Plugin $s3, 
         private $cli,
         private FileSystemInterface $fileSystem,
-        private CacheFactory $cacheFactory,
+        private CacheInterface $cache,
         private PathParserInterface $pathParser,
         private LoggerInterface $logger
     ) {
@@ -71,8 +70,7 @@ class Command
         $this->cli::log("[S3 Local Index] Creating index for bucket: {$bucket}");
 
         // Clear cache before rebuilding index
-        $cache = $this->cacheFactory->createDefault();
-        $cache->clear();
+        $this->cache->clear();
         $this->cli::log("[S3 Local Index] Cache cleared.");
 
         $cacheDir = $this->fileSystem->getCacheDir();
