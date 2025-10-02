@@ -2,3 +2,6 @@
 vendor
 phpunit.phar
 .phpunit.result.cache
+
+# Backup files from refactoring
+*.backup
