@@ -17,7 +17,7 @@ use S3_Local_Index\Index\Exception\IndexManagerException;
  * for fast file existence checks and metadata operations. It supports both
  * single-site and multisite WordPress configurations.
  */
-class Reader implements WrapperInterface
+class StreamWrapperIndexed implements StreamWrapperInterface
 {
     public $context;
 

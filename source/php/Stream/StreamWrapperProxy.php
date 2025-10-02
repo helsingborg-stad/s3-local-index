@@ -3,56 +3,35 @@ declare(strict_types=1);
 
 namespace S3_Local_Index\Stream;
 
-use S3_Local_Index\Stream\ReaderInterface;
 use S3_Local_Index\Logger\LoggerInterface;
-use S3_Local_Index\Stream\WrapperInterface;
+use S3_Local_Index\Stream\StreamWrapperInterface;
 use S3_Local_Index\Parser\PathParserInterface;
 
-class Wrapper implements WrapperInterface
+class StreamWrapperProxy implements StreamWrapperInterface
 {
-    private static WrapperInterface    $reader;
+    private static StreamWrapperInterface    $streamWrapperIndexed;
+    private static StreamWrapperInterface    $streamWrapperOriginal;
+
     private static PathParserInterface $pathParser;
     private static LoggerInterface     $logger;
-    private static WrapperInterface    $delegate;
 
-    private const PROTOCOL = 's3';
     public $context;
-
-    public function __construct() {}
 
     /**
      * Set dependencies statically.
      */
     public static function setDependencies(
-        WrapperInterface $reader,
+        StreamWrapperInterface $streamWrapperIndexed,
+        StreamWrapperInterface $streamWrapperOriginal,
+
         PathParserInterface $pathParser,
         LoggerInterface $logger,
-        WrapperInterface $delegate
     ): void {
-        self::$reader     = $reader;
+        self::$streamWrapperIndexed    = $streamWrapperIndexed;
+        self::$streamWrapperOriginal   = $streamWrapperOriginal;
+
         self::$pathParser = $pathParser;
         self::$logger     = $logger;
-        self::$delegate   = $delegate;
-    }
-
-    public static function register(): void
-    {
-        static $registered = false;
-        if ($registered === true) {
-            return;
-        }
-
-        $protocol = self::PROTOCOL;
-        if (in_array(self::PROTOCOL, stream_get_wrappers(), true)) {
-            stream_wrapper_unregister($protocol);
-        }
-        $registered = stream_wrapper_register(self::PROTOCOL, static::class, STREAM_IS_URL);
-
-        if ($registered) {
-            self::$logger->log("Stream wrapper for {".self::PROTOCOL."} successfully registered.");
-        } else {
-            self::$logger->log("Failed to register stream wrapper for {".self::PROTOCOL."}.");
-        }
     }
 
     /**
@@ -79,7 +58,7 @@ class Wrapper implements WrapperInterface
 
         //Handle file_exists check
         try {
-            $response = self::$reader->url_stat($uri, $flags);
+            $response = self::$streamWrapperIndexed->url_stat($uri, $flags);
         } catch (\Throwable $e) {
             self::$logger->log("url_stat failed: " . $e->getMessage());
         } finally {
@@ -103,11 +82,11 @@ class Wrapper implements WrapperInterface
      */
     public function __call(string $name, array $args): mixed
     {
-        if (method_exists(self::$delegate, $name)) {
+        if (method_exists(self::$streamWrapperOriginal, $name)) {
             if (is_resource($this->context)) {
-                self::$delegate->context = $this->context;
+                self::$streamWrapperOriginal->context = $this->context;
             }
-            return self::$delegate->$name(...$args);
+            return self::$streamWrapperOriginal->$name(...$args);
         }
         throw new \BadMethodCallException("Method $name not found on delegate");
     }

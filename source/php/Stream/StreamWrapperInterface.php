@@ -7,7 +7,7 @@ namespace S3_Local_Index\Stream;
  *
  * Defines the required methods for a stream wrapper implementation.
  */
-interface WrapperInterface
+interface StreamWrapperInterface
 {
   /**
    * Wrapper method to add index lookup to url_stat.

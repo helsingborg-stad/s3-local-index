@@ -1,8 +1,7 @@
 <?php 
 
 namespace S3_Local_Index\Stream;
-use S3_Local_Index\Stream\WrapperInterface;
-use S3_Uploads\Stream_Wrapper as StreamWrapperOriginal;
+use S3_Uploads\Stream_Wrapper as S3PluginStreamWrapperOriginal;
 
 /**
  * Original S3 stream wrapper class to delegate calls to.
@@ -14,6 +13,6 @@ use S3_Uploads\Stream_Wrapper as StreamWrapperOriginal;
  * This class cannot be validated, due to the fact that it only acts 
  * as a proxy, holding the original S3 stream wrapper.
  */
-class WrapperOriginal extends StreamWrapperOriginal implements WrapperInterface
+class StreamWrapperOriginal extends S3PluginStreamWrapperOriginal implements StreamWrapperInterface
 {
 }
