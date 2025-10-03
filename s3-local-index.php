@@ -8,7 +8,9 @@
 use S3_Local_Index\App;
 use WpService\Implementations\NativeWpService;
 
-require_once __DIR__ . '/vendor/autoload.php';
+if(file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
 
 $wpService  = new NativeWpService();
 $config     = new S3_Local_Index\Config\Config($wpService);
