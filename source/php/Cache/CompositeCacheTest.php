@@ -205,6 +205,10 @@ class CompositeCacheTest extends TestCase
             {
                 return false; 
             }
+            public function createCacheIdentifier(array $details): ?string
+            {
+                return null;
+            }
         };
     }
 }

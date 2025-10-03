@@ -56,3 +56,93 @@ if (!class_exists('S3_Uploads\Plugin')) {
     }
     ');
 }
+
+// Mock WpService classes - first create the base class
+if (!class_exists('WpService\WpService')) {
+    eval('
+    namespace WpService {
+        class WpService {
+            public function addAction($hook, $callback, $priority = 10, $args = 1) {
+                return true;
+            }
+            
+            public function addFilter($hook, $callback, $priority = 10, $args = 1) {
+                return true;
+            }
+            
+            public function applyFilters($hook, $value, ...$args) {
+                return $value;
+            }
+            
+            public function wpCacheGet($key, $group = "") {
+                return false;
+            }
+            
+            public function wpCacheSet($key, $data, $group = "", $expire = 0) {
+                return true;
+            }
+            
+            public function wpCacheDelete($key, $group = "") {
+                return true;
+            }
+            
+            public function wpCacheFlush() {
+                return true;
+            }
+            
+            public function wpCacheFlushGroup($group) {
+                return true;
+            }
+        }
+    }
+    ');
+}
+
+if (!class_exists('WpService\Implementations\FakeWpService')) {
+    eval('
+    namespace WpService\Implementations {
+        class FakeWpService extends \WpService\WpService {
+            private $methods = [];
+            
+            public function __construct(array $methods = []) {
+                $this->methods = $methods;
+            }
+            
+            public function addAction($hook, $callback, $priority = 10, $args = 1) {
+                return $this->methods["addAction"] ?? true;
+            }
+            
+            public function addFilter($hook, $callback, $priority = 10, $args = 1) {
+                return $this->methods["addFilter"] ?? true;
+            }
+            
+            public function applyFilters($hook, $value, ...$args) {
+                if (isset($this->methods["applyFilters"]) && is_callable($this->methods["applyFilters"])) {
+                    return $this->methods["applyFilters"]($hook, $value, ...$args);
+                }
+                return $value;
+            }
+            
+            public function wpCacheGet($key, $group = "") {
+                return $this->methods["wpCacheGet"] ?? false;
+            }
+            
+            public function wpCacheSet($key, $data, $group = "", $expire = 0) {
+                return $this->methods["wpCacheSet"] ?? true;
+            }
+            
+            public function wpCacheDelete($key, $group = "") {
+                return $this->methods["wpCacheDelete"] ?? true;
+            }
+            
+            public function wpCacheFlush() {
+                return $this->methods["wpCacheFlush"] ?? true;
+            }
+            
+            public function wpCacheFlushGroup($group) {
+                return $this->methods["wpCacheFlushGroup"] ?? true;
+            }
+        }
+    }
+    ');
+}

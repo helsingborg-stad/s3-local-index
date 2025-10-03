@@ -83,7 +83,11 @@ class PathParserTest extends TestCase
     {
         $path = 'uploads/networks/1/sites/5/uploads/2023/01/image.jpg';
         $pathDetails = $this->pathParser->getPathDetails($path);
-        $cacheIdentifier = $this->pathParser->createCacheIdentifier($pathDetails);
+        
+        // Use a cache implementation that has the createCacheIdentifier method
+        $cache = new \S3_Local_Index\Cache\StaticCache();
+        $cacheIdentifier = $cache->createCacheIdentifier($pathDetails);
+        
         $this->assertEquals('index_5_2023_01', $cacheIdentifier);
     }
 }
