@@ -2,7 +2,7 @@
 
 namespace S3_Local_Index\Logger;
 
-use S3_Local_Index\Config\Config;
+use S3_Local_Index\Config\ConfigInterface;
 
 /**
  * Debug-aware logger implementation.
@@ -13,7 +13,7 @@ use S3_Local_Index\Config\Config;
  */
 class Logger implements LoggerInterface
 {
-    public function __construct(private Config $config) {}
+    public function __construct(private ConfigInterface $config) {}
 
     private const LOG_TAG = '[S3 Local Index] ';
 

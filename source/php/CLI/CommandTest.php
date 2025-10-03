@@ -174,6 +174,11 @@ class CommandTest extends TestCase
             {
                 return "{$details['blogId']}-{$details['year']}-{$details['month']}.json";
             }
+
+            public function getCacheFilePath(array $details): string
+            {
+                return $this->getCacheDir() . '/' . $this->getCacheFileName($details);
+            }
         };
     }
 
