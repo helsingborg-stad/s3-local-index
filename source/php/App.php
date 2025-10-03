@@ -16,6 +16,8 @@ use S3_Local_Index\Stream\StreamWrapperIndexed;
 use S3_Local_Index\Stream\StreamWrapperOriginal;
 use S3_Uploads\Plugin as S3Plugin;
 use S3_Local_Index\Stream\StreamWrapperRegistrar;
+use S3_Local_Index\Index\Maintainance\MaintainIndexOnFileUpload;
+use S3_Local_Index\Index\Maintainance\MaintainIndexOnFileDelete;
 
 /**
  * Main application class for S3 Local Index plugin.
@@ -124,9 +126,9 @@ class App implements HookableInterface
         $streamWrapperRegistrar->register('s3', StreamWrapperProxy::class);
 
         //Add hooks to maintain index on file upload/delete
-        //$maintainIndexOnFileUpload = new MaintainIndexOnFileUpload($this->wpService, $indexManager);
-        //$maintainIndexOnFileUpload->addHooks();
-        //$maintainIndexOnFileDelete = new MaintainIndexOnFileDelete($this->wpService, $indexManager);
-        //$maintainIndexOnFileDelete->addHooks();
+        $maintainIndexOnFileUpload = new MaintainIndexOnFileUpload($this->wpService, $indexManager);
+        $maintainIndexOnFileUpload->addHooks();
+        $maintainIndexOnFileDelete = new MaintainIndexOnFileDelete($this->wpService, $indexManager);
+        $maintainIndexOnFileDelete->addHooks();
     }
 }
