@@ -2,7 +2,7 @@
 
 A WordPress plugin that provides local indexing of S3 files with CLI commands and cache flushing capabilities. This plugin improves performance when working with large S3 buckets by creating local indexes that enable fast file existence checks and directory listings without expensive S3 API calls.
 
-This plugin is tested with a bucket of over 100 000 files. 
+This plugin is tested with a bucket of over 1 000 000 files. 
 
 ## Description
 
@@ -19,8 +19,15 @@ The S3 Local Index plugin creates and maintains local JSON index files that mirr
 ## Index maintanaince
 The plugin will maintain the index when files are deleted and uploaded to reflect the changes. This functionality is designed using WordPress standard hooks. This plugin requires that you manage files "the right way", not registering files in WordPress will cause not_found errors. 
 
-- Create itermidiate image [wp_handle_upload, add_attachment, wp_generate_attachment_metadata, image_make_intermediate_size]
-- Delete file [wp_delete_file]
+The flowing file changes will be captured: 
+- When a image file is resized. 
+- When a file is deleted
+- When a file is uploaded
+
+## Good to know & limitations
+- The indexing cron / cli should only run on one of the sites in a multisite environment. 
+- All sites in a network MUST share a bucket. Multiple buckets is not yet supported. 
+- This plugin does not index directories, a lookup delegation will be made on is_dir querys. 
 
 ## Requirements
 
