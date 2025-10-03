@@ -18,6 +18,7 @@ use S3_Uploads\Plugin as S3Plugin;
 use S3_Local_Index\Stream\StreamWrapperRegistrar;
 use S3_Local_Index\Index\Maintainance\MaintainIndexOnFileUpload;
 use S3_Local_Index\Index\Maintainance\MaintainIndexOnFileDelete;
+use S3_Local_Index\Index\Maintainance\MaintainIndexOnNewIntermidiateImage;
 
 /**
  * Main application class for S3 Local Index plugin.
@@ -110,7 +111,7 @@ class App implements HookableInterface
         $streamWrapperIndexed  = new StreamWrapperIndexed($cache, $logger, $pathParser, $indexManager);
         $streamWrapperOriginal = new StreamWrapperOriginal();
 
-        //Setup stream wrapper proxy (used later with classname string)
+        //Setup stream wrapper proxy (used by classname in stream wrapper registration)
         (new StreamWrapperProxy())->setDependencies(
             $streamWrapperIndexed, 
             $streamWrapperOriginal, 
@@ -120,15 +121,17 @@ class App implements HookableInterface
 
         //Register a new stream wrapper for s3:// URLs
         $streamWrapperRegistrar = new StreamWrapperRegistrar(
-            new Logger()
+            $logger,
         );
         $streamWrapperRegistrar->unregister('s3');
         $streamWrapperRegistrar->register('s3', StreamWrapperProxy::class);
 
         //Add hooks to maintain index on file upload/delete
-        $maintainIndexOnFileUpload = new MaintainIndexOnFileUpload($this->wpService, $indexManager);
+        $maintainIndexOnFileUpload = new MaintainIndexOnFileUpload($this->wpService, $indexManager, $logger);
         $maintainIndexOnFileUpload->addHooks();
-        $maintainIndexOnFileDelete = new MaintainIndexOnFileDelete($this->wpService, $indexManager);
+        $maintainIndexOnFileDelete = new MaintainIndexOnFileDelete($this->wpService, $indexManager, $logger);
         $maintainIndexOnFileDelete->addHooks();
+        $maintainIndexOnNewIntermidiateImage = new MaintainIndexOnNewIntermidiateImage($this->wpService, $indexManager, $logger);
+        $maintainIndexOnNewIntermidiateImage->addHooks();
     }
 }

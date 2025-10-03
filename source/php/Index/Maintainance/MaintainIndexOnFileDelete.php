@@ -3,11 +3,14 @@
 namespace S3_Local_Index\Index\Maintainance;
 
 use S3_Local_Index\HookableInterface;
+use S3_Local_Index\Index\IndexManager;
+use S3_Local_Index\Logger\Logger;
+use WpService\WpService;
 
 class MaintainIndexOnFileDelete implements HookableInterface
 {
 
-  public function __construct(private $wpService, private $indexManager) {}
+  public function __construct(private WpService $wpService, private IndexManager $indexManager, private Logger $logger) {}
 
   /**
    * Register hooks with WordPress.
@@ -20,8 +23,8 @@ class MaintainIndexOnFileDelete implements HookableInterface
   /**
    * Handle file delete event.
    *
-   * @param array $upload
-   * @param string $context
+   * @param string $file
+   * @return string
    */
   public function onFileDelete(string $file): string
   {
