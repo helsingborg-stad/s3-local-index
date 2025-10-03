@@ -14,17 +14,18 @@ class MaintainIndexOnFileDelete implements HookableInterface
    */
   public function addHooks(): void
   {
-    //$this->wpService->addAction('wp_handle_upload', [$this, 'onFileUpload'], 10, 2);
+    $this->wpService->addFilter('wp_delete_file', [$this, 'onFileDelete'], 100, 1);
   }
 
   /**
-   * Handle file upload event.
+   * Handle file delete event.
    *
    * @param array $upload
    * @param string $context
    */
-  public function onFileUpload(array $upload, string $context): void
+  public function onFileDelete(string $file): string
   {
-    // Implement index maintenance logic here.
+    $this->indexManager->delete($file);
+    return $file;
   }
 }
