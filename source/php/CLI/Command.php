@@ -27,7 +27,6 @@ class Command
      * @param FileSystemInterface|null                    $fileSystem     File system handler (optional, defaults to NativeFileSystem)
      * @param CacheInterface|null                         $cache          Cache service (optional)
      * @param PathParserInterface|null                    $pathParser     Parser for path operations (optional)
-     * @param LoggerInterface|null                        $logger         Logger for debug messages (optional)
      */
     public function __construct(
         private WpService $wpService, 
@@ -35,8 +34,7 @@ class Command
         private $cli,
         private FileSystemInterface $fileSystem,
         private CacheInterface $cache,
-        private PathParserInterface $pathParser,
-        private LoggerInterface $logger
+        private PathParserInterface $pathParser
     ) {
     }
 

@@ -75,7 +75,6 @@ class App implements HookableInterface
     {
         $fileSystem     = new NativeFileSystem($this->config);
         $pathParser     = new PathParser();
-        $logger         = new Logger();
         $cache          = (new CacheFactory($this->wpService))->createDefault();
     
         $cliCommand = new Command(
@@ -84,8 +83,7 @@ class App implements HookableInterface
             WP_CLI::class,
             $fileSystem,
             $cache,
-            $pathParser,
-            $logger
+            $pathParser
         );
         WP_CLI::add_command('s3-index', $cliCommand);
     }
