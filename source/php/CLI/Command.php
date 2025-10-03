@@ -120,6 +120,5 @@ class Command
         }
 
         $this->cli::success("[S3 Local Index] Index created successfully. Total objects: {$count}");
-        $this->cli::log("[S3 Local Index] Cache will be populated on next access.");
     }
 }

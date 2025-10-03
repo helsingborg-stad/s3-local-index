@@ -104,7 +104,7 @@ class App implements HookableInterface
         $fileSystem   = new NativeFileSystem($this->config);
         $pathParser   = new PathParser();
         $cache        = (new CacheFactory($this->wpService))->createDefault();
-        $logger       = new Logger();
+        $logger       = new Logger($this->config);
         $indexManager = new IndexManager($cache, $fileSystem, $logger, $pathParser);
 
         //Create stream wrappers

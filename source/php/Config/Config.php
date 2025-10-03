@@ -44,6 +44,23 @@ class Config implements ConfigInterface
     }
 
     /**
+     * Check if debug logging is enabled.
+     * 
+     * Returns false by default, but can be enabled via the
+     * 'S3_Local_Index/Config/IsDebugEnabled' filter.
+     * 
+     * @return bool True if debug logging is enabled, false otherwise
+     */
+    public function isDebugEnabled(): bool
+    {
+        $isEnabled = defined('WP_DEBUG') && WP_DEBUG;
+        return $this->wpService->applyFilters(
+            $this->createFilterKey(__FUNCTION__),
+            $isEnabled
+        );
+    }
+
+    /**
      * Get the priority for CLI command registration.
      * 
      * Returns the priority level used when registering CLI commands with WordPress.

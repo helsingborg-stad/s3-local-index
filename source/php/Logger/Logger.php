@@ -2,6 +2,8 @@
 
 namespace S3_Local_Index\Logger;
 
+use S3_Local_Index\Config\Config;
+
 /**
  * Debug-aware logger implementation.
  * 
@@ -11,6 +13,8 @@ namespace S3_Local_Index\Logger;
  */
 class Logger implements LoggerInterface
 {
+    public function __construct(private Config $config) {}
+
     private const LOG_TAG = '[S3 Local Index] ';
 
     /**
@@ -25,7 +29,7 @@ class Logger implements LoggerInterface
      */
     public function log(string $message): void
     {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
+        if ($this->config->isDebugEnabled()) {
             error_log(self::LOG_TAG . $message);
         }
     }
