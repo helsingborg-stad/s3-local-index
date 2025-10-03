@@ -6,6 +6,8 @@ use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 
+class DummyS3UploadsPlugin {}
+
 class ConfigTest extends TestCase
 {
     #[TestDox('class can be instantiated')]
@@ -19,9 +21,12 @@ class ConfigTest extends TestCase
     #[TestDox('isEnabled returns true when S3_Uploads plugin class exists')]
     public function testIsEnabledReturnsTrueWhenS3UploadsExists(): void
     {
+        // Fake the S3_Uploads\Plugin class only for this test
+        if (!class_exists(\S3_Uploads\Plugin::class, false)) {
+            class_alias(DummyS3UploadsPlugin::class, \S3_Uploads\Plugin::class);
+        }
+
         $config = new Config($this->getWpService());
-        
-        // Since we mock the S3_Uploads\Plugin class in bootstrap.php, this should return true
         $this->assertTrue($config->isEnabled());
     }
 
