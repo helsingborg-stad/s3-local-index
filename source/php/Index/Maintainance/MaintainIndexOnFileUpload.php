@@ -14,7 +14,7 @@ class MaintainIndexOnFileUpload implements HookableInterface
    */
   public function addHooks(): void
   {
-    //$this->wpService->addAction('wp_handle_upload', [$this, 'onFileUpload'], 10, 2);
+    $this->wpService->addAction('add_attachment', [$this, 'onFileUpload'], 100, 1);
   }
 
   /**
@@ -23,8 +23,16 @@ class MaintainIndexOnFileUpload implements HookableInterface
    * @param array $upload
    * @param string $context
    */
-  public function onFileUpload(array $upload, string $context): void
+  public function onFileUpload(array $postId): void
   {
-    // Implement index maintenance logic here.
+    $isImage = $this->wpService->wpAttachmentIsImage($postId);
+    if (!$isImage) {
+      return;
+    }
+    $attachmentUrl = $this->wpService->getAttachedFile($postId);
+    if (!$attachmentUrl) {
+      return;
+    }
+    $this->indexManager->write($attachmentUrl);
   }
 }
