@@ -13,7 +13,7 @@ class LoggerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->logger = new Logger();
+        $this->logger = new Logger($this->createMockConfig());
     }
 
     protected function tearDown(): void
@@ -78,5 +78,38 @@ class LoggerTest extends TestCase
     public function testLoggerImplementsInterface(): void
     {
         $this->assertInstanceOf(LoggerInterface::class, $this->logger);
+    }
+
+    /**
+     * Create a mock Config for testing.
+     */
+    private function createMockConfig(): \S3_Local_Index\Config\ConfigInterface
+    {
+        return new class implements \S3_Local_Index\Config\ConfigInterface {
+            public function isEnabled(): bool
+            {
+                return true;
+            }
+
+            public function getCliPriority(): int
+            {
+                return 10;
+            }
+
+            public function getPluginPriority(): int
+            {
+                return 20;
+            }
+
+            public function getCacheDirectory(): string
+            {
+                return sys_get_temp_dir() . '/test-cache';
+            }
+
+            public function isDebugEnabled(): bool
+            {
+                return defined('WP_DEBUG') && WP_DEBUG;
+            }
+        };
     }
 }

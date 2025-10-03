@@ -5,14 +5,14 @@ namespace S3_Local_Index\Cache;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 
-class LruCacheTest extends TestCase
+class StaticCacheTest extends TestCase
 {
-    private LruCache $cache;
+    private StaticCache $cache;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->cache = new LruCache();
+        $this->cache = new StaticCache();
         // Clear cache before each test
         $this->cache->clear();
     }
@@ -27,9 +27,10 @@ class LruCacheTest extends TestCase
     #[TestDox('class can be instantiated')]
     public function testClassCanBeInstantiated(): void
     {
-        $cache = new LruCache();
+        $cache = new StaticCache();
 
-        $this->assertInstanceOf(LruCache::class, $cache);
+        $this->assertInstanceOf(StaticCache::class, $cache);
+        $this->assertInstanceOf(CacheInterface::class, $cache);
     }
 
     #[TestDox('set and get work correctly')]
@@ -166,5 +167,29 @@ class LruCacheTest extends TestCase
             $this->cache->set($key, $value);
             $this->assertEquals($value, $this->cache->get($key));
         }
+    }
+
+    #[TestDox('createCacheIdentifier creates correct identifier')]
+    public function testCreateCacheIdentifierCreatesCorrectIdentifier(): void
+    {
+        $details = [
+            'blogId' => 5,
+            'year' => 2023,
+            'month' => 1
+        ];
+
+        $result = $this->cache->createCacheIdentifier($details);
+
+        $this->assertEquals('index_5_2023_1', $result);
+    }
+
+    #[TestDox('createCacheIdentifier returns null for incomplete details')]
+    public function testCreateCacheIdentifierReturnsNullForIncompleteDetails(): void
+    {
+        $details = ['blogId' => 5]; // Missing year and month
+
+        $result = $this->cache->createCacheIdentifier($details);
+
+        $this->assertNull($result);
     }
 }

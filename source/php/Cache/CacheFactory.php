@@ -35,13 +35,13 @@ class CacheFactory
     }
 
     /**
-     * Create a LruCache instance
+     * Create a StaticCache instance
      *
      * @return CacheInterface
      */
     public function createStatic(): CacheInterface
     {
-        return new LruCache();
+        return new StaticCache();
     }
 
     /**

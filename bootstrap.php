@@ -31,28 +31,3 @@ spl_autoload_register(function ($class) {
         require_once $file;
     }
 });
-
-// Mock S3 Uploads Plugin class if needed
-if (!class_exists('S3_Uploads\Plugin')) {
-    eval('
-    namespace S3_Uploads {
-        class Plugin {
-            public static function get_instance() {
-                return new static();
-            }
-            
-            public function s3() {
-                return new class {
-                    public function getPaginator($operation, $args) {
-                        return new \ArrayIterator([]);
-                    }
-                };
-            }
-            
-            public function get_s3_bucket() {
-                return "test-bucket";
-            }
-        }
-    }
-    ');
-}
