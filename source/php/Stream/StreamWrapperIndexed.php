@@ -47,6 +47,9 @@ class StreamWrapperIndexed implements StreamWrapperInterface
      */
     public function url_stat(string $path, int $flags) : string|array
     {
+        $normalized = $this->pathParser->normalizePath($path);
+        $isDir = pathinfo($normalized, PATHINFO_EXTENSION) === '';
+
         try {
             $index = $this->indexManager->read($path);
         } catch (IndexManagerException $e) {
@@ -54,7 +57,6 @@ class StreamWrapperIndexed implements StreamWrapperInterface
                 case 'index_not_found':
                     $this->logger->log("Index missing: {$e->getMessage()}");
                     return $e->getId();
-                    break;
 
                 case 'index_corrupt':
                     $this->logger->log("Index corrupt, needs rebuild: {$e->getMessage()}");
@@ -64,18 +66,42 @@ class StreamWrapperIndexed implements StreamWrapperInterface
                     $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
                     break;
             }
+
+            // if we could not read the index for reasons other than missing index,
+            // continue with an empty index so subsequent checks behave predictably.
+            $index = [];
         }
 
-        //If not found, flag as unavabile.
-        if (in_array($this->pathParser->normalizePath($path), $index, true) === false) {
+        // If this is a directory check and we managed to read an index (i.e. we didn't return
+        // 'index_not_found' above) we assume the directory exists.
+        if ($isDir) {
+            $this->logger->log("Directory index present, treating as existing directory: {$path}");
+            return [
+                'dev'     => 0,
+                'ino'     => 0,
+                'mode'    => 0040000,
+                'nlink'   => 1,
+                'uid'     => 0,
+                'gid'     => 0,
+                'rdev'    => 0,
+                'size'    => 0,
+                'atime'   => time(),
+                'mtime'   => time(),
+                'ctime'   => time(),
+                'blksize' => -1,
+                'blocks'  => -1,
+            ];
+        }
+
+        // For file checks, we require the exact entry to be present in the index.
+        if (in_array($normalized, $index, true) === false) {
             $this->logger->log("Entry not found: " . $path);
             return 'entry_not_found';
         }
 
-        //Message file found
+        // File found
         $this->logger->log("Entry found: " . $path);
 
-        //Resolve as found. 
         return [
             'dev'     => 0,
             'ino'     => 0,
