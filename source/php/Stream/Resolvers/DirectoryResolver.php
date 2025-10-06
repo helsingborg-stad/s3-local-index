@@ -71,7 +71,9 @@ class DirectoryResolver implements StreamWrapperResolverInterface
      * 
      * @param  string $path  Path to stat
      * @param  int    $flags Stat flags
-     * @return array|false File statistics or false if file doesn't exist
+     * 
+     * @return null|array|false Null if unable to determine, false if not found, or
+     *                          an array of file statistics if found.
      */
     public function url_stat(string $path, int $flags) : null|false|array
     {
