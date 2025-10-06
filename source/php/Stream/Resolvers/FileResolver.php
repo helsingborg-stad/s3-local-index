@@ -54,6 +54,16 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
     }
 
     /**
+     * Get the unique identifier for this resolver.
+     * 
+     * @return string The resolver ID
+     */
+    public function resolverId(): string
+    {
+        return 'file';
+    }
+
+    /**
      * Get file statistics.
      * 
      * Implementation of PHP's url_stat for the stream wrapper.

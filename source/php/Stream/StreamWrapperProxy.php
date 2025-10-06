@@ -43,34 +43,20 @@ class StreamWrapperProxy implements StreamWrapperInterface
     {
         $response       = null;
         $uri            = self::$pathParser->normalizePath($uri);
-        $isFileExists   = fn($uri, int $flags) =>
-            pathinfo($uri, PATHINFO_EXTENSION) !== '' &&
-            ($flags & STREAM_URL_STAT_QUIET) !== 0;
 
-        //Should not be handled by us, delegate
-        if (!$isFileExists($uri, $flags)) {
-            self::$logger->log("Delegating url_stat for non-file_exists query: $uri");
-            return $this->__call(
-                'url_stat',
-                [self::$pathParser->normalizePathWithProtocol($uri), $flags]
-            );
+        foreach(self::$resolvers as $resolver) {
+            if ($resolver->canResolve($uri, $flags)) {
+                $response = $resolver->url_stat($uri, $flags);
+                if(is_array($response) || $response === false) {
+                    return $response;
+                }
+            }
         }
 
-        //Handle file_exists check
-        try {
-            $response = self::$streamWrapperIndexed->url_stat($uri, $flags);
-        } catch (\Throwable $e) {
-            self::$logger->log("url_stat failed: " . $e->getMessage());
-        } finally {
-            return match (true) {
-                is_array($response)             => $response,
-                $response === 'entry_not_found' => false,
-                default                         => $this->__call(
-                    'url_stat',
-                    [self::$pathParser->normalizePathWithProtocol($uri), $flags]
-                ),
-            };
-        }
+        return $this->__call(
+            'url_stat',
+            [self::$pathParser->normalizePathWithProtocol($uri), $flags]
+        );
     }
 
     /**

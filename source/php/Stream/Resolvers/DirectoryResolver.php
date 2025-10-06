@@ -49,8 +49,18 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
      */
     public function canResolve(string $path, int $flags): bool
     {
-        return pathinfo($path, PATHINFO_EXTENSION) !== ''
+        return pathinfo($path, PATH_INFO_EXTENSION) === ''
             && ($flags & STREAM_URL_STAT_QUIET) !== 0;
+    }
+
+    /**
+     * Get the unique identifier for this resolver.
+     * 
+     * @return string The resolver ID
+     */
+    public function resolverId(): string
+    {
+        return 'directory';
     }
 
     /**
@@ -73,25 +83,8 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
                     $this->logger->log("Index missing: {$e->getMessage()}");
                     return $e->getId();
                     break;
-
-                case 'index_corrupt':
-                    $this->logger->log("Index corrupt, needs rebuild: {$e->getMessage()}");
-                    break;
-
-                case 'entry_invalid_path':
-                    $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
-                    break;
             }
         }
-
-        //If not found, flag as unavabile.
-        if (in_array($this->pathParser->normalizePath($path), $index, true) === false) {
-            $this->logger->log("Entry not found: " . $path);
-            return 'entry_not_found';
-        }
-
-        //Message file found
-        $this->logger->log("Entry found: " . $path);
 
         //Resolve as found. 
         return [
