@@ -1,6 +1,6 @@
 <?php
 
-namespace S3_Local_Index\Stream;
+namespace S3_Local_Index\Stream\Resolvers;
 
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\Logger\LoggerInterface;
@@ -16,7 +16,7 @@ use S3_Local_Index\Stream\StreamWrapperResolverInterface;
  * for fast file existence checks and metadata operations. It supports both
  * single-site and multisite WordPress configurations.
  */
-class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResolverInterface
+class DirectoryResolver implements StreamWrapperResolverInterface
 {
     public $context;
 
@@ -49,7 +49,7 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
      */
     public function canResolve(string $path, int $flags): bool
     {
-        return pathinfo($path, PATH_INFO_EXTENSION) === ''
+        return pathinfo($path, PATHINFO_EXTENSION) === ''
             && ($flags & STREAM_URL_STAT_QUIET) !== 0;
     }
 
@@ -73,7 +73,7 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
      * @param  int    $flags Stat flags
      * @return array|false File statistics or false if file doesn't exist
      */
-    public function url_stat(string $path, int $flags) : string|array
+    public function url_stat(string $path, int $flags) : null|false|array
     {
         try {
             $index = $this->indexManager->read($path);
@@ -81,26 +81,29 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
             switch ($e->getId()) {
                 case 'index_not_found':
                     $this->logger->log("Index missing: {$e->getMessage()}");
-                    return $e->getId();
+                    return false;
+                    break;
+                case 'entry_invalid_path':
+                    $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
+                    return null;
                     break;
             }
         }
 
-        //Resolve as found. 
         return [
-            'dev'     => 0,
-            'ino'     => 0,
-            'mode'    => 0100000,
-            'nlink'   => 1,
-            'uid'     => 0,
-            'gid'     => 0,
-            'rdev'    => 0,
-            'size'    => 0,
-            'atime'   => time(),
-            'mtime'   => time(),
-            'ctime'   => time(),
+            'dev'   => 0,
+            'ino'   => 0,
+            'mode'  => 0040755,
+            'nlink' => 0,
+            'uid'   => 0,
+            'gid'   => 0,
+            'rdev'  => 0,
+            'size'  => 0,
+            'atime' => 0,
+            'mtime' => 0,
+            'ctime' => 0,
             'blksize' => -1,
-            'blocks'  => -1,
+            'blocks'  => -1
         ];
     }
 }

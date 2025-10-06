@@ -1,6 +1,6 @@
 <?php
 
-namespace S3_Local_Index\Stream;
+namespace S3_Local_Index\Stream\Resolvers;
 
 use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\Logger\LoggerInterface;
@@ -16,7 +16,7 @@ use S3_Local_Index\Stream\StreamWrapperResolverInterface;
  * for fast file existence checks and metadata operations. It supports both
  * single-site and multisite WordPress configurations.
  */
-class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResolverInterface
+class FileResolver implements StreamWrapperResolverInterface
 {
     public $context;
 
@@ -73,7 +73,7 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
      * @param  int    $flags Stat flags
      * @return array|false File statistics or false if file doesn't exist
      */
-    public function url_stat(string $path, int $flags) : string|array
+    public function url_stat(string $path, int $flags) : null|false|array
     {
         try {
             $index = $this->indexManager->read($path);
@@ -81,15 +81,17 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
             switch ($e->getId()) {
                 case 'index_not_found':
                     $this->logger->log("Index missing: {$e->getMessage()}");
-                    return $e->getId();
+                    return null;
                     break;
 
                 case 'index_corrupt':
                     $this->logger->log("Index corrupt, needs rebuild: {$e->getMessage()}");
+                    return null;
                     break;
 
                 case 'entry_invalid_path':
                     $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
+                    return null;
                     break;
             }
         }
@@ -97,7 +99,7 @@ class StreamWrapperIndexed implements StreamWrapperInterface, StreamWrapperResol
         //If not found, flag as unavabile.
         if (in_array($this->pathParser->normalizePath($path), $index, true) === false) {
             $this->logger->log("Entry not found: " . $path);
-            return 'entry_not_found';
+            return false;
         }
 
         //Message file found

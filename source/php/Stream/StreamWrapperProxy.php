@@ -9,33 +9,28 @@ use S3_Local_Index\Parser\PathParserInterface;
 
 class StreamWrapperProxy implements StreamWrapperInterface
 {
-    private static StreamWrapperInterface    $streamWrapperIndexed;
-    private static StreamWrapperInterface    $streamWrapperOriginal;
-
-    private static PathParserInterface $pathParser;
-    private static LoggerInterface     $logger;
-
     public $context;
+
+    private static array $streamWrapperResolvers = [];
+    private static StreamWrapperInterface    $streamWrapperOriginal;
+    private static PathParserInterface $pathParser;
 
     /**
      * Set dependencies statically.
      */
     public static function setDependencies(
-        StreamWrapperInterface $streamWrapperIndexed,
-        StreamWrapperInterface $streamWrapperOriginal,
-
         PathParserInterface $pathParser,
-        LoggerInterface $logger,
+        StreamWrapperInterface $streamWrapperOriginal,
+        StreamWrapperResolverInterface ...$streamWrapperResolvers
     ): void {
-        self::$streamWrapperIndexed    = $streamWrapperIndexed;
-        self::$streamWrapperOriginal   = $streamWrapperOriginal;
-
         self::$pathParser = $pathParser;
-        self::$logger     = $logger;
+        self::$streamWrapperOriginal   = $streamWrapperOriginal;
+        self::$streamWrapperResolvers    = $streamWrapperResolvers;
     }
 
     /**
-     * File exists check handler.
+     * Proxy for url_stat calls to handle with resolvers first.
+     * If no resolver can handle, delegate to original stream wrapper.
      * 
      * @inheritDoc
      */
@@ -44,9 +39,16 @@ class StreamWrapperProxy implements StreamWrapperInterface
         $response       = null;
         $uri            = self::$pathParser->normalizePath($uri);
 
-        foreach(self::$resolvers as $resolver) {
+        foreach(self::$streamWrapperResolvers as $resolver) {
+
+            // Check if this resolver can handle the request
             if ($resolver->canResolve($uri, $flags)) {
+                // Resolve returns: 
+                // false: if not found
+                // array: if found (array is faked stat data) 
+                // null: if unable to determine (try next resolver or original)
                 $response = $resolver->url_stat($uri, $flags);
+
                 if(is_array($response) || $response === false) {
                     return $response;
                 }
