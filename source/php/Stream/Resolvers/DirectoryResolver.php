@@ -49,6 +49,9 @@ class DirectoryResolver implements StreamWrapperResolverInterface
      */
     public function canResolve(string $path, int $flags): bool
     {
+        if(is_admin()) { //TODO: Use wp service
+            return false;
+        }
         return pathinfo($path, PATHINFO_EXTENSION) === ''
             && ($flags & STREAM_URL_STAT_QUIET) !== 0;
     }
@@ -82,7 +85,7 @@ class DirectoryResolver implements StreamWrapperResolverInterface
         } catch (IndexManagerException $e) {
             switch ($e->getId()) {
                 case 'index_not_found':
-                    $this->logger->log("Index missing: {$e->getMessage()}");
+                    $this->logger->log("Index missing, assuming directory not found: {$e->getMessage()}");
                     return false;
                     break;
                 case 'entry_invalid_path':
