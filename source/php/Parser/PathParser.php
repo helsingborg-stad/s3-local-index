@@ -19,8 +19,6 @@ class PathParser implements PathParserInterface
      */
     public function getPathDetails(string $path): ?array
     {
-        echo "Parsing path: $path\n"; // Debug line to trace path parsing
-
         /*
         * Supported path patterns:
         *
