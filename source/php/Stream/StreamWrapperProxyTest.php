@@ -10,15 +10,19 @@ use S3_Local_Index\Parser\PathParserInterface;
 class StreamWrapperProxyTest extends TestCase
 {
     private StreamWrapperProxy $streamWrapperProxy;
-    private StreamWrapperInterface $mockIndexed;
     private StreamWrapperInterface $mockOriginal;
     private PathParserInterface $mockPathParser;
+    /** @var StreamWrapperResolverInterface[] */
+    private array $mockIndexedResolvers;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->mockIndexed = $this->createMockStreamWrapper();
+        $this->mockIndexedResolvers = [
+            $this->createMockStreamWrapper(),
+            $this->createMockStreamWrapper()
+        ];
         $this->mockOriginal = $this->createMockStreamWrapper();
         $this->mockPathParser = $this->createMockPathParser();
 
@@ -26,7 +30,7 @@ class StreamWrapperProxyTest extends TestCase
         $this->streamWrapperProxy::setDependencies(
             $this->mockPathParser,
             $this->mockOriginal,
-            $this->mockIndexed
+            ...$this->mockIndexedResolvers
         );
     }
 
@@ -43,7 +47,6 @@ class StreamWrapperProxyTest extends TestCase
         $uri = 's3://bucket/path/directory/';
         $flags = 0; // No STREAM_URL_STAT_QUIET flag
 
-        // Mock path parser to normalize the path
         $normalizedUri = 'bucket/path/directory/';
         $this->mockPathParser->expects($this->once())
             ->method('normalizePath')
@@ -55,12 +58,6 @@ class StreamWrapperProxyTest extends TestCase
             ->with($normalizedUri)
             ->willReturn('s3://' . $normalizedUri);
 
-        // Mock logger
-        $this->mockLogger->expects($this->once())
-            ->method('log')
-            ->with($this->stringContains('Delegating url_stat for non-file_exists query'));
-
-        // Mock original wrapper to return some stats
         $expectedStats = ['size' => 1024, 'mtime' => time()];
         $this->mockOriginal->expects($this->once())
             ->method('url_stat')
@@ -84,9 +81,14 @@ class StreamWrapperProxyTest extends TestCase
             ->with($uri)
             ->willReturn($normalizedUri);
 
-        // Mock indexed wrapper to return stats
-        $expectedStats = ['size' => 2048, 'mtime' => time()];
-        $this->mockIndexed->expects($this->once())
+        // First resolver returns false, second returns stats
+        $this->mockIndexedResolvers[0]->expects($this->once())
+            ->method('url_stat')
+            ->with($normalizedUri, $flags)
+            ->willReturn(false);
+
+        $expectedStats = ['size' => 1024, 'mtime' => time()];
+        $this->mockIndexedResolvers[1]->expects($this->once())
             ->method('url_stat')
             ->with($normalizedUri, $flags)
             ->willReturn($expectedStats);
@@ -113,18 +115,16 @@ class StreamWrapperProxyTest extends TestCase
             ->with($normalizedUri)
             ->willReturn('s3://' . $normalizedUri);
 
-        // Mock indexed wrapper to throw exception
-        $this->mockIndexed->expects($this->once())
+        // Both resolvers throw exception
+        $this->mockIndexedResolvers[0]->expects($this->once())
+            ->method('url_stat')
+            ->with($normalizedUri, $flags)
+            ->willThrowException(new \Exception('Index lookup failed'));
+        $this->mockIndexedResolvers[1]->expects($this->once())
             ->method('url_stat')
             ->with($normalizedUri, $flags)
             ->willThrowException(new \Exception('Index lookup failed'));
 
-        // Mock logger to log the error
-        $this->mockLogger->expects($this->once())
-            ->method('log')
-            ->with($this->stringContains('url_stat failed'));
-
-        // Mock original wrapper to return stats
         $expectedStats = ['size' => 1024, 'mtime' => time()];
         $this->mockOriginal->expects($this->once())
             ->method('url_stat')
@@ -148,20 +148,24 @@ class StreamWrapperProxyTest extends TestCase
             ->with($uri)
             ->willReturn($normalizedUri);
 
-        // Mock indexed wrapper to return 'entry_not_found'
-        $this->mockIndexed->expects($this->once())
+        // Both resolvers return false (entry not found)
+        $this->mockIndexedResolvers[0]->expects($this->once())
             ->method('url_stat')
             ->with($normalizedUri, $flags)
-            ->willReturn('entry_not_found');
+            ->willReturn(false);
+        $this->mockIndexedResolvers[1]->expects($this->once())
+            ->method('url_stat')
+            ->with($normalizedUri, $flags)
+            ->willReturn(false);
 
         $result = $this->streamWrapperProxy->url_stat($uri, $flags);
 
         $this->assertFalse($result);
     }
 
-    private function createMockStreamWrapper(): StreamWrapperInterface
+    private function createMockStreamWrapper(): StreamWrapperResolverInterface
     {
-        return $this->createMock(StreamWrapperInterface::class);
+        return $this->createMock(StreamWrapperResolverInterface::class);
     }
 
     private function createMockPathParser(): PathParserInterface

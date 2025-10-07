@@ -96,7 +96,7 @@ class DirectoryResolver implements StreamWrapperResolverInterface
                     break;
             }
         }
-
+        $this->logger->log("Found directory index for path: " . $path);
         return $this->url_stat_response()->found('dir');
     }
 }
