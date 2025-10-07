@@ -72,26 +72,36 @@ class StreamWrapperProxyTest extends TestCase
     #[TestDox('url_stat uses indexed wrapper for file_exists queries')]
     public function testUrlStatUsesIndexedWrapperForFileExistsQueries(): void
     {
-        $uri = 's3://bucket/path/file.jpg';
-        $flags = STREAM_URL_STAT_QUIET; // file_exists check
+        $uri = 's3://bucket/path/file.txt';
+        $flags = STREAM_URL_STAT_QUIET; // Only STREAM_URL_STAT_QUIET flag
 
-        $normalizedUri = 'bucket/path/file.jpg';
+        $normalizedUri = 'bucket/path/file.txt';
         $this->mockPathParser->expects($this->once())
             ->method('normalizePath')
             ->with($uri)
             ->willReturn($normalizedUri);
 
-        // First resolver returns false, second returns stats
+        // First resolver cannot handle
         $this->mockIndexedResolvers[0]->expects($this->once())
-            ->method('url_stat')
+            ->method('canResolve')
             ->with($normalizedUri, $flags)
             ->willReturn(false);
 
-        $expectedStats = ['size' => 1024, 'mtime' => time()];
+        // Second resolver can handle and finds the file
+        $this->mockIndexedResolvers[1]->expects($this->once())
+            ->method('canResolve')
+            ->with($normalizedUri, $flags)
+            ->willReturn(true);
+
+        $expectedStats = ['size' => 2048, 'mtime' => time()];
         $this->mockIndexedResolvers[1]->expects($this->once())
             ->method('url_stat')
             ->with($normalizedUri, $flags)
             ->willReturn($expectedStats);
+
+        // Original wrapper should not be called
+        $this->mockOriginal->expects($this->never())
+            ->method('url_stat');
 
         $result = $this->streamWrapperProxy->url_stat($uri, $flags);
 
@@ -101,31 +111,29 @@ class StreamWrapperProxyTest extends TestCase
     #[TestDox('url_stat falls back to original when indexed fails')]
     public function testUrlStatFallsBackToOriginalWhenIndexedFails(): void
     {
-        $uri = 's3://bucket/path/file.jpg';
-        $flags = STREAM_URL_STAT_QUIET;
+        $uri = 's3://bucket/path/file.txt';
+        $flags = STREAM_URL_STAT_QUIET; // Only STREAM_URL_STAT_QUIET flag
 
-        $normalizedUri = 'bucket/path/file.jpg';
-        $this->mockPathParser->expects($this->atLeastOnce())
+        $normalizedUri = 'bucket/path/file.txt';
+        $this->mockPathParser->expects($this->once())
             ->method('normalizePath')
             ->with($uri)
             ->willReturn($normalizedUri);
+
+        // Both resolvers cannot handle
+        foreach ($this->mockIndexedResolvers as $resolver) {
+            $resolver->expects($this->once())
+                ->method('canResolve')
+                ->with($normalizedUri, $flags)
+                ->willReturn(false);
+        }
 
         $this->mockPathParser->expects($this->once())
             ->method('normalizePathWithProtocol')
             ->with($normalizedUri)
             ->willReturn('s3://' . $normalizedUri);
 
-        // Both resolvers throw exception
-        $this->mockIndexedResolvers[0]->expects($this->once())
-            ->method('url_stat')
-            ->with($normalizedUri, $flags)
-            ->willThrowException(new \Exception('Index lookup failed'));
-        $this->mockIndexedResolvers[1]->expects($this->once())
-            ->method('url_stat')
-            ->with($normalizedUri, $flags)
-            ->willThrowException(new \Exception('Index lookup failed'));
-
-        $expectedStats = ['size' => 1024, 'mtime' => time()];
+        $expectedStats = ['size' => 4096, 'mtime' => time()];
         $this->mockOriginal->expects($this->once())
             ->method('url_stat')
             ->with('s3://' . $normalizedUri, $flags)
@@ -139,24 +147,35 @@ class StreamWrapperProxyTest extends TestCase
     #[TestDox('url_stat returns false when entry not found')]
     public function testUrlStatReturnsFalseWhenEntryNotFound(): void
     {
-        $uri = 's3://bucket/path/file.jpg';
-        $flags = STREAM_URL_STAT_QUIET;
+        $uri = 's3://bucket/path/missingfile.txt';
+        $flags = STREAM_URL_STAT_QUIET; // Only STREAM_URL_STAT_QUIET flag
 
-        $normalizedUri = 'bucket/path/file.jpg';
+        $normalizedUri = 'bucket/path/missingfile.txt';
         $this->mockPathParser->expects($this->once())
             ->method('normalizePath')
             ->with($uri)
             ->willReturn($normalizedUri);
 
-        // Both resolvers return false (entry not found)
+        // First resolver cannot handle
         $this->mockIndexedResolvers[0]->expects($this->once())
-            ->method('url_stat')
+            ->method('canResolve')
             ->with($normalizedUri, $flags)
             ->willReturn(false);
+
+        // Second resolver can handle but does not find the file
+        $this->mockIndexedResolvers[1]->expects($this->once())
+            ->method('canResolve')
+            ->with($normalizedUri, $flags)
+            ->willReturn(true);
+
         $this->mockIndexedResolvers[1]->expects($this->once())
             ->method('url_stat')
             ->with($normalizedUri, $flags)
             ->willReturn(false);
+
+        // Original wrapper should not be called
+        $this->mockOriginal->expects($this->never())
+            ->method('url_stat');
 
         $result = $this->streamWrapperProxy->url_stat($uri, $flags);
 
