@@ -19,8 +19,22 @@ class PathParser implements PathParserInterface
      */
     public function getPathDetails(string $path): ?array
     {
+        /*
+        * Supported path patterns:
+        *
+        * Path Example                                   | networkId | blogId | year  | month  |
+        * ---------------------------------------------- | ----------|--------|-------|--------|
+        * uploads/2023/10/file.jpg                       | null      | 1      | 2023  | 10     |
+        * /uploads/2023/10/file.jpg                      | null      | 1      | 2023  | 10     |
+        * uploads/networks/2/sites/3/2023/10/file.jpg    | 2         | 3      | 2023  | 10     |
+        * /uploads/networks/2/sites/3/2023/10/file.jpg   | 2         | 3      | 2023  | 10     |
+        * uploads/networks/1/2025/10                     | 1         | 1      | 2025  | 10     |
+        * helsingborg-se/uploads/networks/1/2025/10      | 1         | 1      | 2025  | 10     |
+        * uploads/networks/9/2022/11/                    | 9         | 1      | 2022  | 11     |
+        */
+
         $path = ltrim($path, '/');
-        if (preg_match('#(?:uploads/networks/\d+/sites/(\d+)/)?(?:uploads/)?(\d{4})/(\d{2})/#', $path, $m)) {
+        if (preg_match('#/?uploads/(?:networks/(\d+)(?:/sites/(\d+))?/)?(\d{4})/(\d{2})(?:/|$)#', $path, $m)) {
             return [
                 'blogId' => $m[1] ?: '1',
                 'year'   => $m[2] ?: '1970',
