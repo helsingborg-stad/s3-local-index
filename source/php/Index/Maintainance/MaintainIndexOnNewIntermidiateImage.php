@@ -18,18 +18,17 @@ class MaintainIndexOnNewIntermidiateImage implements HookableInterface
    */
   public function addHooks(): void
   {
-    $this->wpService->addAction('wp_save_image_file', [$this, 'onFileCreation'], 100, 1);
+    $this->wpService->addAction('wp_create_file_in_uploads', [$this, 'onFileCreation'], 1, 1);
   }
 
   /**
    * Handle file creation event.
    *
    */
-  public function onFileCreation(string $filePath): void
+  public function onFileCreation($file)
   {
-    $this->logger->log("New intermidiate image created: " . $filePath);
     try {
-        $this->indexManager->write($filePath);
+        $this->indexManager->write($file);
     } catch (IndexManagerException $e) {
       switch ($e->getId()) {
           case 'cannot_write_to_index':
@@ -40,5 +39,6 @@ class MaintainIndexOnNewIntermidiateImage implements HookableInterface
               break;
       }
     }
+    return $file;
   }
 }

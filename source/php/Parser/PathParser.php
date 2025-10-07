@@ -19,6 +19,8 @@ class PathParser implements PathParserInterface
      */
     public function getPathDetails(string $path): ?array
     {
+        echo "Parsing path: $path\n"; // Debug line to trace path parsing
+
         /*
         * Supported path patterns:
         *
@@ -36,9 +38,10 @@ class PathParser implements PathParserInterface
         $path = ltrim($path, '/');
         if (preg_match('#/?uploads/(?:networks/(\d+)(?:/sites/(\d+))?/)?(\d{4})/(\d{2})(?:/|$)#', $path, $m)) {
             return [
-                'blogId' => $m[1] ?: '1',
-                'year'   => $m[2] ?: '1970',
-                'month'  => sprintf('%02d', (string) $m[3]) ?: '01',
+                'networkId' => $m[1] ?: '1',
+                'blogId'    => $m[2] ?: '1',
+                'year'      => $m[3] ?: '1970',
+                'month'     => sprintf('%02d', (string) ($m[4] ?? '1')),
             ];
         }
         return null;

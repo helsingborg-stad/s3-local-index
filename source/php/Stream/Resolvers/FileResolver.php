@@ -87,17 +87,14 @@ class FileResolver implements StreamWrapperResolverInterface
                 case 'index_not_found':
                     $this->logger->log("Index missing: {$e->getMessage()}");
                     return $this->url_stat_response()->bypass();
-                    break;
 
                 case 'index_corrupt':
                     $this->logger->log("Index corrupt, needs rebuild: {$e->getMessage()}");
                     return $this->url_stat_response()->bypass();
-                    break;
 
                 case 'entry_invalid_path':
                     $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
                     return $this->url_stat_response()->bypass();
-                    break;
             }
         }
 

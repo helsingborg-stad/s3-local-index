@@ -55,7 +55,7 @@ class StreamWrapperProxy implements StreamWrapperInterface
                 // null: if unable to determine (try next resolver or original)
                 $response = $resolver->url_stat($uri, $flags);
 
-                if(is_array($response) || $response === false) {
+                if(!is_null($response)) {
                     return $response;
                 }
             }
