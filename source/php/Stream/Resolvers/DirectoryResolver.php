@@ -8,6 +8,7 @@ use S3_Local_Index\Index\IndexManager;
 use S3_Local_Index\Index\Exception\IndexManagerException;
 use S3_Local_Index\Stream\StreamWrapperResolverInterface;
 use WpService\WpService;
+use S3_Local_Index\Stream\Response\ResponseTrait;
 
 /**
  * Stream reader for S3 files with local index support.
@@ -19,6 +20,8 @@ use WpService\WpService;
 class DirectoryResolver implements StreamWrapperResolverInterface
 {
     public $context;
+
+    use ResponseTrait;
 
     /**
      * Constructor with dependency injection
@@ -85,29 +88,15 @@ class DirectoryResolver implements StreamWrapperResolverInterface
             switch ($e->getId()) {
                 case 'index_not_found':
                     $this->logger->log("Index missing, assuming directory not found: {$e->getMessage()}");
-                    return false;
+                    return $this->url_stat_response()->notfound();
                     break;
                 case 'entry_invalid_path':
                     $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
-                    return null;
+                    return $this->url_stat_response()->bypass();
                     break;
             }
         }
 
-        return [
-            'dev'   => 0,
-            'ino'   => 0,
-            'mode'  => 0040755,
-            'nlink' => 0,
-            'uid'   => 0,
-            'gid'   => 0,
-            'rdev'  => 0,
-            'size'  => 0,
-            'atime' => 0,
-            'mtime' => 0,
-            'ctime' => 0,
-            'blksize' => -1,
-            'blocks'  => -1
-        ];
+        return $this->url_stat_response()->found('dir');
     }
 }

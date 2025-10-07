@@ -9,6 +9,7 @@ use S3_Local_Index\Index\IndexManager;
 use S3_Local_Index\Index\Exception\IndexManagerException;
 use S3_Local_Index\Stream\StreamWrapperResolverInterface;
 use WpService\WpService;
+use S3_Local_Index\Stream\Response\ResponseTrait;
 
 /**
  * Stream reader for S3 files with local index support.
@@ -20,6 +21,8 @@ use WpService\WpService;
 class FileResolver implements StreamWrapperResolverInterface
 {
     public $context;
+
+    use ResponseTrait;
 
     /**
      * Constructor with dependency injection
@@ -83,17 +86,17 @@ class FileResolver implements StreamWrapperResolverInterface
             switch ($e->getId()) {
                 case 'index_not_found':
                     $this->logger->log("Index missing: {$e->getMessage()}");
-                    return null;
+                    return $this->url_stat_response()->bypass();
                     break;
 
                 case 'index_corrupt':
                     $this->logger->log("Index corrupt, needs rebuild: {$e->getMessage()}");
-                    return null;
+                    return $this->url_stat_response()->bypass();
                     break;
 
                 case 'entry_invalid_path':
                     $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
-                    return null;
+                    return $this->url_stat_response()->bypass();
                     break;
             }
         }
@@ -101,27 +104,13 @@ class FileResolver implements StreamWrapperResolverInterface
         //If not found, flag as unavabile.
         if (in_array($this->pathParser->normalizePath($path), $index, true) === false) {
             $this->logger->log("Entry not found: " . $path);
-            return false;
+            return $this->url_stat_response()->notfound();
         }
 
         //Message file found
         $this->logger->log("Entry found: " . $path);
 
         //Resolve as found. 
-        return [
-            'dev'     => 0,
-            'ino'     => 0,
-            'mode'    => 0100000,
-            'nlink'   => 1,
-            'uid'     => 0,
-            'gid'     => 0,
-            'rdev'    => 0,
-            'size'    => 0,
-            'atime'   => time(),
-            'mtime'   => time(),
-            'ctime'   => time(),
-            'blksize' => -1,
-            'blocks'  => -1,
-        ];
+        return $this->url_stat_response()->found('file');
     }
 }
