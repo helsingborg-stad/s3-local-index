@@ -28,6 +28,7 @@ class StreamWrapperProxyTest extends TestCase
 
         $this->streamWrapperProxy = new StreamWrapperProxy();
         $this->streamWrapperProxy::setDependencies(
+            $this->createMock(LoggerInterface::class),
             $this->mockPathParser,
             $this->mockOriginal,
             ...$this->mockIndexedResolvers

@@ -17,15 +17,18 @@ class StreamWrapperProxy implements StreamWrapperInterface
     private static array $streamWrapperResolvers = [];
     private static StreamWrapperInterface    $streamWrapperOriginal;
     private static PathParserInterface $pathParser;
+    private static LoggerInterface $logger;
 
     /**
      * Set dependencies statically.
      */
     public static function setDependencies(
+        LoggerInterface $logger,
         PathParserInterface $pathParser,
         StreamWrapperInterface $streamWrapperOriginal,
         StreamWrapperResolverInterface ...$streamWrapperResolvers
     ): void {
+        self::$logger = $logger;
         self::$pathParser = $pathParser;
         self::$streamWrapperOriginal   = $streamWrapperOriginal;
         self::$streamWrapperResolvers    = $streamWrapperResolvers;
@@ -77,6 +80,7 @@ class StreamWrapperProxy implements StreamWrapperInterface
             if (is_resource($this->context)) {
                 self::$streamWrapperOriginal->context = $this->context;
             }
+            self::$logger->log("Delegating $name to original stream wrapper");
             return self::$streamWrapperOriginal->$name(...$args);
         }
         throw new \BadMethodCallException("Method $name not found on delegate");

@@ -115,6 +115,7 @@ class App implements HookableInterface
 
         //Setup stream wrapper proxy (used by classname in stream wrapper registration)
         (new StreamWrapperProxy())->setDependencies(
+            $logger,
             $pathParser,
             $streamWrapperOriginal,
             ...[$streamWrapperDirectoryResolver, $streamWrapperFileResolver]
