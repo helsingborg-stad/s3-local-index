@@ -3,39 +3,37 @@ declare(strict_types=1);
 
 namespace S3_Local_Index\Stream;
 
+use S3_Local_Index\Config\Config;
+use S3_Local_Index\Logger\Logger;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3_Local_Index\Stream\StreamWrapperInterface;
 use S3_Local_Index\Parser\PathParserInterface;
+use WpService\Implementations\NativeWpService;
 
 class StreamWrapperProxy implements StreamWrapperInterface
 {
-    private static StreamWrapperInterface    $streamWrapperIndexed;
-    private static StreamWrapperInterface    $streamWrapperOriginal;
-
-    private static PathParserInterface $pathParser;
-    private static LoggerInterface     $logger;
-
     public $context;
+
+    private static array $streamWrapperResolvers = [];
+    private static StreamWrapperInterface    $streamWrapperOriginal;
+    private static PathParserInterface $pathParser;
 
     /**
      * Set dependencies statically.
      */
     public static function setDependencies(
-        StreamWrapperInterface $streamWrapperIndexed,
-        StreamWrapperInterface $streamWrapperOriginal,
-
         PathParserInterface $pathParser,
-        LoggerInterface $logger,
+        StreamWrapperInterface $streamWrapperOriginal,
+        StreamWrapperResolverInterface ...$streamWrapperResolvers
     ): void {
-        self::$streamWrapperIndexed    = $streamWrapperIndexed;
-        self::$streamWrapperOriginal   = $streamWrapperOriginal;
-
         self::$pathParser = $pathParser;
-        self::$logger     = $logger;
+        self::$streamWrapperOriginal   = $streamWrapperOriginal;
+        self::$streamWrapperResolvers    = $streamWrapperResolvers;
     }
 
     /**
-     * File exists check handler.
+     * Proxy for url_stat calls to handle with resolvers first.
+     * If no resolver can handle, delegate to original stream wrapper.
      * 
      * @inheritDoc
      */
@@ -43,34 +41,27 @@ class StreamWrapperProxy implements StreamWrapperInterface
     {
         $response       = null;
         $uri            = self::$pathParser->normalizePath($uri);
-        $isFileExists   = fn($uri, int $flags) =>
-            pathinfo($uri, PATHINFO_EXTENSION) !== '' &&
-            ($flags & STREAM_URL_STAT_QUIET) !== 0;
 
-        //Should not be handled by us, delegate
-        if (!$isFileExists($uri, $flags)) {
-            self::$logger->log("Delegating url_stat for non-file_exists query: $uri");
-            return $this->__call(
-                'url_stat',
-                [self::$pathParser->normalizePathWithProtocol($uri), $flags]
-            );
+        foreach(self::$streamWrapperResolvers as $resolver) {
+
+            // Check if this resolver can handle the request
+            if ($resolver->canResolve($uri, $flags)) {
+                // Resolve returns: 
+                // false: if not found
+                // array: if found (array is faked stat data) 
+                // null: if unable to determine (try next resolver or original)
+                $response = $resolver->url_stat($uri, $flags);
+
+                if(is_array($response) || $response === false) {
+                    return $response;
+                }
+            }
         }
 
-        //Handle file_exists check
-        try {
-            $response = self::$streamWrapperIndexed->url_stat($uri, $flags);
-        } catch (\Throwable $e) {
-            self::$logger->log("url_stat failed: " . $e->getMessage());
-        } finally {
-            return match (true) {
-                is_array($response)             => $response,
-                $response === 'entry_not_found' => false,
-                default                         => $this->__call(
-                    'url_stat',
-                    [self::$pathParser->normalizePathWithProtocol($uri), $flags]
-                ),
-            };
-        }
+        return $this->__call(
+            'url_stat',
+            [self::$pathParser->normalizePathWithProtocol($uri), $flags]
+        );
     }
 
     /**
