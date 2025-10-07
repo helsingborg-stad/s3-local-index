@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace S3_Local_Index\Stream;
 
+use S3_Local_Index\Config\Config;
+use S3_Local_Index\Logger\Logger;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3_Local_Index\Stream\StreamWrapperInterface;
 use S3_Local_Index\Parser\PathParserInterface;
+use WpService\Implementations\NativeWpService;
 
 class StreamWrapperProxy implements StreamWrapperInterface
 {

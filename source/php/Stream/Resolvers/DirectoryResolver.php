@@ -2,12 +2,12 @@
 
 namespace S3_Local_Index\Stream\Resolvers;
 
-use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3_Local_Index\Parser\PathParserInterface;
 use S3_Local_Index\Index\IndexManager;
 use S3_Local_Index\Index\Exception\IndexManagerException;
 use S3_Local_Index\Stream\StreamWrapperResolverInterface;
+use WpService\WpService;
 
 /**
  * Stream reader for S3 files with local index support.
@@ -23,13 +23,12 @@ class DirectoryResolver implements StreamWrapperResolverInterface
     /**
      * Constructor with dependency injection
      *
-     * @param CacheInterface      $cache        Cache interface for storing index data
      * @param LoggerInterface     $logger       Logger interface for debugging messages
      * @param PathParserInterface $pathParser   Parser interface for path operations
      * @param IndexManager        $indexManager Index manager for handling local index
      */
     public function __construct(
-        private CacheInterface $cache,
+        private WpService $wpService,
         private LoggerInterface $logger,
         private PathParserInterface $pathParser,
         private IndexManager $indexManager
@@ -49,7 +48,7 @@ class DirectoryResolver implements StreamWrapperResolverInterface
      */
     public function canResolve(string $path, int $flags): bool
     {
-        if(is_admin()) { //TODO: Use wp service
+        if($this->wpService->isAdmin()) {
             return false;
         }
         return pathinfo($path, PATHINFO_EXTENSION) === ''

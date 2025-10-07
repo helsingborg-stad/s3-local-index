@@ -13,7 +13,6 @@ class StreamWrapperProxyTest extends TestCase
     private StreamWrapperInterface $mockIndexed;
     private StreamWrapperInterface $mockOriginal;
     private PathParserInterface $mockPathParser;
-    private LoggerInterface $mockLogger;
 
     protected function setUp(): void
     {
@@ -22,14 +21,12 @@ class StreamWrapperProxyTest extends TestCase
         $this->mockIndexed = $this->createMockStreamWrapper();
         $this->mockOriginal = $this->createMockStreamWrapper();
         $this->mockPathParser = $this->createMockPathParser();
-        $this->mockLogger = $this->createMockLogger();
 
         $this->streamWrapperProxy = new StreamWrapperProxy();
         $this->streamWrapperProxy::setDependencies(
-            $this->mockIndexed,
-            $this->mockOriginal,
             $this->mockPathParser,
-            $this->mockLogger
+            $this->mockOriginal,
+            $this->mockIndexed
         );
     }
 
@@ -172,8 +169,4 @@ class StreamWrapperProxyTest extends TestCase
         return $this->createMock(PathParserInterface::class);
     }
 
-    private function createMockLogger(): LoggerInterface
-    {
-        return $this->createMock(LoggerInterface::class);
-    }
 }

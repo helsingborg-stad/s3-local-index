@@ -108,8 +108,8 @@ class App implements HookableInterface
         $indexManager = new IndexManager($cache, $fileSystem, $logger, $pathParser);
 
         //Create stream wrappers
-        $streamWrapperDirectoryResolver = new DirectoryResolver($cache, $logger, $pathParser, $indexManager);
-        $streamWrapperFileResolver      = new FileResolver($cache, $logger, $pathParser, $indexManager);
+        $streamWrapperDirectoryResolver = new DirectoryResolver($this->wpService, $logger, $pathParser, $indexManager);
+        $streamWrapperFileResolver      = new FileResolver($this->wpService, $logger, $pathParser, $indexManager);
 
         $streamWrapperOriginal = new StreamWrapperOriginal();
 
