@@ -2,6 +2,7 @@
 
 namespace S3_Local_Index;
 
+use Directory;
 use WP_CLI;
 use WpService\WpService;
 use S3_Local_Index\Config\ConfigInterface;
@@ -12,7 +13,8 @@ use S3_Local_Index\Cache\CacheFactory;
 use S3_Local_Index\Logger\Logger;
 use S3_Local_Index\Parser\PathParser;
 use S3_Local_Index\Index\IndexManager;
-use S3_Local_Index\Stream\StreamWrapperIndexed;
+use S3_Local_Index\Stream\Resolvers\DirectoryResolver;
+use S3_Local_Index\Stream\Resolvers\FileResolver;
 use S3_Local_Index\Stream\StreamWrapperOriginal;
 use S3_Uploads\Plugin as S3Plugin;
 use S3_Local_Index\Stream\StreamWrapperRegistrar;
@@ -106,15 +108,16 @@ class App implements HookableInterface
         $indexManager = new IndexManager($cache, $fileSystem, $logger, $pathParser);
 
         //Create stream wrappers
-        $streamWrapperIndexed  = new StreamWrapperIndexed($cache, $logger, $pathParser, $indexManager);
+        $streamWrapperDirectoryResolver = new DirectoryResolver($this->wpService, $logger, $pathParser, $indexManager);
+        $streamWrapperFileResolver      = new FileResolver($this->wpService, $logger, $pathParser, $indexManager);
+
         $streamWrapperOriginal = new StreamWrapperOriginal();
 
         //Setup stream wrapper proxy (used by classname in stream wrapper registration)
         (new StreamWrapperProxy())->setDependencies(
-            $streamWrapperIndexed, 
-            $streamWrapperOriginal, 
-            $pathParser, 
-            $logger
+            $pathParser,
+            $streamWrapperOriginal,
+            ...[$streamWrapperDirectoryResolver, $streamWrapperFileResolver]
         );
 
         //Register a new stream wrapper for s3:// URLs
