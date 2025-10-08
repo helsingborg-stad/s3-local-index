@@ -86,16 +86,16 @@ class StreamWrapperProxy implements StreamWrapperInterface
             $this->delegate = clone self::$streamWrapperOriginal;
         }
 
-        if (method_exists($this->delegate, $name)) {
-            self::$logger->log(
-                "Delegating $name to original stream wrapper.
-                Args: " . json_encode($args)
-            );
+        self::$logger->log(
+            "Delegating {$name} to original stream wrapper. Args: " . json_encode($args)
+        );
 
-            $this->delegate->context = $this->context;
+        $this->delegate->context = $this->context;
+
+        try {
             return $this->delegate->$name(...$args);
+        } catch (\Error $e) {
+            throw new \BadMethodCallException("Method {$name} not found on delegate", 0, $e);
         }
-
-        throw new \BadMethodCallException("Method $name not found on delegate");
     }
 }

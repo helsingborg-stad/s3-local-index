@@ -143,11 +143,12 @@ class StreamWrapperCached implements StreamWrapperInterface
      */
     public function __call(string $name, array $args): mixed
     {
-        if (method_exists($this->delegate, $name)) {
-            $this->delegate->context = $this->context;
-            return $this->delegate->$name(...$args);
-        }
+        $this->delegate->context = $this->context;
 
-        throw new \BadMethodCallException("Unknown stream wrapper method: {$name}");
+        try {
+            return $this->delegate->$name(...$args);
+        } catch (\Error $e) {
+            throw new \BadMethodCallException("Method {$name} not found on delegate", 0, $e);
+        }
     }
 }
