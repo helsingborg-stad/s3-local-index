@@ -16,7 +16,7 @@ class LruCache implements CacheInterface
     private static array $ttlCache = [];  // key => expiry timestamp
     private static array $usage = [];     // key => last access time
 
-    private static int $capacity = 1000;   // default max items
+    private static int $capacity = 10000;   // default max items
 
     public function __construct(int $capacity = 1000)
     {

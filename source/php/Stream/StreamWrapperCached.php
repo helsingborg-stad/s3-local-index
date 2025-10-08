@@ -38,12 +38,6 @@ class StreamWrapperCached implements StreamWrapperInterface
         $this->cache    = $cache;
         $this->config   = $config;
         $this->ttl      = $this->config->getCacheTtl();
-
-        $this->logger->log(sprintf(
-            '[StreamWrapperCached] Initialized with TTL=%d, cache group=%s',
-            $this->ttl,
-            $this->cacheGroup
-        ));
     }
 
     /**
@@ -52,7 +46,6 @@ class StreamWrapperCached implements StreamWrapperInterface
     public function url_stat(string $uri, int $flags): array|false
     {
         if (!$this->config->isCacheEnabled()) {
-            $this->logger->log("[StreamWrapperCached] Cache disabled — delegating directly for: {$uri}");
             return $this->delegate->url_stat($uri, $flags);
         }
 
