@@ -72,6 +72,9 @@ class StreamWrapperProxy implements StreamWrapperInterface
 
     /**
      * Magic method to delegate calls to the original stream wrapper.
+     * The original stream wrapper is cloned on first use to avoid
+     * side effects. The original stream wrapper needs to be stateful
+     * to be able to remember its injected dependencies.
      *
      * @param string $name Method name
      * @param array<int,mixed> $args Arguments
@@ -79,16 +82,17 @@ class StreamWrapperProxy implements StreamWrapperInterface
      */
     public function __call(string $name, array $args): mixed
     {
-        // Each proxy instance can have its own delegate
         if (!isset($this->delegate)) {
             $this->delegate = clone self::$streamWrapperOriginal;
         }
 
         if (method_exists($this->delegate, $name)) {
+            self::$logger->log(
+                "Delegating $name to original stream wrapper.
+                Args: " . json_encode($args)
+            );
+
             $this->delegate->context = $this->context;
-
-            self::$logger->log("Delegating $name to original stream wrapper. Args: " . json_encode($args));
-
             return $this->delegate->$name(...$args);
         }
 
