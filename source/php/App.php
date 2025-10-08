@@ -21,6 +21,7 @@ use S3_Local_Index\Stream\StreamWrapperRegistrar;
 use S3_Local_Index\Index\Maintainance\MaintainIndexOnFileUpload;
 use S3_Local_Index\Index\Maintainance\MaintainIndexOnFileDelete;
 use S3_Local_Index\Index\Maintainance\MaintainIndexOnNewIntermidiateImage;
+use S3_Local_Index\Stream\StreamWrapperCached;
 
 /**
  * Main application class for S3 Local Index plugin.
@@ -111,7 +112,13 @@ class App implements HookableInterface
         $streamWrapperDirectoryResolver = new DirectoryResolver($this->wpService, $logger, $pathParser, $indexManager);
         $streamWrapperFileResolver      = new FileResolver($this->wpService, $logger, $pathParser, $indexManager);
 
-        $streamWrapperOriginal = new StreamWrapperOriginal();
+        //Original stream wrapper with caching
+        $streamWrapperOriginal = new StreamWrapperCached(
+            new StreamWrapperOriginal(),
+            $logger,
+            $cache,
+            $this->config
+        );
 
         //Setup stream wrapper proxy (used by classname in stream wrapper registration)
         (new StreamWrapperProxy())->setDependencies(
