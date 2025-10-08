@@ -78,8 +78,10 @@ class StreamWrapperProxy implements StreamWrapperInterface
     public function __call(string $name, array $args): mixed
     {
         if (method_exists(self::$streamWrapperOriginal, $name)) {
-                self::$streamWrapperOriginal->context = $this->context;
+            self::$streamWrapperOriginal->context = $this->context;
+
             self::$logger->log("Delegating $name to original stream wrapper. Args: " . json_encode($args));
+            
             return self::$streamWrapperOriginal->$name(...$args);
         }
         throw new \BadMethodCallException("Method $name not found on delegate");
