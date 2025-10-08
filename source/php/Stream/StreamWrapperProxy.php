@@ -86,8 +86,15 @@ class StreamWrapperProxy implements StreamWrapperInterface
             $this->delegate = clone self::$streamWrapperOriginal;
         }
 
+        $truncatedArgs = array_map(function ($arg) {
+            if (is_string($arg) && strlen($arg) > 100) {
+                return substr($arg, 0, 100) . '...';
+            }
+            return $arg;
+        }, $args);
+
         self::$logger->log(
-            "Delegating {$name} to original stream wrapper. Args: " . json_encode($args)
+            "Delegating {$name} to original stream wrapper. Args: " . json_encode($truncatedArgs)
         );
 
         $this->delegate->context = $this->context;
