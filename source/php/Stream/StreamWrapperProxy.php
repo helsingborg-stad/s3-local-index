@@ -15,7 +15,7 @@ class StreamWrapperProxy implements StreamWrapperInterface
     public $context;
 
     private static array $streamWrapperResolvers = [];
-    private static StreamWrapperInterface    $streamWrapperOriginal;
+    private static StreamWrapperInterface $streamWrapperOriginal;
     private static PathParserInterface $pathParser;
     private static LoggerInterface $logger;
 
@@ -43,9 +43,10 @@ class StreamWrapperProxy implements StreamWrapperInterface
     public function url_stat(string $uri, int $flags): array|false
     {
         $response       = null;
+        $rawUri         = $uri;
         $uri            = self::$pathParser->normalizePath($uri);
 
-        foreach(self::$streamWrapperResolvers as $resolver) {
+        foreach (self::$streamWrapperResolvers as $resolver) {
 
             // Check if this resolver can handle the request
             if ($resolver->canResolve($uri, $flags)) {
@@ -55,7 +56,7 @@ class StreamWrapperProxy implements StreamWrapperInterface
                 // null: if unable to determine (try next resolver or original)
                 $response = $resolver->url_stat($uri, $flags);
 
-                if(!is_null($response)) {
+                if (!is_null($response)) {
                     return $response;
                 }
             }
@@ -63,7 +64,7 @@ class StreamWrapperProxy implements StreamWrapperInterface
 
         return $this->__call(
             'url_stat',
-            [self::$pathParser->normalizePathWithProtocol($uri), $flags]
+            [$rawUri, $flags]
         );
     }
 
@@ -77,9 +78,7 @@ class StreamWrapperProxy implements StreamWrapperInterface
     public function __call(string $name, array $args): mixed
     {
         if (method_exists(self::$streamWrapperOriginal, $name)) {
-            if (is_resource($this->context)) {
                 self::$streamWrapperOriginal->context = $this->context;
-            }
             self::$logger->log("Delegating $name to original stream wrapper. Args: " . json_encode($args));
             return self::$streamWrapperOriginal->$name(...$args);
         }
