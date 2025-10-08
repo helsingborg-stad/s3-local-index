@@ -12,6 +12,8 @@ use WpService\Implementations\NativeWpService;
 
 class StreamWrapperProxy implements StreamWrapperInterface
 {
+    private ?StreamWrapperInterface $delegate = null;
+
     public $context;
 
     private static array $streamWrapperResolvers = [];
@@ -77,13 +79,19 @@ class StreamWrapperProxy implements StreamWrapperInterface
      */
     public function __call(string $name, array $args): mixed
     {
-        if (method_exists(self::$streamWrapperOriginal, $name)) {
-            self::$streamWrapperOriginal->context = $this->context;
+        // Each proxy instance can have its own delegate
+        if (!isset($this->delegate)) {
+            $this->delegate = clone self::$streamWrapperOriginal;
+        }
+
+        if (method_exists($this->delegate, $name)) {
+            $this->delegate->context = $this->context;
 
             self::$logger->log("Delegating $name to original stream wrapper. Args: " . json_encode($args));
-            
-            return self::$streamWrapperOriginal->$name(...$args);
+
+            return $this->delegate->$name(...$args);
         }
+
         throw new \BadMethodCallException("Method $name not found on delegate");
     }
 }
