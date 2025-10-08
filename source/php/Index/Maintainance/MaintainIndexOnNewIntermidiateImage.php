@@ -18,9 +18,8 @@ class MaintainIndexOnNewIntermidiateImage implements HookableInterface
    */
   public function addHooks(): void
   {
-    $this->wpService->addAction('wp_create_file_in_uploads', [$this, 'onFileCreation'], 1, 1);
+      $this->wpService->addFilter('wp_create_file_in_uploads', [$this, 'onFileCreation'], 1, 1);
   }
-
   /**
    * Handle file creation event.
    *
