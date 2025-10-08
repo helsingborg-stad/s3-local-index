@@ -80,7 +80,7 @@ class StreamWrapperProxy implements StreamWrapperInterface
             if (is_resource($this->context)) {
                 self::$streamWrapperOriginal->context = $this->context;
             }
-            self::$logger->log("Delegating $name to original stream wrapper");
+            self::$logger->log("Delegating $name to original stream wrapper. Args: " . json_encode($args));
             return self::$streamWrapperOriginal->$name(...$args);
         }
         throw new \BadMethodCallException("Method $name not found on delegate");
