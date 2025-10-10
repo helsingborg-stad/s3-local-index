@@ -60,11 +60,11 @@ class Config implements ConfigInterface
     /**
      * Get cache lifetime (in seconds).
      * 
-     * Default: 3600 seconds (1 hour).
+     * Default: 3600*24 seconds (1 day).
      */
     public function getCacheTtl(): int
     {
-        $default = 3600;
+        $default = 3600 * 24;
         return $this->wpService->applyFilters(
             $this->createFilterKey(__FUNCTION__),
             $default
