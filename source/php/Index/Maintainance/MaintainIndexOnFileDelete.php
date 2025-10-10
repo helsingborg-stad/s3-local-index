@@ -28,6 +28,7 @@ class MaintainIndexOnFileDelete implements HookableInterface
    */
   public function onFileDelete(string $file): string
   {
+    $this->logger->log("[MaintainIndex][wp_delete_file]: Hook triggered to delete {$file} from index.");
     $this->indexManager->delete($file);
     return $file;
   }

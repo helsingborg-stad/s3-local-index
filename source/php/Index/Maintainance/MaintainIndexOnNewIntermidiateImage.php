@@ -26,6 +26,8 @@ class MaintainIndexOnNewIntermidiateImage implements HookableInterface
    */
   public function onFileCreation($file)
   {
+    $this->logger->log("[MaintainIndex][wp_create_file_in_uploads]: Hook triggered to add {$file} to index.");
+
     try {
         $this->indexManager->write($file);
     } catch (IndexManagerException $e) {

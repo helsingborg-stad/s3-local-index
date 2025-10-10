@@ -29,6 +29,7 @@ class MaintainIndexOnFileUpload implements HookableInterface
    */
   public function onFileUpload(int $postId): void
   {
+
     $isImage = $this->wpService->wpAttachmentIsImage($postId);
     if (!$isImage) {
       return;
@@ -37,6 +38,8 @@ class MaintainIndexOnFileUpload implements HookableInterface
     if (!$filePath) {
       return;
     }
+
+    $this->logger->log("[MaintainIndex][add_attachment]: Hook triggered to add {$filePath} to index.");
 
     try {
         $this->indexManager->write($filePath);
