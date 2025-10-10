@@ -51,16 +51,6 @@ class DirectoryResolver implements StreamWrapperResolverInterface
      */
     public function canResolve(string $path, int $flags): bool
     {
-        // Not in admin context
-        if ($this->wpService->isAdmin()) {
-            return false;
-        }
-        
-        //If path contains /tmp/ it is a temp file, ignore.
-        if (str_contains($path, '/tmp/')) {
-            return false;
-        }
-        
         return pathinfo($path, PATHINFO_EXTENSION) === ''
             && ($flags & STREAM_URL_STAT_QUIET) !== 0;
     }
