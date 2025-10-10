@@ -54,11 +54,6 @@ class StreamWrapperCached implements StreamWrapperInterface
         if ($this->cache->has($cacheKey)) {
             $cached = $this->cache->get($cacheKey);
 
-            if ($cached === 'found') {
-                $this->logger->log("[StreamWrapperCached] Cache hit (found) for: {$uri}");
-                return ['cached' => true];
-            }
-
             if ($cached === 'notfound') {
                 $this->logger->log("[StreamWrapperCached] Cache hit (notfound) for: {$uri}");
                 return false;
@@ -76,8 +71,8 @@ class StreamWrapperCached implements StreamWrapperInterface
 
         // Cache only existence results
         if (is_array($result)) {
-            $this->cache->set($cacheKey, 'found', $this->ttl);
-        } elseif ($result === false) {
+            $this->cache->set($cacheKey, $result, $this->ttl);
+        } else {
             $this->cache->set($cacheKey, 'notfound', $this->ttl);
         }
 
