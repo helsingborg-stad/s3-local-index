@@ -86,7 +86,7 @@ class StreamWrapperProxy implements StreamWrapperInterface
      */
     public function stream_open(string $uri, string $mode, int $options, ?string &$opened_path): bool
     {
-        $requiresExistingFile = in_array($mode, ['r', 'r+'], true);
+        $requiresExistingFile = in_array($mode, ['r', 'r+', 'rb', 'rb+'], true);
         if ($requiresExistingFile && !$this->url_stat($uri, 0)) {
             return false;
         }
