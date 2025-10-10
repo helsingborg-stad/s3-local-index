@@ -71,6 +71,32 @@ class StreamWrapperProxy implements StreamWrapperInterface
     }
 
     /**
+     * Open a stream.
+     * 
+     * Implementation of PHP's stream_open for the stream wrapper.
+     * If the mode is for writing, it checks if the file exists first
+     * using url_stat to prevent creating new files.
+     * 
+     * @param  string      $uri         The URI to open
+     * @param  string      $mode        The mode to open the stream in
+     * @param  int         $options     Stream options
+     * @param  string|null $opened_path If the path was opened, this will be set to that path
+     * 
+     * @return bool True on success, false on failure
+     */
+    public function stream_open(string $uri, string $mode, int $options, ?string &$opened_path): bool
+    {
+        $requiresExistingFile = in_array($mode, ['r', 'r+'], true);
+        if ($requiresExistingFile && !$this->url_stat($uri, 0)) {
+            return false;
+        }
+        return $this->__call(
+            'stream_open',
+            [$uri, $mode, $options, &$opened_path]
+        );
+    }
+
+    /**
      * Magic method to delegate calls to the original stream wrapper.
      * The original stream wrapper is cloned on first use to avoid
      * side effects. The original stream wrapper needs to be stateful
