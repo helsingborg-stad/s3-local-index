@@ -6,7 +6,9 @@ use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use WpService\Implementations\FakeWpService;
 
-class DummyS3UploadsPlugin {}
+class DummyS3UploadsPlugin
+{
+}
 
 class ConfigTest extends TestCase
 {

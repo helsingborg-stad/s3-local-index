@@ -11,38 +11,40 @@ use WpService\WpService;
 class MaintainIndexOnFileDelete implements HookableInterface
 {
 
-  public function __construct(private WpService $wpService, private IndexManager $indexManager, private Logger $logger) {}
-
-  /**
-   * Register hooks with WordPress.
-   */
-  public function addHooks(): void
-  {
-    $this->wpService->addFilter('wp_delete_file', [$this, 'onFileDelete'], 100, 1);
-  }
-
-  /**
-   * Handle file delete event.
-   *
-   * @param string $file
-   * @return string
-   */
-  public function onFileDelete(string $file): string
-  {
-    $this->logger->log("[MaintainIndex][wp_delete_file]: Hook triggered to delete {$file} from index.");
-    
-    try {
-        $this->indexManager->delete($file);
-    } catch (IndexManagerException $e) {
-        switch ($e->getId()) {
-          case 'cannot_write_to_index':
-              $this->logger->log("[MaintainIndex][wp_delete_file] {$e->getMessage()}");
-              break;
-          default:
-              $this->logger->log("[MaintainIndex][wp_delete_file] Unexpected error on deleting from index: {$e->getMessage()}");
-              break;
-        }
+    public function __construct(private WpService $wpService, private IndexManager $indexManager, private Logger $logger)
+    {
     }
-    return $file;
-  }
+
+    /**
+     * Register hooks with WordPress.
+     */
+    public function addHooks(): void
+    {
+        $this->wpService->addFilter('wp_delete_file', [$this, 'onFileDelete'], 100, 1);
+    }
+  
+    /**
+     * Handle file delete event.
+     *
+     * @param string $file
+     * @return string
+     */
+    public function onFileDelete(string $file): string
+    {
+        $this->logger->log("[MaintainIndex][wp_delete_file]: Hook triggered to delete {$file} from index.");
+
+        try {
+            $this->indexManager->delete($file);
+        } catch (IndexManagerException $e) {
+            switch ($e->getId()) {
+              case 'cannot_write_to_index':
+                  $this->logger->log("[MaintainIndex][wp_delete_file] {$e->getMessage()}");
+                  break;
+              default:
+                  $this->logger->log("[MaintainIndex][wp_delete_file] Unexpected error on deleting from index: {$e->getMessage()}");
+                  break;
+            }
+        }
+        return $file;
+    }
 }

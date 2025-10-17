@@ -71,8 +71,8 @@ class DirectoryResolver implements StreamWrapperResolverInterface
      * Implementation of PHP's url_stat for the stream wrapper.
      * Returns basic file stats if the file exists in the index.
      * 
-     * @param  string $path  Path to stat
-     * @param  int    $flags Stat flags
+     * @param string $path  Path to stat
+     * @param int    $flags Stat flags
      * 
      * @return null|array|false Null if unable to determine, false if not found, or
      *                          an array of file statistics if found.
@@ -83,13 +83,13 @@ class DirectoryResolver implements StreamWrapperResolverInterface
             $index = $this->indexManager->read($path);
         } catch (IndexManagerException $e) {
             switch ($e->getId()) {
-                case 'index_not_found':
-                    $this->logger->log("Index missing, assuming directory not found: {$e->getMessage()}");
-                    return $this->url_stat_response()->notfound();
+            case 'index_not_found':
+                $this->logger->log("Index missing, assuming directory not found: {$e->getMessage()}");
+                return $this->url_stat_response()->notfound();
                     break;
-                case 'entry_invalid_path':
-                    $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
-                    return $this->url_stat_response()->bypass();
+            case 'entry_invalid_path':
+                $this->logger->log("Could not resolve path to index: {$e->getMessage()}");
+                return $this->url_stat_response()->bypass();
                     break;
             }
         }

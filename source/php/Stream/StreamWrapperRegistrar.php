@@ -22,8 +22,8 @@ class StreamWrapperRegistrar implements StreamWrapperRegistrarInterface
     /**
      * Register a stream wrapper for the given protocol.
      *
-     * @param string $protocol The protocol to register (e.g., 's3')
-     * @param string $className The fully qualified class name of the wrapper
+     * @param  string $protocol  The protocol to register (e.g., 's3')
+     * @param  string $className The fully qualified class name of the wrapper
      * @return bool True if registration was successful, false otherwise
      */
     public function register(string $protocol, string $className): bool
@@ -54,7 +54,7 @@ class StreamWrapperRegistrar implements StreamWrapperRegistrarInterface
     /**
      * Unregister a stream wrapper for the given protocol.
      *
-     * @param string $protocol The protocol to unregister
+     * @param  string $protocol The protocol to unregister
      * @return bool True if unregistration was successful, false otherwise
      */
     public function unregister(string $protocol): bool
@@ -78,7 +78,7 @@ class StreamWrapperRegistrar implements StreamWrapperRegistrarInterface
     /**
      * Check if a protocol is already registered.
      *
-     * @param string $protocol The protocol to check
+     * @param  string $protocol The protocol to check
      * @return bool True if the protocol is registered, false otherwise
      */
     public function isRegistered(string $protocol): bool

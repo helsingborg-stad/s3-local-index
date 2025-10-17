@@ -31,18 +31,42 @@ class PathParser implements PathParserInterface
         * uploads/networks/1/2025/10                     | 1         | 1      | 2025  | 10     |
         * helsingborg-se/uploads/networks/1/2025/10      | 1         | 1      | 2025  | 10     |
         * uploads/networks/9/2022/11/                    | 9         | 1      | 2022  | 11     |
+        * /uploads/networks/2/sites/3/2023/01/file.jpg   | 2         | 3      | 2023  | 1     |
         */
 
         $path = ltrim($path, '/');
-        if (preg_match('#/?uploads/(?:networks/(\d+)(?:/sites/(\d+))?/)?(\d{4})/(\d{2})(?:/|$)#', $path, $m)) {
-            return [
-                'networkId' => $m[1] ?: '1',
-                'blogId'    => $m[2] ?: '1',
-                'year'      => $m[3] ?: '1970',
-                'month'     => sprintf('%02d', (string) ($m[4] ?? '1')),
-            ];
+
+        // Default values
+        $networkId  = '1';
+        $blogId     = '1';
+        $year       = null;
+        $month      = null;
+
+        // Extract networkId and blogId
+        if (preg_match('#uploads/networks/(\d+)(?:/sites/(\d+))?#', $path, $m)) {
+            $networkId  = $m[1] ?? '1';
+            $blogId     = isset($m[2]) && $m[2] !== '' ? $m[2] : '1';
+        } elseif (preg_match('#uploads/sites/(\d+)#', $path, $m)) {
+            $blogId     = $m[1] ?? '1';
+            $networkId  = '1';
         }
-        return null;
+
+        // Extract year and month together from /YYYY/MM/ segment
+        if (preg_match('#/(\d{4})/(\d{2})(?:/|$)#', $path, $m)) {
+            $year  = $m[1] ?: $year;
+            $month = $m[2] ?: $month;
+        }
+
+        if(is_null($month) || is_null($year)) {
+            return null;
+        }
+
+        return [
+            'networkId' => $networkId,
+            'blogId'    => $blogId,
+            'year'      => $year,
+            'month'     => str_pad($month, 2, '0', STR_PAD_LEFT),
+        ];
     }
 
     /**
