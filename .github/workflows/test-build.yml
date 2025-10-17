@@ -11,13 +11,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 24.6
-        cache: 'npm'
-        cache-dependency-path: ./package-lock.json
-
     - name: Setup PHP with composer v2
       uses: shivammathur/setup-php@v2
       with:
