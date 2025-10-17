@@ -11,6 +11,6 @@ use S3_Local_Index\Stream\StreamWrapperInterface;
  */
 interface StreamWrapperResolverInterface extends StreamWrapperInterface
 {
-  public function canResolve(string $path, int $flags): bool;
-  public function resolverId(): string;
+    public function canResolve(string $path, int $flags): bool;
+    public function resolverId(): string;
 }

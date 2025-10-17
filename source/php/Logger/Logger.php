@@ -13,7 +13,9 @@ use S3_Local_Index\Config\ConfigInterface;
  */
 class Logger implements LoggerInterface
 {
-    public function __construct(private ConfigInterface $config) {}
+    public function __construct(private ConfigInterface $config)
+    {
+    }
 
     private const LOG_TAG = '[S3 Local Index] ';
 
@@ -24,7 +26,7 @@ class Logger implements LoggerInterface
      * if debugging is enabled. This prevents log file pollution
      * in production environments.
      * 
-     * @param string $message The message to log
+     * @param  string $message The message to log
      * @return void
      */
     public function log(string $message): void

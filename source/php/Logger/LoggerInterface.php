@@ -13,7 +13,7 @@ interface LoggerInterface
     /**
      * Log a message if debug is enabled.
      * 
-     * @param string $message The message to log
+     * @param  string $message The message to log
      * @return void
      */
     public function log(string $message): void;

@@ -21,12 +21,12 @@ class Command
     /**
      * Constructor for CLI Command.
      *
-     * @param WpService                                   $wpService      The WordPress service provider
-     * @param Plugin                                      $s3             The S3 Uploads plugin instance
-     * @param WP_CLI                                      $cli            The WP-CLI interface
-     * @param FileSystemInterface|null                    $fileSystem     File system handler (optional, defaults to NativeFileSystem)
-     * @param CacheInterface|null                         $cache          Cache service (optional)
-     * @param PathParserInterface|null                    $pathParser     Parser for path operations (optional)
+     * @param WpService                $wpService  The WordPress service provider
+     * @param Plugin                   $s3         The S3 Uploads plugin instance
+     * @param WP_CLI                   $cli        The WP-CLI interface
+     * @param FileSystemInterface|null $fileSystem File system handler (optional, defaults to NativeFileSystem)
+     * @param CacheInterface|null      $cache      Cache service (optional)
+     * @param PathParserInterface|null $pathParser Parser for path operations (optional)
      */
     public function __construct(
         private WpService $wpService, 

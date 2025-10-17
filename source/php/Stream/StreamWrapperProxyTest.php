@@ -12,7 +12,9 @@ class StreamWrapperProxyTest extends TestCase
     private StreamWrapperProxy $streamWrapperProxy;
     private StreamWrapperInterface $mockOriginal;
     private PathParserInterface $mockPathParser;
-    /** @var StreamWrapperResolverInterface[] */
+    /**
+     * @var StreamWrapperResolverInterface[] 
+     */
     private array $mockIndexedResolvers;
 
     protected function setUp(): void
