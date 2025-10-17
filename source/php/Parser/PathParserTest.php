@@ -29,9 +29,10 @@ class PathParserTest extends TestCase
 
         $this->assertEquals(
             [
-            'blogId' => 1,
-            'year' => 2023,
-            'month' => 1,
+                'blogId' => 1,
+                'year' => 2023,
+                'month' => 01,
+                'networkId' => 1
             ], $result
         );
     }
@@ -46,7 +47,8 @@ class PathParserTest extends TestCase
             [
             'blogId' => 5,
             'year' => 2023,
-            'month' => 1,
+            'month' => 01,
+            'networkId' => 1
             ], $result
         );
     }
@@ -81,13 +83,19 @@ class PathParserTest extends TestCase
     #[TestDox('createCacheIdentifier creates correct identifier')]
     public function testCreateCacheIdentifierCreatesCorrectIdentifier(): void
     {
-        $path = 'uploads/networks/1/sites/5/uploads/2023/01/image.jpg';
-        $pathDetails = $this->pathParser->getPathDetails($path);
-        
-        // Use a cache implementation that has the createCacheIdentifier method
+        // Test all supported path variants
+        $paths = [
+            'uploads/2023/01/image.jpg' => 'index_1_2023_01',
+            'uploads/networks/1/sites/5/uploads/2023/01/image.jpg' => 'index_5_2023_01',
+            'uploads/networks/2/sites/10/uploads/2024/06/photo.png' => 'index_10_2024_06',
+        ];
+
         $cache = new \S3_Local_Index\Cache\StaticCache();
-        $cacheIdentifier = $cache->createCacheIdentifier($pathDetails);
-        
-        $this->assertEquals('index_5_2023_01', $cacheIdentifier);
+
+        foreach ($paths as $path => $expectedIdentifier) {
+            $pathDetails = $this->pathParser->getPathDetails($path);
+            $cacheIdentifier = $cache->createCacheIdentifier($pathDetails);
+            $this->assertEquals($expectedIdentifier, $cacheIdentifier);
+        }
     }
 }
