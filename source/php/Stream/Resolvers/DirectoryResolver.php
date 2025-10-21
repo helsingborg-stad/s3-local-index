@@ -79,6 +79,11 @@ class DirectoryResolver implements StreamWrapperResolverInterface
      */
     public function url_stat(string $path, int $flags) : null|false|array
     {
+        // We do not care enough about directories for admin users
+        if($this->wpService->isAdmin()) {
+            return $this->url_stat_response()->bypass();
+        }
+
         try {
             $index = $this->indexManager->read($path);
         } catch (IndexManagerException $e) {
