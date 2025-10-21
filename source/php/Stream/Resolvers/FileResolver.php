@@ -2,7 +2,6 @@
 
 namespace S3_Local_Index\Stream\Resolvers;
 
-use S3_Local_Index\Cache\CacheInterface;
 use S3_Local_Index\Logger\LoggerInterface;
 use S3_Local_Index\Parser\PathParserInterface;
 use S3_Local_Index\Index\IndexManager;
