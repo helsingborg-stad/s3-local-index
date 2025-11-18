@@ -18,10 +18,11 @@ interface IndexManagerInterface
     /**
      * Update the local index with a new file path.
      *
-     * @param  string $path
+     * @param  string   $path File path to add to the index
+     * @param  int|null $size File size in bytes (optional)
      * @return bool True if the path was updated, or added to the string. 
      */
-    public function write(string $path): bool;
+    public function write(string $path, ?int $size = null): bool;
 
     /**
      * Remove a file path from the local index.

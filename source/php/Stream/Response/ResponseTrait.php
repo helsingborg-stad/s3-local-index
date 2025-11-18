@@ -23,10 +23,11 @@ trait ResponseTrait
             /**
              * Return a simulated stat array for a found file or directory.
              *
-             * @param  string $type Either 'file' or 'dir'.
+             * @param  string   $type Either 'file' or 'dir'.
+             * @param  int|null $size File size in bytes. If null, uses 1024 as default.
              * @return array
              */
-            public function found(string $type = 'file'): array
+            public function found(string $type = 'file', ?int $size = null): array
             {
                 if($type !== 'file' && $type !== 'dir') {
                     throw new \InvalidArgumentException('Type must be either "file" or "dir".');
@@ -53,7 +54,7 @@ trait ResponseTrait
                 ? (0040000 | $dirMode)   // Directory
                 : (0100000 | $fileMode); // Regular file
 
-                $size = $isDir ? 0 : 1024; // Directory = 0, file = 1 KB (placeholder)
+                $size = $isDir ? 0 : ($size ?? 1024); // Directory = 0, file = provided size or 1 KB (placeholder)
 
                 $blocks = ceil($size / 512) ?: 0;
 

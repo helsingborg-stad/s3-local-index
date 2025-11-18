@@ -91,12 +91,16 @@ class Command
             if (!empty($page['Contents'])) {
                 foreach ($page['Contents'] as $obj) {
                     $key = $obj['Key'];
+                    $size = $obj['Size'] ?? 0;
 
                     $locationDetails = $this->pathParser->getPathDetails($key);
                     
                     if (!empty($locationDetails)) {
                         extract($locationDetails);
-                        $filesBySite[$blogId][$year][$month][] = $bucket . "/" . $key;
+                        $filesBySite[$blogId][$year][$month][] = [
+                            'path' => $bucket . "/" . $key,
+                            'size' => $size
+                        ];
                     }
 
                     $count++;

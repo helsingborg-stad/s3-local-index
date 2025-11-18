@@ -71,7 +71,7 @@ class IndexManager implements IndexManagerInterface
     /*
     * @inheritDoc
     */
-    public function write(string $path): bool
+    public function write(string $path, ?int $size = null): bool
     {
         // Early bailout
         $details = $this->pathParser->getPathDetails($path);
@@ -93,18 +93,37 @@ class IndexManager implements IndexManagerInterface
             throw $e;
         }
 
-        // Append to index
-        $index[] = $normalized;
-
-        // Write to file with error handling
-        try {
-            $this->fileSystem->filePutContents($file, json_encode($index));
-        } catch (\Throwable $e) {
-            throw new CannotWriteToIndex($file);
+        // Check if entry already exists (avoid duplicates)
+        $entryExists = false;
+        foreach ($index as $existingEntry) {
+            $existingPath = is_array($existingEntry) ? ($existingEntry['path'] ?? '') : $existingEntry;
+            if ($existingPath === $normalized) {
+                $entryExists = true;
+                break;
+            }
         }
 
-        // Update cache
-        $this->cache->set($cacheKey, $index, 3600);
+        // Only append if entry doesn't already exist
+        if (!$entryExists) {
+            // Create entry with metadata
+            $entry = [
+                'path' => $normalized,
+                'size' => $size ?? 0
+            ];
+
+            // Append to index
+            $index[] = $entry;
+
+            // Write to file with error handling
+            try {
+                $this->fileSystem->filePutContents($file, json_encode($index));
+            } catch (\Throwable $e) {
+                throw new CannotWriteToIndex($file);
+            }
+
+            // Update cache
+            $this->cache->set($cacheKey, $index, 3600);
+        }
 
         return true;
     }
@@ -136,11 +155,14 @@ class IndexManager implements IndexManagerInterface
             throw $e;
         }
 
-        // Remove from index if present
-        $keys = array_keys($index, $normalized, true);
-        foreach ($keys as $key) {
-            unset($index[$key]);
-        }
+        // Remove from index if present (support both old and new format)
+        $index = array_filter(
+            $index, function ($entry) use ($normalized) {
+                // Support old format (string) and new format (array with 'path')
+                $entryPath = is_array($entry) ? ($entry['path'] ?? '') : $entry;
+                return $entryPath !== $normalized;
+            }
+        );
 
         // Reindex array to keep it clean
         $index = array_values($index);

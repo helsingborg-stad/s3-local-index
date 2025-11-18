@@ -97,8 +97,20 @@ class FileResolver implements StreamWrapperResolverInterface
             }
         }
 
+        $normalizedPath = $this->pathParser->normalizePath($path);
+        
+        // Find entry in index (support both old and new format)
+        $entry = null;
+        foreach ($index as $item) {
+            $itemPath = is_array($item) ? ($item['path'] ?? '') : $item;
+            if ($itemPath === $normalizedPath) {
+                $entry = $item;
+                break;
+            }
+        }
+
         //If not found, flag as unavabile.
-        if (in_array($this->pathParser->normalizePath($path), $index, true) === false) {
+        if ($entry === null) {
             $this->logger->log("Entry not found (" . $this->resolverId()  . "): " . $path);
             return $this->url_stat_response()->notfound();
         }
@@ -106,7 +118,10 @@ class FileResolver implements StreamWrapperResolverInterface
         //Message file found
         $this->logger->log("Entry found (" . $this->resolverId()  . "): " . $path);
 
-        //Resolve as found. 
-        return $this->url_stat_response()->found('file');
+        // Extract size from entry if available
+        $size = is_array($entry) ? ($entry['size'] ?? null) : null;
+
+        //Resolve as found with size metadata
+        return $this->url_stat_response()->found('file', $size);
     }
 }

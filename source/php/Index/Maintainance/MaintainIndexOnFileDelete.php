@@ -26,7 +26,7 @@ class MaintainIndexOnFileDelete implements HookableInterface
     /**
      * Handle file delete event.
      *
-     * @param string $file
+     * @param  string $file
      * @return string
      */
     public function onFileDelete(string $file): string
@@ -37,12 +37,12 @@ class MaintainIndexOnFileDelete implements HookableInterface
             $this->indexManager->delete($file);
         } catch (IndexManagerException $e) {
             switch ($e->getId()) {
-              case 'cannot_write_to_index':
-                  $this->logger->log("[MaintainIndex][wp_delete_file] {$e->getMessage()}");
-                  break;
-              default:
-                  $this->logger->log("[MaintainIndex][wp_delete_file] Unexpected error on deleting from index: {$e->getMessage()}");
-                  break;
+            case 'cannot_write_to_index':
+                $this->logger->log("[MaintainIndex][wp_delete_file] {$e->getMessage()}");
+                break;
+            default:
+                $this->logger->log("[MaintainIndex][wp_delete_file] Unexpected error on deleting from index: {$e->getMessage()}");
+                break;
             }
         }
         return $file;
