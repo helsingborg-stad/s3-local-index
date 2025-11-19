@@ -107,6 +107,6 @@ class FileResolver implements StreamWrapperResolverInterface
         $this->logger->log("Entry found (" . $this->resolverId()  . "): " . $path);
 
         //Resolve as found. 
-        return $this->url_stat_response()->found('file');
+        return $this->url_stat_response()->found('file', $path);
     }
 }

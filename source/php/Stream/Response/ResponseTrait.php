@@ -26,7 +26,7 @@ trait ResponseTrait
              * @param  string $type Either 'file' or 'dir'.
              * @return array
              */
-            public function found(string $type = 'file'): array
+            public function found(string $type = 'file', ?string $path = null): array
             {
                 if($type !== 'file' && $type !== 'dir') {
                     throw new \InvalidArgumentException('Type must be either "file" or "dir".');
@@ -53,7 +53,9 @@ trait ResponseTrait
                 ? (0040000 | $dirMode)   // Directory
                 : (0100000 | $fileMode); // Regular file
 
-                $size = $isDir ? 0 : 1024; // Directory = 0, file = 1 KB (placeholder)
+                $size = $isDir ? 0 : (
+                    $this->getFilesizeFromDatabase($path) ?? 1024
+                );
 
                 $blocks = ceil($size / 512) ?: 0;
 
@@ -85,6 +87,31 @@ trait ResponseTrait
             public function notfound(): false
             {
                 return false;
+            }
+
+            /**
+             * Attempt to get the filesize from the database by path.
+             *
+             * @param string $path The file path on disk.
+             * @return int|null The filesize in bytes, or null if not found.
+             */
+            private function getFilesizeFromDatabase(?string $path): ?int
+            {
+                if($path === null) {
+                    return null;
+                }
+
+                global $wpdb;
+
+                // Adjust table/column names as needed for your schema
+                $table = $wpdb->prefix . 'your_file_index_table';
+                $sql = $wpdb->prepare(
+                    "SELECT filesize FROM $table WHERE path = %s LIMIT 1",
+                    $path
+                );
+                $result = $wpdb->get_var($sql);
+
+                return ($result !== null) ? (int)$result : null;
             }
         };
     }
