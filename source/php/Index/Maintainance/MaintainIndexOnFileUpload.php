@@ -31,11 +31,6 @@ class MaintainIndexOnFileUpload implements HookableInterface
      */
     public function onFileUpload(int $postId): void
     {
-
-        $isImage = $this->wpService->wpAttachmentIsImage($postId);
-        if (!$isImage) {
-            return;
-        }
         $filePath = $this->wpService->getAttachedFile($postId);
         if (!$filePath) {
             return;
