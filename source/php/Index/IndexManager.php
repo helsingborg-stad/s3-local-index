@@ -71,7 +71,7 @@ class IndexManager implements IndexManagerInterface
     /*
     * @inheritDoc
     */
-    public function write(string $path): bool
+    public function write(string $path, array $metaData = []): bool
     {
         // Early bailout
         $details = $this->pathParser->getPathDetails($path);
@@ -94,7 +94,7 @@ class IndexManager implements IndexManagerInterface
         }
 
         // Append to index (key = file reference, value = metadata object)
-        $index[$normalized] = (object)[];
+        $index[$normalized] = (object) $metaData;
 
         // Write to file with error handling
         try {
