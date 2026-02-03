@@ -21,6 +21,7 @@ use S3_Local_Index\Stream\StreamWrapperRegistrar;
 use S3_Local_Index\Index\Maintainance\MaintainIndexOnFileUpload;
 use S3_Local_Index\Index\Maintainance\MaintainIndexOnFileDelete;
 use S3_Local_Index\Index\Maintainance\MaintainIndexOnNewIntermidiateImage;
+use S3_Local_Index\FileSize\S3FileSizeResolver;
 
 /**
  * Main application class for S3 Local Index plugin.
@@ -101,11 +102,12 @@ class App implements HookableInterface
     public function initPlugin(): void
     {
         //Create dependencies
-        $fileSystem   = new NativeFileSystem($this->config);
-        $pathParser   = new PathParser();
-        $cache        = (new CacheFactory($this->wpService))->createDefault();
-        $logger       = new Logger($this->config);
-        $indexManager = new IndexManager($cache, $fileSystem, $logger, $pathParser);
+        $fileSystem         = new NativeFileSystem($this->config);
+        $pathParser         = new PathParser();
+        $cache              = (new CacheFactory($this->wpService))->createDefault();
+        $logger             = new Logger($this->config);
+        $indexManager       = new IndexManager($cache, $fileSystem, $logger, $pathParser);
+        $fileSizeResolver   = new S3FileSizeResolver(S3Plugin::get_instance(), $logger);
 
         //Create stream wrappers
         $streamWrapperDirectoryResolver = new DirectoryResolver($this->wpService, $logger, $pathParser, $indexManager);
@@ -129,12 +131,28 @@ class App implements HookableInterface
         $streamWrapperRegistrar->unregister('s3');
         $streamWrapperRegistrar->register('s3', StreamWrapperProxy::class);
 
+        //Create file size resolver for S3
+
         //Add hooks to maintain index on file upload/delete
-        $maintainIndexOnFileUpload = new MaintainIndexOnFileUpload($this->wpService, $indexManager, $logger);
+        $maintainIndexOnFileUpload = new MaintainIndexOnFileUpload(
+            $this->wpService, 
+            $indexManager, 
+            $logger, 
+            $fileSizeResolver
+        );
         $maintainIndexOnFileUpload->addHooks();
-        $maintainIndexOnFileDelete = new MaintainIndexOnFileDelete($this->wpService, $indexManager, $logger);
+        $maintainIndexOnFileDelete = new MaintainIndexOnFileDelete(
+            $this->wpService, 
+            $indexManager, 
+            $logger
+        );
         $maintainIndexOnFileDelete->addHooks();
-        $maintainIndexOnNewIntermidiateImage = new MaintainIndexOnNewIntermidiateImage($this->wpService, $indexManager, $logger);
+        $maintainIndexOnNewIntermidiateImage = new MaintainIndexOnNewIntermidiateImage(
+            $this->wpService, 
+            $indexManager, 
+            $logger, 
+            $fileSizeResolver
+        );
         $maintainIndexOnNewIntermidiateImage->addHooks();
     }
 }

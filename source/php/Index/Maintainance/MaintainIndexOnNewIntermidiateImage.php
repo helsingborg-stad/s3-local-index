@@ -5,14 +5,19 @@ namespace S3_Local_Index\Index\Maintainance;
 use S3_Local_Index\HookableInterface;
 use S3_Local_Index\Index\IndexManager;
 use S3_Local_Index\Logger\Logger;
+use S3_Local_Index\FileSize\FileSizeResolverInterface;
 use WpService\WpService;
 use S3_Local_Index\Index\Exception\IndexManagerException;
 
 class MaintainIndexOnNewIntermidiateImage implements HookableInterface
 {
 
-    public function __construct(private WpService $wpService, private IndexManager $indexManager, private Logger $logger)
-    {
+    public function __construct(
+        private WpService $wpService,
+        private IndexManager $indexManager,
+        private Logger $logger,
+        private FileSizeResolverInterface $fileSizeResolver
+    ) {
     }
 
     /**
@@ -29,10 +34,10 @@ class MaintainIndexOnNewIntermidiateImage implements HookableInterface
     {
         $this->logger->log("[MaintainIndex][wp_create_file_in_uploads]: Hook triggered to add {$file} to index.");
 
-        $fileSize = @filesize($file);
+        $fileSize = $this->fileSizeResolver->getFileSize($file);
 
         try {
-            $this->indexManager->write($file, $fileSize ? ['size' => $fileSize] : []);
+            $this->indexManager->write($file, $fileSize !== null ? ['size' => $fileSize] : []);
         } catch (IndexManagerException $e) {
             switch ($e->getId()) {
             case 'cannot_write_to_index':
