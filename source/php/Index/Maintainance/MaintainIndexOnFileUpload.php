@@ -43,8 +43,10 @@ class MaintainIndexOnFileUpload implements HookableInterface
 
         $this->logger->log("[MaintainIndex][add_attachment]: Hook triggered to add {$filePath} to index.");
 
+        $fileSize = @filesize($filePath);
+
         try {
-            $this->indexManager->write($filePath);
+            $this->indexManager->write($filePath, $fileSize ? ['size' => $fileSize] : []);
         } catch (IndexManagerException $e) {
             switch ($e->getId()) {
             case 'cannot_write_to_index':

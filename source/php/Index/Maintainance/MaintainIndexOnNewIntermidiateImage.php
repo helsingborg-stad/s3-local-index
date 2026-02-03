@@ -29,8 +29,10 @@ class MaintainIndexOnNewIntermidiateImage implements HookableInterface
     {
         $this->logger->log("[MaintainIndex][wp_create_file_in_uploads]: Hook triggered to add {$file} to index.");
 
+        $fileSize = @filesize($file);
+
         try {
-            $this->indexManager->write($file);
+            $this->indexManager->write($file, $fileSize ? ['size' => $fileSize] : []);
         } catch (IndexManagerException $e) {
             switch ($e->getId()) {
             case 'cannot_write_to_index':

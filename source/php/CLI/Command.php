@@ -96,7 +96,9 @@ class Command
                     
                     if (!empty($locationDetails)) {
                         extract($locationDetails);
-                        $filesBySite[$blogId][$year][$month][$bucket . "/" . $key] = (object)[];
+                        $filesBySite[$blogId][$year][$month][$bucket . "/" . $key] = (object)[
+                            'size' => $obj['Size']
+                        ];
                     }
 
                     $count++;
