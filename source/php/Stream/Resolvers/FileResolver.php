@@ -98,7 +98,7 @@ class FileResolver implements StreamWrapperResolverInterface
         }
 
         //If not found, flag as unavabile.
-        if (in_array($this->pathParser->normalizePath($path), $index, true) === false) {
+        if (!array_key_exists($this->pathParser->normalizePath($path), $index)) {
             $this->logger->log("Entry not found (" . $this->resolverId()  . "): " . $path);
             return $this->url_stat_response()->notfound();
         }
