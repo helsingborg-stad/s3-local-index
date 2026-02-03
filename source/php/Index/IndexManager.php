@@ -93,8 +93,8 @@ class IndexManager implements IndexManagerInterface
             throw $e;
         }
 
-        // Append to index (key = file reference, value = metadata object)
-        $index[$normalized] = (object) $metaData;
+        // Append to index (key = file reference, value = metadata array)
+        $index[$normalized] = $metaData;
 
         // Write to file with error handling
         try {

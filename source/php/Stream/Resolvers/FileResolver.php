@@ -98,15 +98,22 @@ class FileResolver implements StreamWrapperResolverInterface
         }
 
         //If not found, flag as unavabile.
-        if (!array_key_exists($this->pathParser->normalizePath($path), $index)) {
-            $this->logger->log("Entry not found (" . $this->resolverId()  . "): " . $path);
+        $normalizedPath = $this->pathParser->normalizePath($path);
+        if (!array_key_exists($normalizedPath, $index)) {
+            $this->logger->log(
+                "Entry not found (" . $this->resolverId()  . "): " . $path
+            );
             return $this->url_stat_response()->notfound();
         }
+
+        //Extract filesize from index metadata
+        $metadata = $index[$normalizedPath];
+        $fileSize = isset($metadata['size']) ? (int) $metadata['size'] : null;
 
         //Message file found
         $this->logger->log("Entry found (" . $this->resolverId()  . "): " . $path);
 
-        //Resolve as found. 
-        return $this->url_stat_response()->found('file');
+        //Resolve as found with filesize from index
+        return $this->url_stat_response()->found('file', $fileSize);
     }
 }
