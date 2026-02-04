@@ -21,7 +21,7 @@ interface IndexManagerInterface
      * @param  string $path
      * @return bool True if the path was updated, or added to the string. 
      */
-    public function write(string $path): bool;
+    public function write(string $path, array $metaData = []): bool;
 
     /**
      * Remove a file path from the local index.

@@ -71,7 +71,7 @@ class IndexManager implements IndexManagerInterface
     /*
     * @inheritDoc
     */
-    public function write(string $path): bool
+    public function write(string $path, array $metaData = []): bool
     {
         // Early bailout
         $details = $this->pathParser->getPathDetails($path);
@@ -93,8 +93,8 @@ class IndexManager implements IndexManagerInterface
             throw $e;
         }
 
-        // Append to index
-        $index[] = $normalized;
+        // Append to index (key = file reference, value = metadata array)
+        $index[$normalized] = $metaData;
 
         // Write to file with error handling
         try {
@@ -136,14 +136,10 @@ class IndexManager implements IndexManagerInterface
             throw $e;
         }
 
-        // Remove from index if present
-        $keys = array_keys($index, $normalized, true);
-        foreach ($keys as $key) {
-            unset($index[$key]);
+        // Remove from index if present (key-based lookup)
+        if (array_key_exists($normalized, $index)) {
+            unset($index[$normalized]);
         }
-
-        // Reindex array to keep it clean
-        $index = array_values($index);
 
         // Write to file with error handling
         try {
