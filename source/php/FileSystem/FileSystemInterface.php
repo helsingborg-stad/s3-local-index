@@ -30,6 +30,15 @@ interface FileSystemInterface
     public function filePutContents(string $path, string $data);
 
     /**
+     * Lock, read the current index from disk, mutate it, and publish it atomically.
+     * Return false from the callback to leave the file unchanged.
+     *
+     * @param callable(array): (array|false) $mutation
+     * @return array|false The committed index, or false when skipped.
+     */
+    public function mutateIndexFile(string $path, callable $mutation): array|false;
+
+    /**
      * Delete a file.
      *
      * @param  string $path File path

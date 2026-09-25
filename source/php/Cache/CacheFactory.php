@@ -26,12 +26,8 @@ class CacheFactory
      */
     public function createDefault(): CacheInterface
     {
-        $LruCache = new LruCache();
-        
-        return new CompositeCache(
-            $LruCache,
-            new WpCache($this->wpService)
-        );
+        // Per-process memory caches cannot be invalidated by another worker.
+        return new WpCache($this->wpService);
     }
 
     /**

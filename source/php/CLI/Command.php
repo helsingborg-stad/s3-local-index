@@ -83,6 +83,7 @@ class Command
 
         $this->cli::log("[S3 Local Index] Using cache directory: {$cacheDir}");
 
+        $scanStartedAt = time();
         $filesBySite = [];
         $count = 0;
         $paginator = $s3->getPaginator('ListObjectsV2', ['Bucket' => $bucket]);
@@ -109,16 +110,42 @@ class Command
             }
         }
 
+        $skipped = 0;
         foreach ($filesBySite as $blogId => $years) {
             foreach ($years as $year => $months) {
                 foreach ($months as $month => $keys) {
                     $file = "{$cacheDir}/s3-index-{$blogId}-{$year}-{$month}.json";
-                    $this->fileSystem->filePutContents($file, json_encode($keys, JSON_PRETTY_PRINT));
+                    try {
+                        $result = $this->fileSystem->mutateIndexFile(
+                            $file,
+                            static function (array $current) use ($file, $keys, $scanStartedAt): array|false {
+                                // Uploads/deletes made while S3 was being scanned must not
+                                // be overwritten by a snapshot taken before those changes.
+                                clearstatcache(true, $file);
+                                if (is_file($file) && filemtime($file) >= $scanStartedAt) {
+                                    return false;
+                                }
+                                return $keys;
+                            }
+                        );
+                    } catch (\Throwable $e) {
+                        $this->cli::error("[S3 Local Index] Failed to write {$file}: {$e->getMessage()}");
+                        return;
+                    }
+
+                    if ($result === false) {
+                        $skipped++;
+                        $this->cli::warning("Skipped {$file}: changed during S3 scan; next rebuild will refresh it.");
+                        continue;
+                    }
                     $this->cli::log("Written index for blog {$blogId} {$year}-{$month}. [File: {$file}] [Items: " . count($keys) . "]");
                 }
             }
         }
 
-        $this->cli::success("[S3 Local Index] Index created successfully. Total objects: {$count}");
+        // A worker could have repopulated the cache from an old index while
+        // the scan was running. Invalidate it after publishing the new files.
+        $this->cache->clear();
+        $this->cli::success("[S3 Local Index] Index created. Total objects: {$count}. Skipped changed months: {$skipped}.");
     }
 }

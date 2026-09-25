@@ -29,6 +29,9 @@ The flowing file changes will be captured:
 - The indexing cron / cli should only run on one of the sites in a multisite environment. 
 - All sites in a network MUST share a bucket. Multiple buckets is not yet supported. 
 - This plugin does not index directories, a lookup delegation will be made on is_dir querys. 
+- The CLI rebuild and PHP workers must use the same index directory, and both must be able to write to it. Run the cron as the PHP worker user or configure shared ownership and group permissions. Running the rebuild as root can leave files that PHP cannot update.
+- If the existing index directory was created by root, fix its ownership or group permissions before switching the cron user. The plugin now logs index write failures in production instead of treating them as successful updates.
+- Each index update takes a per-file lock and publishes a complete JSON file by atomic rename. A rebuild skips an index changed during its S3 scan; the next rebuild will refresh that month.
 
 ## Requirements
 
@@ -110,7 +113,8 @@ This command:
 - Scans the entire S3 bucket
 - Groups files by blog ID, year, and month
 - Creates JSON index files in the temporary directory
-- Clears existing cache before starting
+- Clears the object cache before and after rebuilding
+- Reports months skipped because another process changed them during the scan
 - Provides progress updates during execution
 
 
@@ -148,11 +152,7 @@ uploads/networks/1/sites/2/2023/01/image.jpg
 
 ### Caching Strategy
 
-The plugin uses a multi-layer caching approach:
-
-1. **Static Cache**: In-memory cache for the current request
-2. **WordPress Object Cache**: Persistent cache using WordPress's object cache system
-3. **Composite Cache**: Combines both strategies for optimal performance
+The default index cache uses the WordPress object cache. Per-process memory caches are not used because another worker cannot invalidate them.
 
 Cache keys follow the pattern: `index_{blogId}_{year}_{month}`
 
