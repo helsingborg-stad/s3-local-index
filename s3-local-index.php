@@ -2,7 +2,7 @@
 /**
  * Plugin Name: S3 Local Index
  * Description: Provides local indexing of S3 files and a CLI command with cache flushing capabilities.
- * Version: 1.2.0
+ * Version: 1.2.1
  */
 
 use S3_Local_Index\App;
