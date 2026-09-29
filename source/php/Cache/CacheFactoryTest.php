@@ -16,14 +16,14 @@ class CacheFactoryTest extends TestCase
         $this->assertInstanceOf(CacheFactory::class, $cacheFactory);
     }
 
-    #[TestDox('createDefault returns CompositeCache instance')]
-    public function testCreateDefaultReturnsCompositeCacheInstance(): void
+    #[TestDox('createDefault uses the shared WordPress cache')]
+    public function testCreateDefaultReturnsWpCacheInstance(): void
     {
         $cacheFactory = new CacheFactory($this->getWpService());
 
         $cache = $cacheFactory->createDefault();
 
-        $this->assertInstanceOf(CompositeCache::class, $cache);
+        $this->assertInstanceOf(WpCache::class, $cache);
     }
 
     #[TestDox('createStatic returns StaticCache instance')]

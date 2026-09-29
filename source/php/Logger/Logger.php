@@ -35,4 +35,9 @@ class Logger implements LoggerInterface
             error_log(self::LOG_TAG . $message);
         }
     }
+
+    public function error(string $message): void
+    {
+        error_log(self::LOG_TAG . $message);
+    }
 }

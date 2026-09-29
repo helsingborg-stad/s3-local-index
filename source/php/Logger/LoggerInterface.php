@@ -17,4 +17,7 @@ interface LoggerInterface
      * @return void
      */
     public function log(string $message): void;
+
+    /** Log an index failure even when debug logging is disabled. */
+    public function error(string $message): void;
 }

@@ -83,28 +83,18 @@ class IndexManager implements IndexManagerInterface
         $file       = $this->fileSystem->getCacheFilePath($details);
         $normalized = $this->pathParser->normalizePath($path);
 
-        $index = [];
-
         try {
-            $index = $this->read($path);
-        } catch (IndexNotFoundException | IndexCorruptException $e) {
-            $index = [];
-        } catch (\Exception $e) {
-            throw $e;
-        }
-
-        // Append to index (key = file reference, value = metadata array)
-        $index[$normalized] = $metaData;
-
-        // Write to file with error handling
-        try {
-            $this->fileSystem->filePutContents($file, json_encode($index));
+            $this->fileSystem->mutateIndexFile($file, static function (array $index) use ($normalized, $metaData): array {
+                $index[$normalized] = $metaData;
+                return $index;
+            });
         } catch (\Throwable $e) {
-            throw new CannotWriteToIndex($file);
+            $this->logger->error("Failed to add {$normalized} to index {$file}: {$e->getMessage()}");
+            throw new CannotWriteToIndex($file, $e);
         }
 
-        // Update cache
-        $this->cache->set($cacheKey, $index, 3600);
+        // A different process may have changed the file since this request cached it.
+        $this->cache->delete($cacheKey);
 
         return true;
     }
@@ -124,32 +114,20 @@ class IndexManager implements IndexManagerInterface
         $file       = $this->fileSystem->getCacheFilePath($details);
         $normalized = $this->pathParser->normalizePath($path);
 
-        $index = [];
-
-        // Try loading existing index
         try {
-            $index = $this->read($path);
-        } catch (IndexNotFoundException | IndexCorruptException $e) {
-            // Nothing to delete if file missing or corrupt → treat as empty index
-            $index = [];
-        } catch (\Exception $e) {
-            throw $e;
-        }
-
-        // Remove from index if present (key-based lookup)
-        if (array_key_exists($normalized, $index)) {
-            unset($index[$normalized]);
-        }
-
-        // Write to file with error handling
-        try {
-            $this->fileSystem->filePutContents($file, json_encode($index));
+            $this->fileSystem->mutateIndexFile($file, static function (array $index) use ($normalized): array|false {
+                if (!array_key_exists($normalized, $index)) {
+                    return false;
+                }
+                unset($index[$normalized]);
+                return $index;
+            });
         } catch (\Throwable $e) {
-            throw new CannotWriteToIndex($file);
+            $this->logger->error("Failed to remove {$normalized} from index {$file}: {$e->getMessage()}");
+            throw new CannotWriteToIndex($file, $e);
         }
 
-        // Update cache
-        $this->cache->set($cacheKey, $index, 3600);
+        $this->cache->delete($cacheKey);
 
         return true;
     }

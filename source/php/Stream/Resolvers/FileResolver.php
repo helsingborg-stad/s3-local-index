@@ -97,13 +97,13 @@ class FileResolver implements StreamWrapperResolverInterface
             }
         }
 
-        //If not found, flag as unavabile.
+        // An index miss is not proof that the object is absent from S3.
         $normalizedPath = $this->pathParser->normalizePath($path);
         if (!array_key_exists($normalizedPath, $index)) {
             $this->logger->log(
                 "Entry not found (" . $this->resolverId()  . "): " . $path
             );
-            return $this->url_stat_response()->notfound();
+            return $this->url_stat_response()->bypass();
         }
 
         //Extract filesize from index metadata

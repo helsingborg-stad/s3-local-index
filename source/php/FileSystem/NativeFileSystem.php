@@ -52,6 +52,78 @@ class NativeFileSystem implements FileSystemInterface
         return file_put_contents($path, $data);
     }
 
+    public function mutateIndexFile(string $path, callable $mutation): array|false
+    {
+        $directory = dirname($path);
+        if (!is_dir($directory) && !@mkdir($directory, 0777, true) && !is_dir($directory)) {
+            throw new \RuntimeException("Cannot create index directory: {$directory}");
+        }
+
+        // Keep the lock on a separate inode: the index itself is replaced by rename().
+        $lockPath = $path . '.lock';
+        $lock = @fopen($lockPath, 'c');
+        if ($lock === false && is_file($lockPath)) {
+            // A CLI process may own the file. flock() also works on a readable
+            // descriptor, so writers do not need permission to modify the lock.
+            $lock = @fopen($lockPath, 'r');
+        }
+        if ($lock === false) {
+            throw new \RuntimeException("Cannot open index lock: {$lockPath}");
+        }
+
+        try {
+            if (!flock($lock, LOCK_EX)) {
+                throw new \RuntimeException("Cannot lock index: {$path}");
+            }
+
+            clearstatcache(true, $path);
+            $current = [];
+            if (is_file($path)) {
+                $contents = file_get_contents($path);
+                $current = $contents === false ? null : json_decode($contents, true);
+                if (!is_array($current) || json_last_error() !== JSON_ERROR_NONE) {
+                    throw new \RuntimeException("Cannot read valid index: {$path}");
+                }
+            }
+
+            $next = $mutation($current);
+            if ($next === false) {
+                return false;
+            }
+            if (!is_array($next)) {
+                throw new \RuntimeException("Index mutation returned invalid data: {$path}");
+            }
+
+            $encoded = json_encode($next, JSON_THROW_ON_ERROR);
+            $temporary = tempnam($directory, '.s3-index-');
+            if ($temporary === false) {
+                throw new \RuntimeException("Cannot create temporary index: {$path}");
+            }
+
+            try {
+                if (file_put_contents($temporary, $encoded) !== strlen($encoded)) {
+                    throw new \RuntimeException("Cannot write complete index: {$path}");
+                }
+                // The CLI may run as root while PHP workers use another user.
+                $existingMode = is_file($path) ? fileperms($path) : false;
+                $mode = $existingMode === false ? 0644 : ($existingMode & 0777);
+                if (!chmod($temporary, $mode) || !rename($temporary, $path)) {
+                    throw new \RuntimeException("Cannot publish index: {$path}");
+                }
+                clearstatcache(true, $path);
+            } finally {
+                if (is_file($temporary)) {
+                    unlink($temporary);
+                }
+            }
+
+            return $next;
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
     /**
      * Delete a file.
      *
