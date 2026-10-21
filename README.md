@@ -107,10 +107,12 @@ Creates a complete index by scanning all objects in the S3 bucket. It is recomme
 
 ```bash
 wp s3-index create
+wp s3-index create --bucket=another-bucket
 ```
 
 This command:
 - Scans the entire S3 bucket
+- Accepts `--bucket=<bucket>` to index a different bucket than the one configured in S3 Uploads
 - Groups files by blog ID, year, and month
 - Creates JSON index files in the temporary directory
 - Clears the object cache before and after rebuilding
