@@ -47,14 +47,16 @@ class Command
      * 
      * ## OPTIONS
      * 
-     * No specific options required.
+     * [--bucket=<bucket>]
+     * : Bucket to index. Defaults to the bucket configured in S3 Uploads.
      * 
      * ## EXAMPLES
      * 
      *     wp s3-index create
+     *     wp s3-index create --bucket=another-bucket
      * 
      * @param  array $args       Positional arguments (unused)
-     * @param  array $assoc_args Associative arguments (unused)
+     * @param  array $assoc_args Associative arguments
      * @return void
      * 
      * @when after_wp_load
@@ -63,7 +65,7 @@ class Command
     {
 
         $s3     = $this->s3->s3();
-        $bucket = $this->s3->get_s3_bucket();
+        $bucket = $assoc_args['bucket'] ?? $this->s3->get_s3_bucket();
 
         $this->cli::log("[S3 Local Index] Creating index for bucket: {$bucket}");
 
