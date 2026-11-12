@@ -36,7 +36,7 @@ The flowing file changes will be captured:
 ## Requirements
 
 - WordPress 5.0 or higher
-- PHP 8.0 or higher
+- PHP 8.2 through 8.5 (required by wpservice 3)
 - [S3 Uploads Plugin](https://github.com/humanmade/S3-Uploads) (required dependency)
 - WP-CLI (for command-line operations)
 - Composer (for dependency management)
